@@ -2,7 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Sora';
+  src: url('/fonts/sora/Sora-VariableFont_wght.ttf') format('truetype-variations'),
+       url('/fonts/sora/static/Sora-Regular.ttf') format('truetype');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
+  --font-sans: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --background: #000000;
   --foreground: #ffffff;
   --card: #111111;
@@ -26,6 +36,7 @@
 }
 
 body {
+  font-family: var(--font-sans), 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: #000000;
   color: #ffffff;
   overflow-x: hidden;
@@ -68,15 +79,18 @@ body {
   background: #111111;
   border: 1px solid #262626;
   border-radius: 0px;
+  box-shadow: none;
 }
 
-.motorsport-card:hover {
-  border-color: #383838;
+.motorsport-grid-hairline {
+  background-image: linear-gradient(to right, #1f1f1f 1px, transparent 1px),
+                    linear-gradient(to bottom, #1f1f1f 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
-/* Spec cell - inspired by BMW M specification tables */
-.spec-cell {
-  background: #0a0a0a;
+/* Glass card compatibility layer */
+.glass-card {
+  background: #0d0d0d;
   border: 1px solid #262626;
-  padding: 16px 20px;
+  border-radius: 0px;
 }

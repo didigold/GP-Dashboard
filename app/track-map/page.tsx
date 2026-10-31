@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { CircuitCanvas } from '../../components/3d/CircuitCanvas';
 import { CIRCUITS_DATA } from '../../lib/data/mock-race-data';
-import { Layers, MapPin, Gauge, Award, Compass } from 'lucide-react';
+import { MapPin, Compass } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -20,20 +20,20 @@ export default function TrackMapPage() {
         <div className="flex items-center gap-3">
           <div className="w-1.5 h-6 bg-[#E10600]" />
           <div>
-            <h1 className="text-sm font-black uppercase tracking-wider text-white">
-              {circuit.name} 3D LIVE SIMULATION
+            <h1 className="text-sm font-bold text-white">
+              {circuit.name} 3D Simulation
             </h1>
             <p className="text-[11px] font-mono text-[#888888]">
-              FIM GRADE A • HIGH-SPEED APEX &amp; RUN-OFF TELEMETRY
+              FIM Grade A • High-speed apex &amp; run-off telemetry
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="rounded-none border-[#262626] bg-black text-[#A0A0A0] font-mono text-[11px]">
-            WEBGL RENDERER
+            WebGL Renderer
           </Badge>
           <Badge className="rounded-none bg-[#E10600] text-white hover:bg-[#E10600] font-mono text-[11px]">
-            3D TRACK MAP
+            3D Track Map
           </Badge>
         </div>
       </div>
@@ -45,9 +45,9 @@ export default function TrackMapPage() {
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-[#0066FF] text-xs font-mono font-bold">
                 <Compass className="w-4 h-4" />
-                <span>GRAND PRIX CIRCUIT ARCHITECTURE</span>
+                <span>Grand Prix Circuit Architecture</span>
               </div>
-              <h2 className="text-2xl font-black uppercase tracking-tight text-white">
+              <h2 className="text-2xl font-bold tracking-tight text-white font-sans">
                 {circuit.name}
               </h2>
               <p className="text-xs text-[#888888] font-mono flex items-center gap-2">
@@ -58,7 +58,7 @@ export default function TrackMapPage() {
 
             {/* Circuit Switcher Dropdown */}
             <div className="flex items-center gap-3">
-              <span className="text-xs font-mono text-[#888888]">SELECT CIRCUIT:</span>
+              <span className="text-xs font-mono text-[#888888]">Select circuit:</span>
               <select
                 value={selectedCircuitIndex}
                 onChange={(e) => setSelectedCircuitIndex(parseInt(e.target.value, 10))}
@@ -78,8 +78,8 @@ export default function TrackMapPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
             <CardContent className="p-4">
-              <div className="text-[10px] font-mono text-[#888888] uppercase">TRACK LENGTH</div>
-              <div className="text-xl font-black text-white font-mono mt-1">
+              <div className="text-[10px] font-mono text-[#888888]">Track Length</div>
+              <div className="text-xl font-bold text-white font-mono mt-1">
                 {circuit.length_meters ? `${(circuit.length_meters / 1000).toFixed(3)} km` : '5.245 km'}
               </div>
               <div className="text-[10px] text-[#666666] font-mono mt-0.5">FIM Grade A Approved</div>
@@ -88,8 +88,8 @@ export default function TrackMapPage() {
 
           <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
             <CardContent className="p-4">
-              <div className="text-[10px] font-mono text-[#888888] uppercase">CORNERS</div>
-              <div className="text-xl font-black text-[#0066FF] font-mono mt-1">
+              <div className="text-[10px] font-mono text-[#888888]">Corners</div>
+              <div className="text-xl font-bold text-[#0066FF] font-mono mt-1">
                 {circuit.corners?.total || 15} Turns
               </div>
               <div className="text-[10px] text-[#666666] font-mono mt-0.5">
@@ -100,8 +100,8 @@ export default function TrackMapPage() {
 
           <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
             <CardContent className="p-4">
-              <div className="text-[10px] font-mono text-[#888888] uppercase">LONGEST STRAIGHT</div>
-              <div className="text-xl font-black text-[#E5A93C] font-mono mt-1">
+              <div className="text-[10px] font-mono text-[#888888]">Longest Straight</div>
+              <div className="text-xl font-bold text-[#E5A93C] font-mono mt-1">
                 {circuit.longest_straight_meters ? `${circuit.longest_straight_meters} m` : '1,141 m'}
               </div>
               <div className="text-[10px] text-[#666666] font-mono mt-0.5">Main Start/Finish Straight</div>
@@ -110,8 +110,8 @@ export default function TrackMapPage() {
 
           <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
             <CardContent className="p-4">
-              <div className="text-[10px] font-mono text-[#888888] uppercase">TOP SPEED TRAP</div>
-              <div className="text-xl font-black text-[#E10600] font-mono mt-1">
+              <div className="text-[10px] font-mono text-[#888888]">Top Speed Trap</div>
+              <div className="text-xl font-bold text-[#E10600] font-mono mt-1">
                 {circuit.top_speed_record?.speed_kmh || 366.1} km/h
               </div>
               <div className="text-[10px] text-[#666666] font-mono mt-0.5">

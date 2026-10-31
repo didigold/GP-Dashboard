@@ -3,7 +3,6 @@
 import React from 'react';
 import { SectorDeltaBar } from '../../components/charts/SectorDeltaBar';
 import { Badge } from '@/components/ui/badge';
-import { GitCompare } from 'lucide-react';
 
 export default function HeadToHeadPage() {
   return (
@@ -11,10 +10,10 @@ export default function HeadToHeadPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-neutral-800">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant="motogp">SECTOR COMPARISON</Badge>
-            <Badge variant="outline">TELEMETRY DELTAS</Badge>
+            <Badge variant="motogp">Sector Comparison</Badge>
+            <Badge variant="outline">Telemetry Deltas</Badge>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-sans font-black tracking-tight uppercase text-white leading-none">
+          <h1 className="text-3xl sm:text-4xl font-sans font-bold tracking-tight text-white leading-tight">
             Head-to-Head Sector Breakdown
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 font-light mt-1 max-w-2xl leading-relaxed">

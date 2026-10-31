@@ -4,8 +4,7 @@ import React, { useState } from 'react';
 import { LeanMeter } from '@/components/ui/LeanMeter';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Compass, Gauge, Zap, Flame, Award, ChevronRight } from 'lucide-react';
+import { Compass, Zap } from 'lucide-react';
 
 interface CornerData {
   number: number;
@@ -53,10 +52,10 @@ export default function LeanTelemetryPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-neutral-800">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant="motogp">GYROSCOPIC SENSORS</Badge>
-            <Badge variant="outline">68.2° ELBOW-DOWN ANGLE</Badge>
+            <Badge variant="motogp">Gyroscopic Sensors</Badge>
+            <Badge variant="outline">68.2° Elbow-Down Angle</Badge>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-sans font-black tracking-tight uppercase text-white leading-none">
+          <h1 className="text-3xl sm:text-4xl font-sans font-bold tracking-tight text-white leading-tight">
             Lean Angle &amp; Apex Dynamics
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 font-light mt-1 max-w-2xl leading-relaxed">
@@ -65,20 +64,23 @@ export default function LeanTelemetryPage() {
         </div>
 
         {/* Rider Switcher */}
-        <div className="flex items-center gap-1.5 p-1 bg-[#111111] border border-neutral-800 font-mono text-xs">
-          {(['martin', 'bagnaia', 'marquez'] as const).map((r) => (
-            <button
-              key={r}
-              onClick={() => setSelectedRider(r)}
-              className={`px-3 py-1.5 font-bold transition-colors ${
-                selectedRider === r
-                  ? 'bg-white text-black'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              {r.toUpperCase()}
-            </button>
-          ))}
+        <div className="flex items-center gap-1 p-1 bg-[#111111] border border-neutral-800 text-xs">
+          {(['martin', 'bagnaia', 'marquez'] as const).map((r) => {
+            const labels = { martin: 'Martin #89', bagnaia: 'Bagnaia #1', marquez: 'Marquez #93' };
+            return (
+              <button
+                key={r}
+                onClick={() => setSelectedRider(r)}
+                className={`px-3 py-1.5 font-semibold transition-colors ${
+                  selectedRider === r
+                    ? 'bg-white text-black'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                {labels[r]}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -89,14 +91,14 @@ export default function LeanTelemetryPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <span>CORNER TELEMETRY:</span>
+                <CardTitle className="flex items-center gap-2 font-sans font-bold text-sm">
+                  <span>Corner Telemetry:</span>
                   <span className="text-[#E10600]">
-                    TURN {corner.number} — {corner.name.toUpperCase()}
+                    Turn {corner.number} — {corner.name}
                   </span>
                 </CardTitle>
                 <Badge variant="outline">
-                  {corner.type.toUpperCase()} HANDER
+                  {corner.type}-hander
                 </Badge>
               </div>
             </CardHeader>
@@ -114,115 +116,70 @@ export default function LeanTelemetryPage() {
                 {/* Corner Metrics */}
                 <div className="sm:col-span-2 grid grid-cols-2 gap-3 font-mono text-xs">
                   <div className="p-3 bg-[#0A0A0A] border border-neutral-800">
-                    <div className="text-[10px] text-neutral-400 uppercase">APEX VELOCITY</div>
-                    <div className="text-xl font-black text-white mt-1 tabular-nums">
+                    <div className="text-[10px] text-neutral-400">Apex Velocity</div>
+                    <div className="text-xl font-bold text-white mt-1 tabular-nums">
                       {corner.apexSpeed.toFixed(1)} km/h
                     </div>
                     <div className="text-[10px] text-neutral-400 font-light mt-0.5">Gear: {corner.gear}th</div>
                   </div>
 
                   <div className="p-3 bg-[#0A0A0A] border border-neutral-800">
-                    <div className="text-[10px] text-neutral-400 uppercase">TIME AT &gt; 60° LEAN</div>
-                    <div className="text-xl font-black text-[#E10600] mt-1 tabular-nums">
+                    <div className="text-[10px] text-neutral-400">Time at &gt;60° Lean</div>
+                    <div className="text-xl font-bold text-[#E10600] mt-1 tabular-nums">
                       {riderStats.timeInLeanSec}s
                     </div>
                     <div className="text-[10px] text-neutral-400 font-light mt-0.5">High tire shear</div>
                   </div>
 
                   <div className="p-3 bg-[#0A0A0A] border border-neutral-800">
-                    <div className="text-[10px] text-neutral-400 uppercase">ELEVATION GRADIENT</div>
-                    <div className="text-xl font-black text-amber-400 mt-1 tabular-nums">
-                      +{corner.elevationM}m Crest
+                    <div className="text-[10px] text-neutral-400">Turn Elevation</div>
+                    <div className="text-xl font-bold text-white mt-1 tabular-nums">
+                      {corner.elevationM > 0 ? `+${corner.elevationM}m` : `${corner.elevationM}m`}
                     </div>
-                    <div className="text-[10px] text-neutral-400 font-light mt-0.5">Blind apex uphill</div>
+                    <div className="text-[10px] text-neutral-400 font-light mt-0.5">Crest compression</div>
                   </div>
 
                   <div className="p-3 bg-[#0A0A0A] border border-neutral-800">
-                    <div className="text-[10px] text-neutral-400 uppercase">RIDING STYLE MATRIX</div>
-                    <div className="text-sm font-black text-purple-400 mt-1 truncate">
-                      {riderStats.style}
+                    <div className="text-[10px] text-neutral-400">Rider Max Lean Limit</div>
+                    <div className="text-xl font-bold text-amber-400 mt-1 tabular-nums">
+                      {riderStats.maxLean}°
                     </div>
-                    <div className="text-[10px] text-neutral-400 font-light mt-0.5">#{riderStats.number} {riderStats.name}</div>
+                    <div className="text-[10px] text-neutral-400 font-light mt-0.5">{riderStats.style}</div>
                   </div>
                 </div>
-              </div>
-
-              {/* Riding Style Physics Comparison */}
-              <div className="p-4 bg-[#0A0A0A] border border-neutral-800 text-xs space-y-2 font-mono">
-                <div className="font-bold text-white flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-[#E10600]" />
-                  <span>POINT-AND-SHOOT (V-SHAPE) vs CORNER SPEED (U-SHAPE)</span>
-                </div>
-                <p className="text-neutral-400 font-light leading-relaxed">
-                  <strong className="text-white">Bagnaia (V-Shape):</strong> Brakes heavily upright, snaps the bike down to 65° for only 1.95s, then immediately picks the bike up onto the fat part of the tire to unleash 300+ HP out of the exit.
-                  <br />
-                  <strong className="text-white">Martin (U-Shape):</strong> Carries higher rolling speed at 67.8° lean angle for 2.45s, relying heavily on front edge grip.
-                </p>
               </div>
             </CardContent>
           </Card>
-
-          {/* Interactive Circuit Corner Selector Bar */}
-          <div className="p-4 bg-[#111111] border border-neutral-800">
-            <div className="text-xs font-mono text-neutral-400 mb-2 flex justify-between">
-              <span className="uppercase tracking-wider font-bold">SELECT CORNER (1 TO 15)</span>
-              <span>AUTODROMO DEL MUGELLO</span>
-            </div>
-            <div className="grid grid-cols-5 sm:grid-cols-15 gap-1.5 font-mono text-xs">
-              {MUGELLO_CORNERS.map((c, i) => (
-                <button
-                  key={c.number}
-                  onClick={() => setSelectedCornerIdx(i)}
-                  className={`p-2 border text-center transition-colors ${
-                    selectedCornerIdx === i
-                      ? 'bg-[#E10600] text-white font-black border-[#E10600]'
-                      : 'bg-[#0A0A0A] text-neutral-400 hover:text-white border-neutral-800'
-                  }`}
-                >
-                  <div className="text-[9px] text-neutral-400 font-light">T{c.number}</div>
-                  <div className="font-bold tabular-nums">{c.angle.toFixed(0)}°</div>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
-        {/* Right 1 Col: Maximum Lean Leaderboard */}
-        <div className="space-y-6">
-          <Card>
+        {/* Right Col: Mugello Corner Selector List */}
+        <div className="space-y-4">
+          <Card className="h-full">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-[#E10600]" />
-                  <span>MAX LEAN RECORD</span>
-                </CardTitle>
-                <Badge variant="purple">SESSION PEAK</Badge>
-              </div>
+              <CardTitle className="font-sans font-bold text-sm">
+                Mugello Corner Selector
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 font-mono text-xs">
-              {[
-                { pos: 1, rider: 'Marc Marquez', num: 93, angle: 68.2, corner: 'T9 Arrabbiata 2', color: '#38BDF8' },
-                { pos: 2, rider: 'Jorge Martin', num: 89, angle: 67.8, corner: 'T9 Arrabbiata 2', color: '#9333EA' },
-                { pos: 3, rider: 'Pedro Acosta', num: 31, angle: 67.1, corner: 'T8 Arrabbiata 1', color: '#EF4444' },
-                { pos: 4, rider: 'Francesco Bagnaia', num: 1, angle: 65.4, corner: 'T7 Savelli', color: '#CC0000' },
-                { pos: 5, rider: 'Maverick Viñales', num: 12, angle: 65.1, corner: 'T15 Bucine', color: '#22C55E' },
-              ].map((r) => (
-                <div
-                  key={r.num}
-                  className="p-3 bg-[#0A0A0A] border border-neutral-800 flex items-center justify-between"
+            <CardContent className="space-y-1.5 p-3 overflow-y-auto max-h-[500px]">
+              {MUGELLO_CORNERS.map((c, idx) => (
+                <button
+                  key={c.number}
+                  onClick={() => setSelectedCornerIdx(idx)}
+                  className={`w-full p-2.5 flex items-center justify-between text-left text-xs font-mono transition-colors border ${
+                    selectedCornerIdx === idx
+                      ? 'bg-[#181818] border-[#E10600] text-white'
+                      : 'bg-black border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700'
+                  }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-1.5 h-6" style={{ backgroundColor: r.color }} />
-                    <div>
-                      <div className="font-bold text-white">#{r.num} {r.rider}</div>
-                      <div className="text-[10px] text-neutral-400 font-light">{r.corner}</div>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-[#E10600]">T{c.number}</span>
+                    <span className="font-sans font-medium text-white">{c.name}</span>
                   </div>
-                  <div className="text-right">
-                    <div className="text-base font-black text-white tabular-nums">{r.angle.toFixed(1)}°</div>
-                    <div className="text-[9px] text-[#E10600] font-bold">ELBOW DOWN</div>
+                  <div className="flex items-center gap-2 text-[11px]">
+                    <span className="text-neutral-500">{c.type}</span>
+                    <span className="font-bold text-white">{c.angle}°</span>
                   </div>
-                </div>
+                </button>
               ))}
             </CardContent>
           </Card>

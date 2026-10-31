@@ -16,11 +16,10 @@ import {
   Tv,
   Sparkles,
   Activity,
-  SlidersHorizontal,
+  Calendar,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 
 interface TopTacticalHUDProps {
   delay?: number;
@@ -31,16 +30,17 @@ interface TopTacticalHUDProps {
 }
 
 export const NAV_ITEMS = [
-  { name: 'PITWALL LIVE', href: '/live-timing', icon: Radio, isLive: true },
-  { name: 'LEAN & GYRO', href: '/lean-telemetry', icon: Compass },
-  { name: 'TYRE THERMALS', href: '/tyres-asymmetry', icon: Disc },
-  { name: 'BREMBO BRAKING', href: '/braking-zones', icon: Zap },
-  { name: 'SPRINT VS GP', href: '/race-pace', icon: BarChart3 },
-  { name: 'SECTOR DUEL', href: '/head-to-head', icon: GitCompare },
-  { name: '3D RADAR', href: '/track-map', icon: Layers },
-  { name: 'STANDINGS', href: '/standings', icon: Trophy },
-  { name: 'INCIDENTS', href: '/gravel-trap', icon: AlertTriangle },
-  { name: 'DESIGN SYSTEM', href: '/design-system', icon: Sparkles },
+  { name: 'Live Timing', href: '/live-timing', icon: Radio, isLive: true },
+  { name: 'Lean & Gyro', href: '/lean-telemetry', icon: Compass },
+  { name: 'Tyre Thermals', href: '/tyres-asymmetry', icon: Disc },
+  { name: 'Braking Zones', href: '/braking-zones', icon: Zap },
+  { name: 'Sprint vs GP', href: '/race-pace', icon: BarChart3 },
+  { name: 'Head to Head', href: '/head-to-head', icon: GitCompare },
+  { name: '3D Track', href: '/track-map', icon: Layers },
+  { name: 'Standings', href: '/standings', icon: Trophy },
+  { name: 'Schedule', href: '/schedule', icon: Calendar },
+  { name: 'Incidents', href: '/gravel-trap', icon: AlertTriangle },
+  { name: 'Design System', href: '/design-system', icon: Sparkles },
 ];
 
 export function TopTacticalHUD({
@@ -58,16 +58,16 @@ export function TopTacticalHUD({
       <div className="w-full px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
         {/* Left: Official MotoGP Brand Badge */}
         <div className="flex items-center gap-4 shrink-0">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="h-7 px-2 bg-[#E10600] flex items-center justify-center text-white font-black text-xs tracking-tighter">
-              MOTOGP™
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="h-7 px-2 bg-[#E10600] flex items-center justify-center text-white font-bold text-xs tracking-tight">
+              MotoGP™
             </div>
             <div className="flex flex-col">
-              <span className="font-sans font-black text-xs tracking-wider text-white uppercase leading-none">
-                PITWALL DASHBOARD
+              <span className="font-sans font-bold text-xs text-white leading-none">
+                Pitwall Dashboard
               </span>
-              <span className="text-[9px] font-mono tracking-widest text-neutral-400 uppercase mt-0.5">
-                Official Engineering Feed
+              <span className="text-[10px] font-mono text-neutral-400 mt-0.5">
+                Engineering Feed
               </span>
             </div>
           </Link>
@@ -75,12 +75,12 @@ export function TopTacticalHUD({
           {/* Active Round Pill */}
           <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 bg-[#111111] border border-neutral-800 text-xs font-mono">
             <span className="w-1.5 h-1.5 rounded-full bg-[#E10600] animate-pulse" />
-            <span className="text-white font-bold">MUGELLO GP</span>
-            <span className="text-[10px] text-neutral-400">RND 07</span>
+            <span className="text-white font-semibold">Mugello GP</span>
+            <span className="text-[10px] text-neutral-400">Rnd 07</span>
           </div>
         </div>
 
-        {/* Center: Horizontal Segmented Navigation Deck (Engineered Uppercase Tracking) */}
+        {/* Center: Horizontal Segmented Navigation Deck (Natural Case) */}
         <nav className="hidden md:flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
@@ -90,7 +90,7 @@ export function TopTacticalHUD({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative px-3 py-1.5 text-xs font-bold uppercase tracking-[1.5px] transition-colors shrink-0 flex items-center gap-1.5 border rounded-none ${
+                className={`relative px-3 py-1.5 text-xs font-medium tracking-tight transition-colors shrink-0 flex items-center gap-1.5 border rounded-none ${
                   isActive
                     ? 'bg-[#181818] text-white border-neutral-700 border-b-2 border-b-[#E10600]'
                     : 'text-neutral-400 hover:text-white hover:bg-neutral-900 border-transparent'
@@ -117,7 +117,7 @@ export function TopTacticalHUD({
           <div className="relative">
             <button
               onClick={() => setShowDelayControl(!showDelayControl)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-none text-xs font-mono font-bold transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-none text-xs font-mono font-medium transition-colors ${
                 delay > 0
                   ? 'bg-neutral-900 text-[#E10600] border-[#E10600]'
                   : 'bg-[#111111] text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700'
@@ -125,17 +125,17 @@ export function TopTacticalHUD({
               title="Adjust TV broadcast transmission delay (0-120s)"
             >
               <Tv className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">SYNC:</span>
-              <span className="text-white tabular-nums">{delay > 0 ? `-${delay.toFixed(1)}s` : 'LIVE'}</span>
+              <span className="hidden sm:inline">Sync:</span>
+              <span className="text-white tabular-nums">{delay > 0 ? `-${delay.toFixed(1)}s` : 'Live'}</span>
             </button>
 
             {/* Quick Floating Delay Drawer */}
             {showDelayControl && (
               <div className="absolute right-0 top-full mt-2 w-72 p-4 bg-[#111111] border border-neutral-800 shadow-2xl z-50 font-mono">
                 <div className="flex items-center justify-between mb-3 text-xs">
-                  <span className="text-white font-bold uppercase tracking-wider">Broadcast TV Sync</span>
+                  <span className="text-white font-semibold">Broadcast TV Sync</span>
                   <span className="text-[#E10600] font-bold tabular-nums">
-                    {delay.toFixed(1)}s DELAY
+                    {delay.toFixed(1)}s delay
                   </span>
                 </div>
                 <input
@@ -155,13 +155,13 @@ export function TopTacticalHUD({
                 <div className="mt-3 pt-3 border-t border-neutral-800 flex justify-between">
                   <button
                     onClick={() => onDelayChange?.(0)}
-                    className="text-[10px] text-neutral-400 hover:text-white uppercase"
+                    className="text-[10px] text-neutral-400 hover:text-white"
                   >
                     Reset Live
                   </button>
                   <button
                     onClick={() => setShowDelayControl(false)}
-                    className="text-[10px] text-white font-bold uppercase"
+                    className="text-[10px] text-white font-semibold"
                   >
                     Done
                   </button>
@@ -179,7 +179,7 @@ export function TopTacticalHUD({
               className="flex items-center gap-1.5"
             >
               <Activity className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">HUD</span>
+              <span className="hidden md:inline">Pitwall HUD</span>
             </Button>
           )}
         </div>

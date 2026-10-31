@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Trophy, Users, Wrench, ShieldCheck, RefreshCw, ExternalLink } from 'lucide-react';
 import { MOCK_STANDINGS } from '@/lib/data/mock-race-data';
 
@@ -117,15 +116,15 @@ export default function StandingsPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-neutral-800">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant="motogp">OFFICIAL DORNA SPORTS FEED</Badge>
+            <Badge variant="motogp">Official Dorna Sports Feed</Badge>
             <Badge variant="outline">api.motogp.pulselive.com</Badge>
             {lastUpdated && (
-              <span className="text-[10px] font-mono text-neutral-500">
-                SYNCED: {lastUpdated}
+              <span className="text-[10px] font-mono text-neutral-400">
+                Synced: {lastUpdated}
               </span>
             )}
           </div>
-          <h1 className="text-3xl sm:text-4xl font-sans font-black tracking-tight uppercase text-white leading-none">
+          <h1 className="text-3xl sm:text-4xl font-sans font-bold tracking-tight text-white leading-tight">
             World Championship Standings
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 font-light mt-1 max-w-2xl leading-relaxed">
@@ -142,7 +141,7 @@ export default function StandingsPage() {
               variant={selectedSeason.year === season.year ? 'motogp' : 'outline'}
               onClick={() => setSelectedSeason(season)}
             >
-              {season.year} SEASON
+              {season.year} Season
             </Button>
           ))}
         </div>
@@ -151,35 +150,35 @@ export default function StandingsPage() {
       {/* Category Tabs: Riders, Teams, Constructors */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 bg-[#111111] p-1 border border-neutral-800 font-mono text-xs">
+          <div className="flex items-center gap-1 bg-[#111111] p-1 border border-neutral-800 text-xs">
             <button
               onClick={() => setActiveTab('riders')}
-              className={`px-4 py-1.5 font-bold uppercase transition-colors ${
+              className={`px-4 py-1.5 font-semibold transition-colors ${
                 activeTab === 'riders' ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
               }`}
             >
-              RIDERS CLASSIFICATION
+              Riders Classification
             </button>
             <button
               onClick={() => setActiveTab('constructors')}
-              className={`px-4 py-1.5 font-bold uppercase transition-colors ${
+              className={`px-4 py-1.5 font-semibold transition-colors ${
                 activeTab === 'constructors' ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
               }`}
             >
-              CONSTRUCTORS
+              Constructors
             </button>
             <button
               onClick={() => setActiveTab('teams')}
-              className={`px-4 py-1.5 font-bold uppercase transition-colors ${
+              className={`px-4 py-1.5 font-semibold transition-colors ${
                 activeTab === 'teams' ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
               }`}
             >
-              TEAMS
+              Teams
             </button>
           </div>
 
           <div className="text-xs font-mono text-neutral-400 hidden sm:block">
-            {isLoading ? 'FETCHING PULSELIVE...' : `${standings.length} CLASSIFIED ENTRIES`}
+            {isLoading ? 'Updating live...' : `${standings.length} classified entries`}
           </div>
         </div>
 
@@ -188,18 +187,18 @@ export default function StandingsPage() {
           <div className="border border-neutral-800 overflow-hidden bg-[#0A0A0A]">
             <table className="w-full text-left font-mono text-xs">
               <thead>
-                <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[10px] uppercase tracking-wider">
-                  <th className="py-3 px-4 w-14 text-center">POS</th>
-                  <th className="py-3 px-3 w-14 text-center">NUM</th>
-                  <th className="py-3 px-4">RIDER</th>
-                  <th className="py-3 px-4">NAT</th>
-                  <th className="py-3 px-4">TEAM / CONSTRUCTOR</th>
-                  <th className="py-3 px-4 text-center">WINS</th>
-                  <th className="py-3 px-4 text-center">PODIUMS</th>
-                  <th className="py-3 px-4 text-right">POINTS</th>
+                <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[11px] font-sans font-semibold">
+                  <th className="py-3 px-4 w-14 text-center">Pos</th>
+                  <th className="py-3 px-3 w-14 text-center">Num</th>
+                  <th className="py-3 px-4">Rider</th>
+                  <th className="py-3 px-4">Nat</th>
+                  <th className="py-3 px-4">Team / Constructor</th>
+                  <th className="py-3 px-4 text-center">Wins</th>
+                  <th className="py-3 px-4 text-center">Podiums</th>
+                  <th className="py-3 px-4 text-right">Points</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-800/60">
+              <tbody className="divide-y divide-neutral-800/60 font-mono">
                 {isLoading && standings.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-8 text-center text-neutral-500 font-mono text-xs">
@@ -214,36 +213,36 @@ export default function StandingsPage() {
                         key={item.id || idx}
                         className="hover:bg-neutral-900/60 transition-colors"
                       >
-                        <td className="py-3 px-4 text-center font-black">
+                        <td className="py-3 px-4 text-center font-bold">
                           {isP1 ? (
-                            <span className="text-[#E10600] font-black text-sm">P1</span>
+                            <span className="text-[#E10600] font-bold text-sm">P1</span>
                           ) : (
                             <span className="text-neutral-400">P{item.position}</span>
                           )}
                         </td>
-                        <td className="py-3 px-3 text-center font-black text-white">
+                        <td className="py-3 px-3 text-center font-bold text-white">
                           #{item.rider?.number}
                         </td>
-                        <td className="py-3 px-4">
-                          <span className="font-bold text-white text-sm">
+                        <td className="py-3 px-4 font-sans">
+                          <span className="font-semibold text-white text-sm">
                             {item.rider?.full_name}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-neutral-400 uppercase">
                           {item.rider?.country?.iso || '—'}
                         </td>
-                        <td className="py-3 px-4 text-neutral-300 font-light">
+                        <td className="py-3 px-4 text-neutral-300 font-light font-sans">
                           <div>{item.team?.name || '—'}</div>
                           <div className="text-[10px] text-neutral-500">{item.constructor?.name}</div>
                         </td>
-                        <td className="py-3 px-4 text-center font-bold text-white tabular-nums">
+                        <td className="py-3 px-4 text-center font-semibold text-white tabular-nums">
                           {item.race_wins ?? '—'}
                         </td>
-                        <td className="py-3 px-4 text-center font-bold text-neutral-300 tabular-nums">
+                        <td className="py-3 px-4 text-center font-semibold text-neutral-300 tabular-nums">
                           {item.podiums ?? '—'}
                         </td>
-                        <td className="py-3 px-4 text-right font-black text-white text-base tabular-nums">
-                          {item.points} <span className="text-xs text-neutral-500 font-normal">PTS</span>
+                        <td className="py-3 px-4 text-right font-bold text-white text-sm tabular-nums">
+                          {item.points} <span className="text-xs text-neutral-500 font-normal">pts</span>
                         </td>
                       </tr>
                     );
@@ -259,31 +258,31 @@ export default function StandingsPage() {
           <div className="border border-neutral-800 overflow-hidden bg-[#0A0A0A]">
             <table className="w-full text-left font-mono text-xs">
               <thead>
-                <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[10px] uppercase tracking-wider">
-                  <th className="py-3 px-4 w-14 text-center">POS</th>
-                  <th className="py-3 px-4">CONSTRUCTOR</th>
-                  <th className="py-3 px-4 text-center">VICTORIES</th>
-                  <th className="py-3 px-4 text-center">PODIUM FINISHES</th>
-                  <th className="py-3 px-4 text-right">TOTAL POINTS</th>
+                <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[11px] font-sans font-semibold">
+                  <th className="py-3 px-4 w-14 text-center">Pos</th>
+                  <th className="py-3 px-4">Constructor</th>
+                  <th className="py-3 px-4 text-center">Victories</th>
+                  <th className="py-3 px-4 text-center">Podium Finishes</th>
+                  <th className="py-3 px-4 text-right">Total Points</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-800/60">
+              <tbody className="divide-y divide-neutral-800/60 font-mono">
                 {constructorStandings.map((c, idx) => (
                   <tr key={c.name} className="hover:bg-neutral-900/60 transition-colors">
-                    <td className="py-3.5 px-4 text-center font-black">
+                    <td className="py-3.5 px-4 text-center font-bold">
                       {idx === 0 ? <span className="text-[#E10600]">1</span> : idx + 1}
                     </td>
-                    <td className="py-3.5 px-4 font-black text-white text-sm">
+                    <td className="py-3.5 px-4 font-semibold text-white text-sm font-sans">
                       {c.name}
                     </td>
-                    <td className="py-3.5 px-4 text-center font-bold text-white tabular-nums">
+                    <td className="py-3.5 px-4 text-center font-semibold text-white tabular-nums">
                       {c.wins}
                     </td>
-                    <td className="py-3.5 px-4 text-center font-bold text-neutral-300 tabular-nums">
+                    <td className="py-3.5 px-4 text-center font-semibold text-neutral-300 tabular-nums">
                       {c.podiums}
                     </td>
-                    <td className="py-3.5 px-4 text-right font-black text-white text-base tabular-nums">
-                      {c.points} <span className="text-xs text-neutral-500 font-normal">PTS</span>
+                    <td className="py-3.5 px-4 text-right font-bold text-white text-sm tabular-nums">
+                      {c.points} <span className="text-xs text-neutral-500 font-normal">pts</span>
                     </td>
                   </tr>
                 ))}
@@ -297,27 +296,27 @@ export default function StandingsPage() {
           <div className="border border-neutral-800 overflow-hidden bg-[#0A0A0A]">
             <table className="w-full text-left font-mono text-xs">
               <thead>
-                <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[10px] uppercase tracking-wider">
-                  <th className="py-3 px-4 w-14 text-center">POS</th>
-                  <th className="py-3 px-4">TEAM</th>
-                  <th className="py-3 px-4 text-center">RACE WINS</th>
-                  <th className="py-3 px-4 text-right">TOTAL POINTS</th>
+                <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[11px] font-sans font-semibold">
+                  <th className="py-3 px-4 w-14 text-center">Pos</th>
+                  <th className="py-3 px-4">Team</th>
+                  <th className="py-3 px-4 text-center">Race Wins</th>
+                  <th className="py-3 px-4 text-right">Total Points</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-800/60">
+              <tbody className="divide-y divide-neutral-800/60 font-mono">
                 {teamStandings.map((t, idx) => (
                   <tr key={t.name} className="hover:bg-neutral-900/60 transition-colors">
-                    <td className="py-3.5 px-4 text-center font-black">
+                    <td className="py-3.5 px-4 text-center font-bold">
                       {idx === 0 ? <span className="text-[#E10600]">1</span> : idx + 1}
                     </td>
-                    <td className="py-3.5 px-4 font-black text-white text-sm">
+                    <td className="py-3.5 px-4 font-semibold text-white text-sm font-sans">
                       {t.name}
                     </td>
-                    <td className="py-3.5 px-4 text-center font-bold text-white tabular-nums">
+                    <td className="py-3.5 px-4 text-center font-semibold text-white tabular-nums">
                       {t.wins}
                     </td>
-                    <td className="py-3.5 px-4 text-right font-black text-white text-base tabular-nums">
-                      {t.points} <span className="text-xs text-neutral-500 font-normal">PTS</span>
+                    <td className="py-3.5 px-4 text-right font-bold text-white text-sm tabular-nums">
+                      {t.points} <span className="text-xs text-neutral-500 font-normal">pts</span>
                     </td>
                   </tr>
                 ))}

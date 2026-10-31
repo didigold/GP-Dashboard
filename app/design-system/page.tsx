@@ -121,16 +121,17 @@ function DesignSystemContent() {
         <div className="max-w-[1560px] mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Badge variant="motogp">OFFICIAL MOTOGP™ SYSTEM</Badge>
-              <Badge variant="outline">BMW M MOTORSPORT INSPIRATION</Badge>
-              <Badge variant="secondary">SHADCN/UI PRIMITIVES</Badge>
+              <Badge variant="motogp">Official MotoGP™ System</Badge>
+              <Badge variant="outline">Motorsport Engineering Spec</Badge>
+              <Badge variant="secondary">shadcn/ui Primitives</Badge>
+              <Badge variant="outline">Sora Typography</Badge>
             </div>
-            <h1 className="text-3xl sm:text-5xl font-sans font-black tracking-tight uppercase text-white leading-none">
-              MOTORSPORT PRECISION <br />
-              <span className="text-[#E10600]">DESIGN SYSTEM</span>
+            <h1 className="text-3xl sm:text-5xl font-sans font-bold tracking-tight text-white leading-tight">
+              Motorsport Precision <br />
+              <span className="text-[#E10600]">Design System &amp; Primitives</span>
             </h1>
             <p className="text-sm text-neutral-400 font-light mt-3 max-w-3xl leading-relaxed">
-              Anchored on a pure black canvas with confident uppercase headlines, rectangular industrial precision
+              Anchored on a pure black canvas with clean geometric Sora typography, rectangular industrial precision
               (0px radii), 1px hairlines, and the official MotoGP red speed stripe. Fully built with shadcn/ui components.
             </p>
           </div>
@@ -152,7 +153,7 @@ function DesignSystemContent() {
               className="flex items-center gap-2"
             >
               <Activity className="w-3.5 h-3.5" />
-              <span>TEST RIGHT DRAWER</span>
+              <span>Test Right Drawer</span>
             </Button>
           </div>
         </div>
@@ -206,14 +207,14 @@ function DesignSystemContent() {
                     </div>
 
                     <div className="p-4 bg-[#0A0A0A] border border-neutral-800">
-                      <div className="text-white font-black font-sans text-sm uppercase mb-1 flex items-center gap-2">
+                      <div className="text-white font-bold font-sans text-sm mb-1 flex items-center gap-2">
                         <span className="w-2 h-2 bg-[#E10600]" />
-                        <span>3. Heavy Display (800) vs. Light Body (300) Contrast</span>
+                        <span>3. Sora Typography &amp; Balanced Case Contrast</span>
                       </div>
                       <p className="text-neutral-400">
-                        Headlines use confident UPPERCASE with tight tracking. Body text drops to Light (weight 300 / zinc-400).
-                        All button labels and category tags carry 1.5px letterspacing (<code className="text-white">tracking-[1.5px]</code>)
-                        giving them a machined, industrial finish.
+                        Typography is powered by the geometric sans-serif <strong className="text-white">Sora</strong>.
+                        Headlines use natural Title Case and Sentence Case with high optical contrast (weight 700 bold vs weight 300 body).
+                        Avoiding aggressive all-caps shouting ensures a refined, human, and professional motorsport engineering aesthetic.
                       </p>
                     </div>
 

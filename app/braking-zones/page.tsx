@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { BrakingGForceBar } from '@/components/ui/BrakingGForceBar';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Gauge, Disc, ShieldAlert, Award } from 'lucide-react';
+import { Zap, Disc } from 'lucide-react';
 
 const BRAKING_ZONES_DATABASE = [
   {
@@ -54,18 +54,16 @@ const BRAKING_ZONES_DATABASE = [
 ];
 
 export default function BrakingZonesPage() {
-  const [selectedCircuit, setSelectedCircuit] = useState('All');
-
   return (
     <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto select-none">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-neutral-800 pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant="motogp">BREMBO 355MM CARBON</Badge>
-            <Badge variant="outline">DECELERATION KINETICS</Badge>
+            <Badge variant="motogp">Brembo 355mm Carbon</Badge>
+            <Badge variant="outline">Deceleration Kinetics</Badge>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-sans font-black tracking-tight uppercase text-white leading-none">
+          <h1 className="text-3xl sm:text-4xl font-sans font-bold tracking-tight text-white leading-tight">
             Hard Braking Zones &amp; G-Forces
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 font-light mt-1 max-w-2xl leading-relaxed">
@@ -75,7 +73,7 @@ export default function BrakingZonesPage() {
 
         <div className="flex items-center gap-2">
           <Badge variant="destructive" dot>
-            CRITICAL THERMAL WINDOW &gt;800°C
+            Critical Thermal Window &gt;800°C
           </Badge>
         </div>
       </div>
@@ -86,11 +84,11 @@ export default function BrakingZonesPage() {
           <Card key={zone.corner}>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>
+                <CardTitle className="font-sans font-bold text-sm">
                   <span className="text-[#E10600] font-mono mr-2">[{zone.circuit}]</span>
-                  <span>{zone.corner.toUpperCase()}</span>
+                  <span>{zone.corner}</span>
                 </CardTitle>
-                <Badge variant="destructive">{zone.gForce.toFixed(2)} G LOAD</Badge>
+                <Badge variant="destructive">{zone.gForce.toFixed(2)} G Load</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -114,36 +112,36 @@ export default function BrakingZonesPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardContent className="space-y-2 text-xs font-mono p-5">
-            <div className="font-bold text-white flex items-center gap-2">
+            <div className="font-semibold text-white flex items-center gap-2 font-sans">
               <Disc className="w-4 h-4 text-[#E10600]" />
-              <span>CARBON OPERATING WINDOW</span>
+              <span>Carbon Operating Window</span>
             </div>
-            <p className="text-neutral-400 font-light leading-relaxed">
-              Carbon discs do not function below 250°C. Peak bite and coefficient of friction occur between 400°C and 800°C. Caliper cooling ducts manage temperature spikes above 950°C.
+            <p className="text-neutral-400 font-light leading-relaxed font-sans">
+              Carbon discs do not function below 250°C. Optimum friction coefficient (μ = 0.60) is reached between 400°C and 800°C.
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="space-y-2 text-xs font-mono p-5">
-            <div className="font-bold text-white flex items-center gap-2">
-              <Gauge className="w-4 h-4 text-amber-500" />
-              <span>REAR THUMB BRAKE LEVER</span>
+            <div className="font-semibold text-white flex items-center gap-2 font-sans">
+              <Zap className="w-4 h-4 text-[#E5A93C]" />
+              <span>Rear Wheel Stoppie Lift</span>
             </div>
-            <p className="text-neutral-400 font-light leading-relaxed">
-              Modern riders use a left-handlebar thumb or finger scooter-style brake to modulate rear slip in deep right-handers where the rider&apos;s right foot is scraping the tarmac.
+            <p className="text-neutral-400 font-light leading-relaxed font-sans">
+              Weight transfer shifts 100% of motorcycle and rider mass onto the front Michelin tyre. Anti-stoppie software regulates rear-wheel lift.
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="space-y-2 text-xs font-mono p-5">
-            <div className="font-bold text-white flex items-center gap-2">
-              <Award className="w-4 h-4 text-emerald-500" />
-              <span>ENGINE BRAKING MAPS (EBC)</span>
+            <div className="font-semibold text-white flex items-center gap-2 font-sans">
+              <Zap className="w-4 h-4 text-[#0066FF]" />
+              <span>1.80G Physiological Stress</span>
             </div>
-            <p className="text-neutral-400 font-light leading-relaxed">
-              Electronic ride-by-wire butterflies automatically crack open on corner entry to prevent rear-wheel hopping, adjusting engine braking corner-by-corner via GPS mapping.
+            <p className="text-neutral-400 font-light leading-relaxed font-sans">
+              Riders endure 7.5 kg of front brake lever pressure, generating over 150 kg of physical load pushing through their shoulders and arms.
             </p>
           </CardContent>
         </Card>

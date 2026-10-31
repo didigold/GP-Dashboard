@@ -7,7 +7,6 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-  SheetTrigger,
 } from '@/components/ui/sheet';
 import {
   Accordion,
@@ -17,19 +16,11 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import {
-  Flame,
   Wind,
   Thermometer,
-  Gauge,
-  Radio,
-  Compass,
   Zap,
   Activity,
-  Layers,
-  SlidersHorizontal,
-  ChevronRight,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -64,7 +55,7 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
           className="shadow-2xl flex items-center gap-2 border-none"
         >
           <Activity className="w-3.5 h-3.5 animate-pulse" />
-          <span>PITWALL HUD</span>
+          <span>Pitwall HUD</span>
         </Button>
       </div>
 
@@ -78,15 +69,15 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#E10600] animate-pulse" />
-                  <span className="font-mono text-[11px] font-bold tracking-widest text-[#E10600] uppercase">
-                    LIVE TELEMETRY FEED
+                  <span className="font-mono text-[11px] font-semibold text-[#E10600]">
+                    Live Telemetry Feed
                   </span>
                 </div>
                 <Badge variant="outline" size="sm">
-                  RND 07 · MUGELLO
+                  Rnd 07 · Mugello
                 </Badge>
               </div>
-              <SheetTitle className="text-xl font-black tracking-tight uppercase text-white mt-1">
+              <SheetTitle className="text-xl font-bold tracking-tight text-white mt-1">
                 Pitwall Tactical Drawer
               </SheetTitle>
               <SheetDescription className="text-xs text-neutral-400 font-light">
@@ -97,55 +88,55 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
             {/* Quick Meteorological Grid (Spec Cells) */}
             <div className="grid grid-cols-2 gap-2 my-5">
               <div className="spec-cell">
-                <div className="flex items-center justify-between text-neutral-400 text-[10px] font-mono uppercase mb-1">
+                <div className="flex items-center justify-between text-neutral-400 text-[10px] font-mono mb-1">
                   <span>Track Temp</span>
                   <Thermometer className="w-3.5 h-3.5 text-[#E10600]" />
                 </div>
-                <div className="text-xl font-black text-white font-mono tabular-nums">44.8°C</div>
+                <div className="text-xl font-bold text-white font-mono tabular-nums">44.8°C</div>
                 <div className="text-[10px] text-neutral-400 font-light mt-0.5">Air: 26.2°C</div>
               </div>
 
               <div className="spec-cell">
-                <div className="flex items-center justify-between text-neutral-400 text-[10px] font-mono uppercase mb-1">
+                <div className="flex items-center justify-between text-neutral-400 text-[10px] font-mono mb-1">
                   <span>Wind Velocity</span>
                   <Wind className="w-3.5 h-3.5 text-neutral-400" />
                 </div>
-                <div className="text-xl font-black text-white font-mono tabular-nums">14 km/h</div>
+                <div className="text-xl font-bold text-white font-mono tabular-nums">14 km/h</div>
                 <div className="text-[10px] text-neutral-400 font-light mt-0.5">Direction: NW</div>
               </div>
 
               <div className="spec-cell">
-                <div className="flex items-center justify-between text-neutral-400 text-[10px] font-mono uppercase mb-1">
+                <div className="flex items-center justify-between text-neutral-400 text-[10px] font-mono mb-1">
                   <span>Track Condition</span>
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                 </div>
-                <div className="text-sm font-black text-emerald-400 font-mono uppercase">GREEN FLAG</div>
+                <div className="text-sm font-semibold text-emerald-400 font-mono">Green Flag</div>
                 <div className="text-[10px] text-neutral-400 font-light mt-0.5">Optimum Grip</div>
               </div>
 
               <div className="spec-cell">
-                <div className="flex items-center justify-between text-neutral-400 text-[10px] font-mono uppercase mb-1">
+                <div className="flex items-center justify-between text-neutral-400 text-[10px] font-mono mb-1">
                   <span>Speed Trap Peak</span>
                   <Zap className="w-3.5 h-3.5 text-amber-500" />
                 </div>
-                <div className="text-xl font-black text-white font-mono tabular-nums">363.6</div>
+                <div className="text-xl font-bold text-white font-mono tabular-nums">363.6</div>
                 <div className="text-[10px] text-neutral-400 font-light mt-0.5">#89 J. Martin</div>
               </div>
             </div>
 
             {/* Live Rider Watchlist */}
             <div className="mb-5">
-              <div className="text-xs font-bold uppercase tracking-[1.5px] text-neutral-300 mb-2 flex items-center justify-between">
+              <div className="text-xs font-semibold text-neutral-300 mb-2 flex items-center justify-between">
                 <span>Active Track Pace</span>
-                <span className="text-[10px] font-mono text-neutral-500 font-normal">TOP 3 Q2</span>
+                <span className="text-[10px] font-mono text-neutral-500 font-normal">Top 3 in Q2</span>
               </div>
 
               <div className="space-y-1.5 font-mono text-xs">
                 <div className="p-3 bg-[#111111] border border-neutral-800 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <span className="font-black text-[#E10600] w-6">#1</span>
+                    <span className="font-bold text-[#E10600] w-6">#1</span>
                     <div>
-                      <div className="text-white font-bold">P. Bagnaia</div>
+                      <div className="text-white font-semibold">P. Bagnaia</div>
                       <div className="text-[10px] text-neutral-500">Ducati Lenovo Team</div>
                     </div>
                   </div>
@@ -157,9 +148,9 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
 
                 <div className="p-3 bg-[#111111] border border-neutral-800 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <span className="font-black text-neutral-400 w-6">#93</span>
+                    <span className="font-bold text-neutral-400 w-6">#93</span>
                     <div>
-                      <div className="text-white font-bold">M. Marquez</div>
+                      <div className="text-white font-semibold">M. Marquez</div>
                       <div className="text-[10px] text-neutral-500">Gresini Racing MotoGP</div>
                     </div>
                   </div>
@@ -171,9 +162,9 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
 
                 <div className="p-3 bg-[#111111] border border-neutral-800 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <span className="font-black text-neutral-400 w-6">#89</span>
+                    <span className="font-bold text-neutral-400 w-6">#89</span>
                     <div>
-                      <div className="text-white font-bold">J. Martin</div>
+                      <div className="text-white font-semibold">J. Martin</div>
                       <div className="text-[10px] text-neutral-500">Prima Pramac Racing</div>
                     </div>
                   </div>
@@ -187,7 +178,7 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
 
             {/* Accordion Components inside Drawer */}
             <div className="mb-6">
-              <div className="text-xs font-bold uppercase tracking-[1.5px] text-neutral-300 mb-2">
+              <div className="text-xs font-semibold text-neutral-300 mb-2">
                 Engineering Diagnostics
               </div>
               <Accordion type="single" collapsible defaultValue="michelin">
@@ -198,34 +189,34 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
                       Mugello features 9 right-hand turns and 6 left-hand turns. Right shoulders experience +24°C higher thermal load, reaching 138°C in Arrabbiata 1 &amp; 2.
                     </p>
                     <div className="flex justify-between items-center text-[11px] font-mono text-neutral-300 pt-1 border-t border-neutral-800">
-                      <span>Front Min Pressure:</span>
-                      <span className="text-emerald-400 font-bold">1.84 BAR (Legal &gt;1.80)</span>
+                      <span>Front Hard / Rear Medium</span>
+                      <span className="text-amber-400">1.84 bar</span>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="brembo">
-                  <AccordionTrigger>Brembo San Donato Braking</AccordionTrigger>
+                  <AccordionTrigger>Brembo Carbon Thermal Window</AccordionTrigger>
                   <AccordionContent>
                     <p className="mb-2">
-                      De-acceleration from 360 km/h to 91 km/h in 286 meters. Peak deceleration: 1.80G. Carbon disc temperature exceeds 900°C for 5.2 seconds.
+                      At Turn 1 San Donato, 355mm carbon discs reach 860°C while shedding 270 km/h in under 5.2 seconds.
                     </p>
                     <div className="flex justify-between items-center text-[11px] font-mono text-neutral-300 pt-1 border-t border-neutral-800">
-                      <span>Carbon Disc Spec:</span>
-                      <span className="text-white font-bold">355mm Heavy Duty</span>
+                      <span>Peak Deceleration</span>
+                      <span className="text-[#E10600]">1.80 G</span>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="lean">
-                  <AccordionTrigger>Gyroscopic Max Lean Angle</AccordionTrigger>
+                  <AccordionTrigger>Gyroscopic Max Lean Threshold</AccordionTrigger>
                   <AccordionContent>
                     <p className="mb-2">
-                      Marc Marquez recorded peak 68.2° lean in Turn 15 (Bucine). Knee and elbow scraping grounds chassis at &gt;64° angle of attack.
+                      Maximum recorded lean angle is 68.2° in Turn 15 Bucine. Friction coefficient required exceeds 1.35 mu.
                     </p>
                     <div className="flex justify-between items-center text-[11px] font-mono text-neutral-300 pt-1 border-t border-neutral-800">
-                      <span>Elbow Down Threshold:</span>
-                      <span className="text-[#E10600] font-bold">ACTIVE (&gt;64°)</span>
+                      <span>Knee &amp; Elbow Down</span>
+                      <span className="text-white">68.2°</span>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -234,26 +225,14 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
           </div>
 
           {/* Drawer Footer Actions */}
-          <div className="pt-4 border-t border-neutral-800 flex items-center justify-between gap-3">
+          <div className="pt-4 border-t border-neutral-800 space-y-2">
             <Button
               variant="outline"
               size="sm"
+              className="w-full text-xs font-semibold"
               onClick={() => setIsOpen(false)}
-              className="w-1/2"
             >
-              Close HUD
-            </Button>
-            <Button
-              variant="motogp"
-              size="sm"
-              onClick={() => {
-                setIsOpen(false);
-                window.location.href = '/live-timing';
-              }}
-              className="w-1/2 flex items-center justify-center gap-1"
-            >
-              <span>Full Pitwall</span>
-              <ChevronRight className="w-3.5 h-3.5" />
+              Close HUD Drawer
             </Button>
           </div>
         </SheetContent>

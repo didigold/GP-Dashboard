@@ -31,10 +31,10 @@ export function LeanMeter({
   const strokeDashoffset = circumference - (percentage * circumference);
 
   const activeColor = isElbowDown
-    ? '#00F5D4' // Neon cyan elbow down
+    ? '#0066FF' // MotoGP electric blue
     : isKneeDown
-    ? '#38BDF8' // Electric blue knee down
-    : '#94A3B8'; // Normal transition
+    ? '#38BDF8'
+    : '#737373';
 
   return (
     <div className={`flex flex-col items-center select-none ${className}`}>
@@ -46,8 +46,8 @@ export function LeanMeter({
             cy="65"
             r={radius}
             fill="none"
-            stroke="#1a2336"
-            strokeWidth="9"
+            stroke="#1a1a1a"
+            strokeWidth="8"
             strokeDasharray={circumference}
             strokeDashoffset="0"
           />
@@ -59,7 +59,7 @@ export function LeanMeter({
             r={radius}
             fill="none"
             stroke={activeColor}
-            strokeWidth="9"
+            strokeWidth="8"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
@@ -72,7 +72,7 @@ export function LeanMeter({
             y1="8"
             x2="65"
             y2="18"
-            stroke="#EC4899"
+            stroke="#E10600"
             strokeWidth="2"
             strokeDasharray="2 2"
           />
@@ -80,32 +80,32 @@ export function LeanMeter({
 
         {/* Center Angle Display */}
         <div className="absolute bottom-1 flex flex-col items-center">
-          <div className="text-2xl font-mono font-black text-text-primary tracking-tighter flex items-start">
+          <div className="text-2xl font-mono font-bold text-white tracking-tighter flex items-start">
             <span>{clampedAngle.toFixed(1)}</span>
-            <span className="text-xs font-bold text-apex-cyan ml-0.5">°</span>
+            <span className="text-xs font-bold text-[#0066FF] ml-0.5">°</span>
           </div>
-          <div className="text-[9px] font-mono uppercase tracking-widest text-text-muted">
-            {direction.toUpperCase()} LEAN
+          <div className="text-[10px] font-mono text-neutral-400 capitalize">
+            {direction} lean
           </div>
         </div>
       </div>
 
       {/* Threshold Status Pill */}
-      <div className="mt-1 flex items-center gap-1.5">
+      <div className="mt-1 flex items-center gap-1.5 font-mono">
         <span
-          className={`text-[9px] font-mono px-2 py-0.5 rounded-apex-xs font-bold ${
+          className={`text-[9px] px-2 py-0.5 font-medium border ${
             isElbowDown
-              ? 'bg-apex-cyan/20 text-apex-cyan border border-apex-cyan/40 shadow-glow-cyan'
+              ? 'bg-blue-950/40 text-blue-400 border-blue-800'
               : isKneeDown
-              ? 'bg-apex-blue/20 text-apex-blue border border-apex-blue/40'
-              : 'bg-surface-subtle text-text-muted border border-surface-border'
+              ? 'bg-neutral-900 text-neutral-200 border-neutral-700'
+              : 'bg-black text-neutral-500 border-neutral-800'
           }`}
         >
-          {isElbowDown ? '⚡ ELBOW DOWN' : isKneeDown ? 'KNEE DOWN' : 'UPRIGHT'}
+          {isElbowDown ? '⚡ Elbow Down' : isKneeDown ? 'Knee Down' : 'Upright'}
         </span>
         {maxAngle && (
-          <span className="text-[9px] font-mono text-text-muted">
-            MAX: <strong className="text-text-primary">{maxAngle.toFixed(1)}°</strong>
+          <span className="text-[9px] text-neutral-400">
+            Max: <strong className="text-white">{maxAngle.toFixed(1)}°</strong>
           </span>
         )}
       </div>

@@ -2,75 +2,67 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDelayedLiveTiming } from '../../lib/hooks/useDelayedLiveTiming';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { LiveTimingRider, LiveTimingState } from '../../lib/types/motogp';
 import { LeanMeter } from '@/components/ui/LeanMeter';
 import { TyreAsymmetryPill } from '@/components/ui/TyreAsymmetryPill';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Radio,
   Tv,
-  Zap,
-  Gauge,
-  Disc,
   RotateCcw,
   FastForward,
   Rewind,
-  Eye,
-  CircleDot,
-  Compass,
-  Activity,
-  RefreshCw,
   AlertCircle,
   CheckCircle2,
+  RefreshCw,
+  Compass,
+  Disc,
 } from 'lucide-react';
 
 export default function LiveTimingPage() {
   const [delay, setDelay] = useState<number>(0);
   const [isSimulation, setIsSimulation] = useState<boolean>(true);
   const [selectedRiderNum, setSelectedRiderNum] = useState<string>('1');
-
-  // Real-time Dorna Gateway state
   const [liveGatewayData, setLiveGatewayData] = useState<any>(null);
   const [isGatewayActive, setIsGatewayActive] = useState<boolean>(false);
-  const [lastCheckTime, setLastCheckTime] = useState<string>('');
   const [isCheckingGateway, setIsCheckingGateway] = useState<boolean>(false);
+  const [lastCheckTime, setLastCheckTime] = useState<string>('');
 
-  // Poll Dorna live timing gateway via our edge proxy
-  const checkLiveGateway = async () => {
+  // Function to poll the real-world Dorna live-timing endpoint via our proxy
+  async function checkLiveGateway() {
     setIsCheckingGateway(true);
     try {
       const res = await fetch('/api/live', { cache: 'no-store' });
-      if (res.ok) {
-        const json = await res.json();
-        setLastCheckTime(new Date().toLocaleTimeString());
-        if (json.active && json.data) {
-          setIsGatewayActive(true);
-          setLiveGatewayData(json.data);
-          setIsSimulation(false);
-        } else {
-          setIsGatewayActive(false);
-        }
+      const data = await res.json();
+      setLastCheckTime(new Date().toLocaleTimeString());
+      if (data && data.active && data.data) {
+        setIsGatewayActive(true);
+        setLiveGatewayData(data.data);
+      } else {
+        setIsGatewayActive(false);
+        setLiveGatewayData(null);
       }
     } catch (err) {
-      console.warn('Error checking live gateway:', err);
+      console.warn('Live gateway connection check failed:', err);
       setIsGatewayActive(false);
     } finally {
       setIsCheckingGateway(false);
     }
-  };
+  }
 
+  // Poll Dorna Sports live-timing gateway every 10 seconds
   useEffect(() => {
     checkLiveGateway();
-    const interval = setInterval(checkLiveGateway, 10000); // Check every 10s
+    const interval = setInterval(checkLiveGateway, 10000);
     return () => clearInterval(interval);
   }, []);
 
-  // Live feed buffered with circular memory queue
+  // When live track action is active, automatically use live data; otherwise allow high-fidelity replay
   const currentTimingState = useDelayedLiveTiming(liveGatewayData, delay, isSimulation);
 
-  const ridersList = Object.values(currentTimingState.rider || {}).sort((a, b) => a.pos - b.pos);
-  const selectedRider = ridersList.find((r) => r.rider_number === selectedRiderNum) || ridersList[0];
+  const ridersList: LiveTimingRider[] = (Object.values(currentTimingState.rider || {}) as LiveTimingRider[]).sort((a, b) => a.pos - b.pos);
+  const selectedRider: LiveTimingRider | undefined = ridersList.find((r) => r.rider_number === selectedRiderNum) || ridersList[0];
 
   return (
     <div className="w-full min-h-screen bg-black text-white p-4 lg:p-6 space-y-4 max-w-[1920px] mx-auto select-none">
@@ -83,7 +75,7 @@ export default function LiveTimingPage() {
                 isGatewayActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
               }`}
             />
-            <span className="font-bold text-white uppercase">DATA SOURCE:</span>
+            <span className="font-semibold text-white">Data Source:</span>
             <span className="text-neutral-400">Dorna Sports Live Gateway</span>
           </div>
 
@@ -91,14 +83,14 @@ export default function LiveTimingPage() {
 
           <div className="flex items-center gap-1.5 text-[11px]">
             {isGatewayActive ? (
-              <span className="text-emerald-400 font-bold flex items-center gap-1">
+              <span className="text-emerald-400 font-medium flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                LIVE TRACK SESSION ACTIVE
+                Live track session active
               </span>
             ) : (
-              <span className="text-amber-400 font-medium flex items-center gap-1">
+              <span className="text-amber-400 font-normal flex items-center gap-1">
                 <AlertCircle className="w-3.5 h-3.5" />
-                OFF-TRACK / BETWEEN RACES (HIGH-FREQUENCY REPLAY ACTIVE)
+                Off-track standby • High-frequency replay active
               </span>
             )}
           </div>
@@ -112,19 +104,19 @@ export default function LiveTimingPage() {
                 setIsSimulation(false);
                 checkLiveGateway();
               }}
-              className={`px-2.5 py-1 font-bold uppercase transition-colors ${
+              className={`px-2.5 py-1 font-semibold transition-colors ${
                 !isSimulation ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
               }`}
             >
-              LIVE GATEWAY
+              Live Gateway
             </button>
             <button
               onClick={() => setIsSimulation(true)}
-              className={`px-2.5 py-1 font-bold uppercase transition-colors ${
+              className={`px-2.5 py-1 font-semibold transition-colors ${
                 isSimulation ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
               }`}
             >
-              REPLAY BUFFER
+              Replay Buffer
             </button>
           </div>
 
@@ -133,10 +125,10 @@ export default function LiveTimingPage() {
             variant="outline"
             onClick={checkLiveGateway}
             disabled={isCheckingGateway}
-            className="h-7 px-2 text-[10px] flex items-center gap-1"
+            className="h-7 px-2 text-[10px] flex items-center gap-1 font-mono"
           >
             <RefreshCw className={`w-3 h-3 ${isCheckingGateway ? 'animate-spin' : ''}`} />
-            <span>PING DORNA</span>
+            <span>Ping Dorna</span>
           </Button>
         </div>
       </div>
@@ -145,23 +137,25 @@ export default function LiveTimingPage() {
       <div className="p-3.5 bg-[#111111] border border-neutral-800 flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
         <div className="flex items-center gap-3">
           <Badge variant="motogp" dot>
-            {currentTimingState.head.session_name.toUpperCase()}
+            {currentTimingState.head.session_name}
           </Badge>
-          <span className="text-white font-bold">{currentTimingState.head.circuit_name}</span>
+          <span className="text-white font-semibold">{currentTimingState.head.circuit_name}</span>
           <span className="text-neutral-600 hidden md:inline">|</span>
-          <span className="text-neutral-400 hidden md:inline">LAP: <strong className="text-white">{currentTimingState.head.remaining}</strong></span>
+          <span className="text-neutral-400 hidden md:inline">Lap: <strong className="text-white">{currentTimingState.head.remaining}</strong></span>
           <span className="text-neutral-600 hidden md:inline">|</span>
-          <span className="text-neutral-400 hidden lg:inline">AIR: <strong className="text-white">27°C</strong></span>
-          <span className="text-neutral-400 hidden lg:inline">TRACK: <strong className="text-amber-400">42°C</strong></span>
-          <Badge variant="green" size="sm" className="hidden lg:inline-flex">DRY TRACK</Badge>
+          <span className="text-neutral-400 hidden lg:inline">Air: <strong className="text-white">27°C</strong></span>
+          <span className="text-neutral-400 hidden lg:inline">Track: <strong className="text-amber-400">42°C</strong></span>
+          <Badge variant="green" size="sm" className="hidden lg:inline-flex">Dry Track</Badge>
         </div>
 
         {/* TV Sync Compact Controller */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-[#0A0A0A] px-3 py-1.5 border border-neutral-800">
+          <div className="flex items-center gap-1.5 text-neutral-400">
             <Tv className="w-3.5 h-3.5 text-[#E10600]" />
-            <span className="text-neutral-400">TV SYNC:</span>
-            <span className="font-extrabold text-white tabular-nums">{delay > 0 ? `-${delay.toFixed(1)}s` : 'REAL-TIME'}</span>
+            <span>TV Sync:</span>
+            <span className="font-bold text-white tabular-nums">
+              {delay === 0 ? 'Real-time' : `-${delay.toFixed(1)}s`}
+            </span>
           </div>
 
           <div className="flex items-center gap-1">
@@ -179,7 +173,7 @@ export default function LiveTimingPage() {
               step="0.5"
               value={delay}
               onChange={(e) => setDelay(parseFloat(e.target.value))}
-              className="w-24 sm:w-36 h-1 bg-neutral-800 appearance-none cursor-pointer accent-[#E10600]"
+              className="w-24 sm:w-36 h-1 bg-neutral-800 accent-[#E10600] cursor-pointer"
             />
             <button
               onClick={() => setDelay(Math.min(120, parseFloat((delay + 1).toFixed(1))))}
@@ -206,21 +200,21 @@ export default function LiveTimingPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse font-mono">
             <thead>
-              <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[10px] tracking-wider uppercase">
-                <th className="py-2.5 px-3 w-12 text-center">POS</th>
-                <th className="py-2.5 px-2 w-10 text-center">NUM</th>
-                <th className="py-2.5 px-4 min-w-[180px]">RIDER &amp; BIKE</th>
-                <th className="py-2.5 px-3 text-center w-20">GAP</th>
-                <th className="py-2.5 px-3 text-center w-20">INT</th>
-                <th className="py-2.5 px-3 text-center w-24">LAP TIME</th>
+              <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[11px] font-sans font-semibold">
+                <th className="py-2.5 px-3 w-12 text-center">Pos</th>
+                <th className="py-2.5 px-2 w-10 text-center">Num</th>
+                <th className="py-2.5 px-4 min-w-[180px]">Rider &amp; Bike</th>
+                <th className="py-2.5 px-3 text-center w-20">Gap</th>
+                <th className="py-2.5 px-3 text-center w-20">Int</th>
+                <th className="py-2.5 px-3 text-center w-24">Lap Time</th>
                 <th className="py-2.5 px-2.5 text-center w-14">S1</th>
                 <th className="py-2.5 px-2.5 text-center w-14">S2</th>
                 <th className="py-2.5 px-2.5 text-center w-14">S3</th>
                 <th className="py-2.5 px-2.5 text-center w-14">S4</th>
-                <th className="py-2.5 px-3 text-right w-24">SPEED</th>
-                <th className="py-2.5 px-3 text-center w-20">LEAN</th>
-                <th className="py-2.5 px-3 text-center w-20">TYRES</th>
-                <th className="py-2.5 px-3 text-center w-24">LAST LAP</th>
+                <th className="py-2.5 px-3 text-right w-24">Speed</th>
+                <th className="py-2.5 px-3 text-center w-20">Lean</th>
+                <th className="py-2.5 px-3 text-center w-20">Tyres</th>
+                <th className="py-2.5 px-3 text-center w-24">Last Lap</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800/60">
@@ -240,25 +234,25 @@ export default function LiveTimingPage() {
                     }`}
                   >
                     {/* Position */}
-                    <td className="py-3 px-3 text-center font-black">
+                    <td className="py-3 px-3 text-center font-bold">
                       {isP1 ? (
-                        <span className="text-[#E10600] font-bold">1</span>
+                        <span className="text-[#E10600]">1</span>
                       ) : (
                         <span className="text-neutral-400">{rider.pos}</span>
                       )}
                     </td>
 
                     {/* Rider Number */}
-                    <td className="py-3 px-2 text-center font-extrabold text-white">
+                    <td className="py-3 px-2 text-center font-bold text-white">
                       #{rider.rider_number}
                     </td>
 
                     {/* Rider Name & Constructor */}
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 font-sans">
                       <div className="flex items-center gap-2">
                         <span className="w-1.5 h-4" style={{ backgroundColor: rider.color || '#E10600' }} />
                         <div>
-                          <div className="font-bold text-white tracking-wide">
+                          <div className="font-semibold text-white tracking-normal">
                             {rider.rider_name} {rider.rider_surname}
                           </div>
                           <div className="text-[10px] text-neutral-500 font-light truncate max-w-[200px]">
@@ -269,8 +263,8 @@ export default function LiveTimingPage() {
                     </td>
 
                     {/* Gap */}
-                    <td className="py-3 px-3 text-center font-bold tabular-nums">
-                      {isP1 ? <span className="text-emerald-400">LEADER</span> : <span className="text-neutral-400">{rider.gap_first}</span>}
+                    <td className="py-3 px-3 text-center font-semibold tabular-nums">
+                      {isP1 ? <span className="text-emerald-400">Leader</span> : <span className="text-neutral-400">{rider.gap_first}</span>}
                     </td>
 
                     {/* Interval */}
@@ -279,7 +273,7 @@ export default function LiveTimingPage() {
                     </td>
 
                     {/* Best Lap */}
-                    <td className="py-3 px-3 text-center font-extrabold text-white tabular-nums">
+                    <td className="py-3 px-3 text-center font-bold text-white tabular-nums">
                       {rider.lap_time || rider.last_lap_time}
                     </td>
 
@@ -306,13 +300,13 @@ export default function LiveTimingPage() {
                     </td>
 
                     {/* Speed Trap */}
-                    <td className="py-3 px-3 text-right font-black text-white tabular-nums">
+                    <td className="py-3 px-3 text-right font-bold text-white tabular-nums">
                       {rider.speed ? `${rider.speed} km/h` : '361.4 km/h'}
                     </td>
 
                     {/* Max Lean Angle */}
                     <td className="py-3 px-3 text-center">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold tabular-nums ${
+                      <span className={`px-2 py-0.5 text-[10px] font-semibold tabular-nums ${
                         mockLean >= 67 ? 'bg-red-950 text-red-300 border border-red-800' : 'bg-neutral-900 text-neutral-400 border border-neutral-800'
                       }`}>
                         {mockLean.toFixed(1)}°
@@ -321,13 +315,13 @@ export default function LiveTimingPage() {
 
                     {/* Tyres */}
                     <td className="py-3 px-3 text-center">
-                      <span className="text-[10px] font-bold text-white px-2 py-0.5 bg-neutral-900 border border-neutral-800">
+                      <span className="text-[10px] font-semibold text-white px-2 py-0.5 bg-neutral-900 border border-neutral-800">
                         {rider.tyre_front || 'H'} / {rider.tyre_rear || 'M'}
                       </span>
                     </td>
 
                     {/* Last Lap Time */}
-                    <td className="py-3 px-3 text-center font-bold text-neutral-300 tabular-nums">
+                    <td className="py-3 px-3 text-center font-medium text-neutral-300 tabular-nums">
                       {rider.last_lap_time}
                     </td>
                   </tr>
@@ -344,7 +338,7 @@ export default function LiveTimingPage() {
           <div className="flex items-center gap-3">
             <span className="w-2 h-10 bg-[#E10600]" />
             <div>
-              <div className="text-base font-black text-white">
+              <div className="text-base font-bold text-white">
                 #{selectedRider.rider_number} {selectedRider.rider_name} {selectedRider.rider_surname}
               </div>
               <div className="text-xs text-neutral-400 font-mono font-light">{selectedRider.team_name}</div>

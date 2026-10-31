@@ -1,12 +1,9 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { RIDERS_DATA } from '@/lib/data/mock-race-data';
-import { Users, Trophy, Flag, Award, Flame, ExternalLink } from 'lucide-react';
 
 export default function RidersPage() {
   return (
@@ -15,10 +12,10 @@ export default function RidersPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-neutral-800">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant="motogp">PREMIER CLASS</Badge>
-            <Badge variant="outline">22 PILOTS</Badge>
+            <Badge variant="motogp">Premier Class</Badge>
+            <Badge variant="outline">22 Riders</Badge>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-sans font-black tracking-tight uppercase text-white leading-none">
+          <h1 className="text-3xl sm:text-4xl font-sans font-bold tracking-tight text-white leading-tight">
             Official Rider Grid &amp; Milestones
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400 font-light mt-1 max-w-2xl leading-relaxed">
@@ -39,7 +36,7 @@ export default function RidersPage() {
                     className="w-2 h-7"
                     style={{ backgroundColor: rider.color || '#E10600' }}
                   />
-                  <span className="font-mono font-black text-2xl text-white">
+                  <span className="font-mono font-bold text-2xl text-white">
                     #{rider.number}
                   </span>
                 </div>
@@ -50,7 +47,7 @@ export default function RidersPage() {
 
               {/* Name & Team */}
               <div>
-                <h3 className="text-base font-black uppercase text-white font-sans">
+                <h3 className="text-base font-bold text-white font-sans">
                   {rider.full_name}
                 </h3>
                 {rider.nickname && (
@@ -58,39 +55,24 @@ export default function RidersPage() {
                     &quot;{rider.nickname}&quot;
                   </p>
                 )}
-                <p className="text-xs text-neutral-400 font-mono font-light mt-1">
+                <p className="text-xs text-neutral-400 font-sans mt-0.5">
                   {rider.team_name}
                 </p>
               </div>
-            </div>
 
-            {/* Career Milestone Counters */}
-            <div className="mt-5 pt-4 border-t border-neutral-800 grid grid-cols-4 gap-2 text-center font-mono">
-              <div className="spec-cell p-2">
-                <div className="text-[9px] text-neutral-500 uppercase">TITLES</div>
-                <div className="text-sm font-black text-amber-400 tabular-nums">
-                  {rider.stats?.world_championships || 0}
+              {/* Quick Stats Grid */}
+              <div className="grid grid-cols-3 gap-2 pt-3 border-t border-neutral-800/80 font-mono text-center">
+                <div className="bg-[#0A0A0A] p-2 border border-neutral-800">
+                  <span className="text-[10px] text-neutral-500 block">World Titles</span>
+                  <span className="text-sm font-bold text-[#E5A93C]">{rider.stats?.world_championships || 0}</span>
                 </div>
-              </div>
-
-              <div className="spec-cell p-2">
-                <div className="text-[9px] text-neutral-500 uppercase">WINS</div>
-                <div className="text-sm font-black text-white tabular-nums">
-                  {rider.stats?.victories || 0}
+                <div className="bg-[#0A0A0A] p-2 border border-neutral-800">
+                  <span className="text-[10px] text-neutral-500 block">Victories</span>
+                  <span className="text-sm font-bold text-white">{rider.stats?.victories || 0}</span>
                 </div>
-              </div>
-
-              <div className="spec-cell p-2">
-                <div className="text-[9px] text-neutral-500 uppercase">PODIUMS</div>
-                <div className="text-sm font-black text-emerald-400 tabular-nums">
-                  {rider.stats?.podiums || 0}
-                </div>
-              </div>
-
-              <div className="spec-cell p-2">
-                <div className="text-[9px] text-neutral-500 uppercase">POLES</div>
-                <div className="text-sm font-black text-neutral-300 tabular-nums">
-                  {rider.stats?.poles || 0}
+                <div className="bg-[#0A0A0A] p-2 border border-neutral-800">
+                  <span className="text-[10px] text-neutral-500 block">Podiums</span>
+                  <span className="text-sm font-bold text-neutral-300">{rider.stats?.podiums || 0}</span>
                 </div>
               </div>
             </div>

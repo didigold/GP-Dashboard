@@ -1,8 +1,8 @@
 'use client';
 
 import { MOCK_CRASHES_DATA } from '../../lib/data/mock-race-data';
-import { AlertTriangle, Flame, ShieldAlert, Euro, Wrench } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertTriangle, Flame, Euro, Wrench } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 export default function GravelTrapPage() {
@@ -16,20 +16,20 @@ export default function GravelTrapPage() {
         <div className="flex items-center gap-3">
           <div className="w-1.5 h-6 bg-[#E10600]" />
           <div>
-            <h1 className="text-sm font-black uppercase tracking-wider text-white">
-              GRAVEL TRAP CHAMPIONSHIP (CRASH LEDGER)
+            <h1 className="text-sm font-bold text-white">
+              Gravel Trap Championship (Crash Ledger)
             </h1>
             <p className="text-[11px] font-mono text-[#888888]">
-              DAMAGE EXPENSES • ACCIDENT FREQUENCY • REPAIR AUDIT
+              Damage expenses • Accident frequency • Repair audit
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="rounded-none border-[#262626] bg-black text-[#A0A0A0] font-mono text-[11px]">
-            SEASON IMPACT
+            Season Impact
           </Badge>
           <Badge className="rounded-none bg-[#E10600] text-white hover:bg-[#E10600] font-mono text-[11px]">
-            OFFICIAL FIM RECORD
+            Official FIM Record
           </Badge>
         </div>
       </div>
@@ -38,9 +38,9 @@ export default function GravelTrapPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#E10600]">
             <Flame className="w-4 h-4" />
-            <span>CRASH LEDGER &amp; INCIDENT EXPENSES</span>
+            <span>Incident Ledger &amp; Repair Expenses</span>
           </div>
-          <h2 className="text-2xl font-black uppercase tracking-tight text-white">
+          <h2 className="text-2xl font-bold tracking-tight text-white font-sans">
             Gravel Trap Championship
           </h2>
           <p className="text-xs text-[#888888] font-mono">
@@ -53,8 +53,8 @@ export default function GravelTrapPage() {
           <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <div className="text-[10px] font-mono text-[#888888] uppercase tracking-wider">TOTAL DAMAGE BILL</div>
-                <div className="text-3xl font-black text-[#E10600] font-mono mt-1">
+                <div className="text-[10px] font-mono text-[#888888]">Total Damage Bill</div>
+                <div className="text-3xl font-bold text-[#E10600] font-mono mt-1">
                   €{(totalSeasonBill / 1000000).toFixed(2)}M
                 </div>
                 <div className="text-[10px] text-[#666666] font-mono mt-0.5">Estimated factory carbon &amp; engine repairs</div>
@@ -68,8 +68,8 @@ export default function GravelTrapPage() {
           <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <div className="text-[10px] font-mono text-[#888888] uppercase tracking-wider">TOTAL CRASHES</div>
-                <div className="text-3xl font-black text-white font-mono mt-1">
+                <div className="text-[10px] font-mono text-[#888888]">Total Crashes</div>
+                <div className="text-3xl font-bold text-white font-mono mt-1">
                   {totalCrashes} Falls
                 </div>
                 <div className="text-[10px] text-[#666666] font-mono mt-0.5">Across FP1, PR, Q1, Q2, SPR &amp; RAC</div>
@@ -83,8 +83,8 @@ export default function GravelTrapPage() {
           <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <div className="text-[10px] font-mono text-[#888888] uppercase tracking-wider">MOST FREQUENT CRASH ZONE</div>
-                <div className="text-2xl font-black text-[#0066FF] font-mono mt-1">
+                <div className="text-[10px] font-mono text-[#888888]">Most Frequent Crash Zone</div>
+                <div className="text-2xl font-bold text-[#0066FF] font-mono mt-1">
                   Le Mans (T3)
                 </div>
                 <div className="text-[10px] text-[#666666] font-mono mt-0.5">Cold front tire chicane lowside</div>
@@ -99,23 +99,23 @@ export default function GravelTrapPage() {
         {/* Crashes Table */}
         <Card className="rounded-none border-[#262626] bg-[#0A0A0A] overflow-hidden">
           <div className="border-b border-[#262626] px-5 py-3.5 flex items-center justify-between bg-black">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-white">
-              RIDERS CRASH LEDGER &amp; ESTIMATED EXPENSE
+            <span className="text-xs font-semibold text-white">
+              Riders Crash Ledger &amp; Estimated Expense
             </span>
             <span className="text-[10px] font-mono text-[#888888]">
-              SORTED BY TOTAL DAMAGE EXPENDITURE
+              Sorted by total damage expenditure
             </span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
-                <tr className="border-b border-[#262626] bg-[#111111] text-[10px] font-mono uppercase tracking-wider text-[#888888]">
-                  <th className="py-3 px-4 w-12 text-center">POS</th>
-                  <th className="py-3 px-4">RIDER</th>
-                  <th className="py-3 px-4">TEAM</th>
-                  <th className="py-3 px-4 text-center">FALLS</th>
-                  <th className="py-3 px-4 text-center">BIKES DAMAGED</th>
-                  <th className="py-3 px-4 text-right">ESTIMATED REPAIR BILL</th>
+                <tr className="border-b border-[#262626] bg-[#111111] text-[11px] font-sans font-semibold text-[#888888]">
+                  <th className="py-3 px-4 w-12 text-center">Pos</th>
+                  <th className="py-3 px-4">Rider</th>
+                  <th className="py-3 px-4">Team</th>
+                  <th className="py-3 px-4 text-center">Falls</th>
+                  <th className="py-3 px-4 text-center">Bikes Damaged</th>
+                  <th className="py-3 px-4 text-right">Estimated Repair Bill</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1F1F1F] font-mono text-xs">
@@ -127,24 +127,24 @@ export default function GravelTrapPage() {
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 font-bold text-white text-sm">
+                    <td className="py-3 px-4 font-semibold text-white text-sm font-sans">
                       <span className="text-[#888888] mr-2 font-mono text-xs">#{item.number}</span>
                       {item.rider}
                     </td>
 
-                    <td className="py-3 px-4 text-[#A0A0A0]">
+                    <td className="py-3 px-4 text-[#A0A0A0] font-sans">
                       {item.team}
                     </td>
 
-                    <td className="py-3 px-4 text-center font-black text-sm text-[#E10600]">
+                    <td className="py-3 px-4 text-center font-bold text-sm text-[#E10600]">
                       {item.crashes}
                     </td>
 
-                    <td className="py-3 px-4 text-center text-[#A0A0A0] font-bold">
+                    <td className="py-3 px-4 text-center text-[#A0A0A0] font-semibold">
                       {item.bikes_damaged}
                     </td>
 
-                    <td className="py-3 px-4 text-right font-black text-sm text-[#E5A93C]">
+                    <td className="py-3 px-4 text-right font-bold text-sm text-[#E5A93C]">
                       €{(item.repair_cost_eur / 1000).toLocaleString()}k
                     </td>
                   </tr>

@@ -12,42 +12,27 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
 } from '@/components/ui/accordion';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { LeanMeter } from '@/components/ui/LeanMeter';
-import { TyreAsymmetryPill } from '@/components/ui/TyreAsymmetryPill';
-import { BrakingGForceBar } from '@/components/ui/BrakingGForceBar';
 import { CircuitCanvas } from '@/components/3d/CircuitCanvas';
-import { MOCK_STANDINGS, RIDERS_DATA } from '@/lib/data/mock-race-data';
+import { MOCK_STANDINGS } from '@/lib/data/mock-race-data';
 import {
   Radio,
   Compass,
   Disc,
   Zap,
   BarChart3,
-  GitCompare,
-  Trophy,
-  Flame,
   ArrowRight,
   Layers,
   ChevronRight,
-  Sparkles,
-  Thermometer,
-  ShieldCheck,
-  Activity,
-  Maximize2,
-  SlidersHorizontal,
 } from 'lucide-react';
 
 export default function HomePage() {
   const [selectedRider, setSelectedRider] = useState('1');
-  const [activeTelemetryTab, setActiveTelemetryTab] = useState('lean');
 
   return (
     <div className="w-full min-h-screen bg-black text-white select-none">
@@ -60,17 +45,17 @@ export default function HomePage() {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div className="max-w-3xl space-y-4">
               <div className="flex items-center gap-3">
-                <Badge variant="motogp">ROUND 07 · LIVE PITWALL</Badge>
-                <Badge variant="outline">MUGELLO AUTODROMO INTERNAZIONALE</Badge>
+                <Badge variant="motogp">Round 07 · Live Pitwall</Badge>
+                <Badge variant="outline">Autodromo Internazionale del Mugello</Badge>
               </div>
 
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-sans font-black tracking-tight uppercase text-white leading-none">
-                THE ULTIMATE <br />
-                <span className="text-[#E10600]">MOTOGP™ TELEMETRY</span>
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-sans font-bold tracking-tight text-white leading-tight">
+                MotoGP™ Pitwall &amp; <br />
+                <span className="text-[#E10600]">Telemetry Platform</span>
               </h1>
 
               <p className="text-sm sm:text-base text-neutral-400 font-light leading-relaxed max-w-2xl">
-                Engineered for motorsport fans and data engineers. Track gyroscopic 68° lean angles,
+                Engineered for motorsport enthusiasts and data engineers. Track gyroscopic 68° lean angles,
                 Michelin asymmetric shoulder heat deltas, Brembo 1.80G carbon braking zones, and Saturday Sprint vs Sunday Grand Prix degradation in real-time.
               </p>
             </div>
@@ -80,13 +65,13 @@ export default function HomePage() {
               <Link href="/live-timing">
                 <Button variant="motogp" size="lg" className="flex items-center gap-2">
                   <Radio className="w-4 h-4 animate-pulse" />
-                  <span>OPEN LIVE PITWALL</span>
+                  <span>Open Live Pitwall</span>
                 </Button>
               </Link>
               <Link href="/lean-telemetry">
                 <Button variant="outline" size="lg" className="flex items-center gap-2">
                   <Compass className="w-4 h-4 text-[#E10600]" />
-                  <span>LEAN DYNAMICS</span>
+                  <span>Lean Dynamics</span>
                 </Button>
               </Link>
             </div>
@@ -95,10 +80,10 @@ export default function HomePage() {
           {/* Quick Technical Spec Cells (BMW M Spec-Cell Pattern) */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-10">
             <div className="spec-cell">
-              <div className="text-[10px] font-mono uppercase tracking-[1.5px] text-neutral-400 mb-1">
-                PEAK LEAN ANGLE
+              <div className="text-[11px] font-mono text-neutral-400 mb-1">
+                Peak Lean Angle
               </div>
-              <div className="text-2xl sm:text-3xl font-black font-mono text-white tabular-nums">
+              <div className="text-2xl sm:text-3xl font-bold font-mono text-white tabular-nums">
                 68.2°
               </div>
               <div className="text-[11px] text-neutral-400 font-light mt-1">
@@ -107,10 +92,10 @@ export default function HomePage() {
             </div>
 
             <div className="spec-cell">
-              <div className="text-[10px] font-mono uppercase tracking-[1.5px] text-neutral-400 mb-1">
-                SAN DONATO BRAKING
+              <div className="text-[11px] font-mono text-neutral-400 mb-1">
+                San Donato Braking
               </div>
-              <div className="text-2xl sm:text-3xl font-black font-mono text-[#E10600] tabular-nums">
+              <div className="text-2xl sm:text-3xl font-bold font-mono text-[#E10600] tabular-nums">
                 1.80 G
               </div>
               <div className="text-[11px] text-neutral-400 font-light mt-1">
@@ -119,11 +104,11 @@ export default function HomePage() {
             </div>
 
             <div className="spec-cell">
-              <div className="text-[10px] font-mono uppercase tracking-[1.5px] text-neutral-400 mb-1">
-                TOP SPEED TRAP
+              <div className="text-[11px] font-mono text-neutral-400 mb-1">
+                Top Speed Trap
               </div>
-              <div className="text-2xl sm:text-3xl font-black font-mono text-white tabular-nums">
-                366.1 <span className="text-xs text-neutral-400">KM/H</span>
+              <div className="text-2xl sm:text-3xl font-bold font-mono text-white tabular-nums">
+                366.1 <span className="text-xs text-neutral-400">km/h</span>
               </div>
               <div className="text-[11px] text-neutral-400 font-light mt-1">
                 B. Binder · Red Bull KTM
@@ -131,10 +116,10 @@ export default function HomePage() {
             </div>
 
             <div className="spec-cell">
-              <div className="text-[10px] font-mono uppercase tracking-[1.5px] text-neutral-400 mb-1">
-                TYRE THERMAL DELTA
+              <div className="text-[11px] font-mono text-neutral-400 mb-1">
+                Tyre Thermal Delta
               </div>
-              <div className="text-2xl sm:text-3xl font-black font-mono text-amber-400 tabular-nums">
+              <div className="text-2xl sm:text-3xl font-bold font-mono text-amber-400 tabular-nums">
                 +24°C
               </div>
               <div className="text-[11px] text-neutral-400 font-light mt-1">
@@ -149,14 +134,14 @@ export default function HomePage() {
       <section className="max-w-[1560px] mx-auto px-6 py-12">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <div className="text-xs font-bold uppercase tracking-[1.5px] text-[#E10600]">
-              TELEMETRY DOMAINS
+            <div className="text-xs font-semibold text-[#E10600]">
+              Telemetry Domains
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight uppercase text-white font-sans mt-0.5">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-sans mt-0.5">
               MotoGP™ Engineering Pillars
             </h2>
           </div>
-          <Link href="/live-timing" className="text-xs font-bold uppercase tracking-[1.5px] text-neutral-400 hover:text-white flex items-center gap-1">
+          <Link href="/live-timing" className="text-xs font-semibold text-neutral-400 hover:text-white flex items-center gap-1 transition-colors">
             <span>View All Sectors</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </Link>
@@ -170,9 +155,9 @@ export default function HomePage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Compass className="w-4 h-4 text-[#E10600]" />
-                    <span>LEAN &amp; GYROSCOPE</span>
+                    <span>Lean &amp; Gyroscope</span>
                   </CardTitle>
-                  <Badge variant="outline">68.2° MAX</Badge>
+                  <Badge variant="outline">68.2° Max</Badge>
                 </div>
                 <CardDescription>
                   Extreme centrifugal cornering dynamics
@@ -180,7 +165,7 @@ export default function HomePage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-baseline">
-                  <div className="text-3xl font-black font-mono text-white group-hover:text-[#E10600] transition-colors">
+                  <div className="text-3xl font-bold font-mono text-white group-hover:text-[#E10600] transition-colors">
                     68.2°
                   </div>
                   <div className="text-xs font-mono text-neutral-400 font-semibold">
@@ -205,9 +190,9 @@ export default function HomePage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Disc className="w-4 h-4 text-amber-500" />
-                    <span>TYRE ASYMMETRY</span>
+                    <span>Tyre Asymmetry</span>
                   </CardTitle>
-                  <Badge variant="amber">1.84 BAR</Badge>
+                  <Badge variant="amber">1.84 bar</Badge>
                 </div>
                 <CardDescription>
                   Left vs Right shoulder compound heat
@@ -215,7 +200,7 @@ export default function HomePage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-baseline">
-                  <div className="text-3xl font-black font-mono text-white group-hover:text-amber-400 transition-colors">
+                  <div className="text-3xl font-bold font-mono text-white group-hover:text-amber-400 transition-colors">
                     138°C
                   </div>
                   <div className="text-xs font-mono text-neutral-400 font-semibold">
@@ -240,7 +225,7 @@ export default function HomePage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Zap className="w-4 h-4 text-[#E10600]" />
-                    <span>BREMBO BRAKING</span>
+                    <span>Brembo Braking</span>
                   </CardTitle>
                   <Badge variant="destructive">1.80 G</Badge>
                 </div>
@@ -250,8 +235,8 @@ export default function HomePage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-baseline">
-                  <div className="text-3xl font-black font-mono text-white group-hover:text-[#E10600] transition-colors">
-                    -269 <span className="text-sm text-neutral-400">KM/H</span>
+                  <div className="text-3xl font-bold font-mono text-white group-hover:text-[#E10600] transition-colors">
+                    -269 <span className="text-sm text-neutral-400">km/h</span>
                   </div>
                   <div className="text-xs font-mono text-neutral-400 font-semibold">
                     286 Meters
@@ -275,9 +260,9 @@ export default function HomePage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="w-4 h-4 text-emerald-500" />
-                    <span>SPRINT VS GP PACE</span>
+                    <span>Sprint vs GP Pace</span>
                   </CardTitle>
-                  <Badge variant="green">LAP 16 CLIFF</Badge>
+                  <Badge variant="green">Lap 16 Cliff</Badge>
                 </div>
                 <CardDescription>
                   10-lap attack vs 23-lap conservation
@@ -285,7 +270,7 @@ export default function HomePage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-baseline">
-                  <div className="text-3xl font-black font-mono text-white group-hover:text-emerald-400 transition-colors">
+                  <div className="text-3xl font-bold font-mono text-white group-hover:text-emerald-400 transition-colors">
                     +1.4s
                   </div>
                   <div className="text-xs font-mono text-neutral-400 font-semibold">
@@ -316,7 +301,7 @@ export default function HomePage() {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <Layers className="w-4 h-4 text-[#E10600]" />
-                      <span>MUGELLO 3D SECTOR RADAR</span>
+                      <span>Mugello 3D Sector Radar</span>
                     </CardTitle>
                     <CardDescription>
                       WebGL track geometry with speed traps &amp; apex markers
@@ -324,7 +309,7 @@ export default function HomePage() {
                   </div>
                   <Link href="/track-map">
                     <Button variant="outline" size="sm">
-                      FULLSCREEN 3D
+                      Fullscreen 3D
                     </Button>
                   </Link>
                 </div>
@@ -333,7 +318,7 @@ export default function HomePage() {
                 <div className="h-[460px] w-full bg-black relative">
                   <CircuitCanvas selectedRiderNumber={selectedRider} />
                   <div className="absolute top-4 left-4 z-10 bg-black/85 border border-neutral-800 p-3 font-mono text-xs">
-                    <div className="text-neutral-400 text-[10px] uppercase">Active Elevation</div>
+                    <div className="text-neutral-400 text-[10px]">Active Elevation</div>
                     <div className="text-white font-bold text-sm">41.2m Elevation Change</div>
                     <div className="text-[#E10600] text-[10px] mt-0.5">Arrabbiata Crest: 280 km/h</div>
                   </div>
@@ -345,10 +330,10 @@ export default function HomePage() {
           {/* Right: Technical Accordion Breakdown (5 cols) */}
           <div className="lg:col-span-5 space-y-4">
             <div>
-              <div className="text-xs font-bold uppercase tracking-[1.5px] text-[#E10600]">
-                CIRCUIT TELEMETRY MANUAL
+              <div className="text-xs font-semibold text-[#E10600]">
+                Circuit Telemetry Manual
               </div>
-              <h3 className="text-xl font-black uppercase text-white font-sans mt-0.5">
+              <h3 className="text-xl font-bold text-white font-sans mt-0.5">
                 Technical Sector Breakdown
               </h3>
               <p className="text-xs text-neutral-400 font-light mt-1">
@@ -469,16 +454,16 @@ export default function HomePage() {
       <section className="max-w-[1560px] mx-auto px-6 py-12 border-t border-neutral-800">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <div className="text-xs font-bold uppercase tracking-[1.5px] text-[#E10600]">
-              WORLD CHAMPIONSHIP CLASSIFICATION
+            <div className="text-xs font-semibold text-[#E10600]">
+              World Championship Classification
             </div>
-            <h3 className="text-2xl font-black uppercase text-white font-sans mt-0.5">
+            <h3 className="text-2xl font-bold text-white font-sans mt-0.5">
               Live Rider Standings
             </h3>
           </div>
           <Link href="/standings">
             <Button variant="outline" size="sm">
-              FULL 22-RIDER TABLE
+              Full 22-Rider Table
             </Button>
           </Link>
         </div>
@@ -486,38 +471,38 @@ export default function HomePage() {
         <div className="overflow-x-auto no-scrollbar border border-neutral-800 bg-[#0E0E0E]">
           <table className="w-full text-left font-mono text-xs">
             <thead>
-              <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[10px] uppercase tracking-wider">
-                <th className="py-3 px-4">POS</th>
-                <th className="py-3 px-4">RIDER</th>
-                <th className="py-3 px-4">TEAM / CONSTRUCTOR</th>
-                <th className="py-3 px-4">BEST LAP</th>
-                <th className="py-3 px-4">GAP</th>
-                <th className="py-3 px-4">MAX LEAN</th>
-                <th className="py-3 px-4">SPEED TRAP</th>
-                <th className="py-3 px-4 text-right">POINTS</th>
+              <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[11px] font-sans font-semibold">
+                <th className="py-3 px-4">Pos</th>
+                <th className="py-3 px-4">Rider</th>
+                <th className="py-3 px-4">Team / Constructor</th>
+                <th className="py-3 px-4">Best Lap</th>
+                <th className="py-3 px-4">Gap</th>
+                <th className="py-3 px-4">Max Lean</th>
+                <th className="py-3 px-4">Speed Trap</th>
+                <th className="py-3 px-4 text-right">Points</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-800/60">
+            <tbody className="divide-y divide-neutral-800/60 font-mono">
               {MOCK_STANDINGS.slice(0, 6).map((standing) => (
                 <tr
                   key={standing.rider.id}
                   className="hover:bg-neutral-900/60 transition-colors cursor-pointer"
                   onClick={() => setSelectedRider(standing.rider.number.toString())}
                 >
-                  <td className="py-3.5 px-4 font-black text-white">
+                  <td className="py-3.5 px-4 font-bold text-white">
                     {standing.position === 1 ? (
                       <span className="text-[#E10600]">P1</span>
                     ) : (
                       `P${standing.position}`
                     )}
                   </td>
-                  <td className="py-3.5 px-4">
+                  <td className="py-3.5 px-4 font-sans">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-white">#{standing.rider.number}</span>
                       <span className="font-semibold text-neutral-200">{standing.rider.full_name}</span>
                     </div>
                   </td>
-                  <td className="py-3.5 px-4 text-neutral-400 font-light">
+                  <td className="py-3.5 px-4 text-neutral-400 font-light font-sans">
                     {standing.team.name}
                   </td>
                   <td className="py-3.5 px-4 font-bold text-white tabular-nums">
@@ -525,7 +510,7 @@ export default function HomePage() {
                   </td>
                   <td className="py-3.5 px-4 font-semibold tabular-nums">
                     {standing.position === 1 ? (
-                      <span className="text-emerald-400">LEADER</span>
+                      <span className="text-emerald-400">Leader</span>
                     ) : (
                       <span className="text-neutral-400">+{((standing.position - 1) * 0.082).toFixed(3)}s</span>
                     )}
@@ -536,8 +521,8 @@ export default function HomePage() {
                   <td className="py-3.5 px-4 tabular-nums">
                     <span className="text-white font-bold">{364 - standing.position * 1.2} km/h</span>
                   </td>
-                  <td className="py-3.5 px-4 text-right font-black text-white tabular-nums">
-                    {standing.points} PTS
+                  <td className="py-3.5 px-4 text-right font-bold text-white tabular-nums">
+                    {standing.points} pts
                   </td>
                 </tr>
               ))}
@@ -550,50 +535,50 @@ export default function HomePage() {
       <footer className="border-t border-neutral-800 bg-black py-16 px-6">
         <div className="max-w-[1560px] mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
           <div>
-            <div className="h-6 px-2 bg-[#E10600] inline-flex items-center text-white font-black text-xs tracking-tighter mb-3">
-              MOTOGP™
+            <div className="h-6 px-2 bg-[#E10600] inline-flex items-center text-white font-bold text-xs tracking-tight mb-3">
+              MotoGP™
             </div>
-            <div className="text-sm font-black uppercase text-white font-sans">
+            <div className="text-sm font-bold text-white font-sans">
               GP-Dashboard Telemetry Platform
             </div>
             <p className="text-xs text-neutral-500 font-light mt-1 max-w-md">
-              European motorsport engineering interface. High-frequency telemetry, Michelin thermal matrices, and Brembo deceleration dynamics.
+              Motorsport telemetry interface. High-frequency timing, Michelin thermal matrices, and Brembo deceleration dynamics.
             </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 text-xs font-mono">
             <div>
-              <div className="text-white font-bold uppercase tracking-wider mb-3">
+              <div className="text-white font-semibold mb-3">
                 Telemetry
               </div>
               <ul className="space-y-2 text-neutral-400 font-light">
-                <li><Link href="/live-timing" className="hover:text-white">Pitwall Timing</Link></li>
-                <li><Link href="/lean-telemetry" className="hover:text-white">68° Lean Angle</Link></li>
-                <li><Link href="/tyres-asymmetry" className="hover:text-white">Tyre Asymmetry</Link></li>
-                <li><Link href="/braking-zones" className="hover:text-white">Braking Zones</Link></li>
+                <li><Link href="/live-timing" className="hover:text-white transition-colors">Pitwall Timing</Link></li>
+                <li><Link href="/lean-telemetry" className="hover:text-white transition-colors">68° Lean Angle</Link></li>
+                <li><Link href="/tyres-asymmetry" className="hover:text-white transition-colors">Tyre Asymmetry</Link></li>
+                <li><Link href="/braking-zones" className="hover:text-white transition-colors">Braking Zones</Link></li>
               </ul>
             </div>
 
             <div>
-              <div className="text-white font-bold uppercase tracking-wider mb-3">
+              <div className="text-white font-semibold mb-3">
                 Design System
               </div>
               <ul className="space-y-2 text-neutral-400 font-light">
-                <li><Link href="/design-system" className="hover:text-white">Apex DS Spec</Link></li>
-                <li><Link href="/design-system?tab=tokens" className="hover:text-white">Color Tokens</Link></li>
-                <li><Link href="/design-system?tab=components" className="hover:text-white">shadcn/ui Suite</Link></li>
-                <li><Link href="/design-system?tab=telemetry" className="hover:text-white">Physics Primitives</Link></li>
+                <li><Link href="/design-system" className="hover:text-white transition-colors">Apex DS Spec</Link></li>
+                <li><Link href="/design-system?tab=tokens" className="hover:text-white transition-colors">Color Tokens</Link></li>
+                <li><Link href="/design-system?tab=components" className="hover:text-white transition-colors">shadcn/ui Suite</Link></li>
+                <li><Link href="/design-system?tab=telemetry" className="hover:text-white transition-colors">Physics Primitives</Link></li>
               </ul>
             </div>
 
             <div>
-              <div className="text-white font-bold uppercase tracking-wider mb-3">
+              <div className="text-white font-semibold mb-3">
                 Championship
               </div>
               <ul className="space-y-2 text-neutral-400 font-light">
-                <li><Link href="/standings" className="hover:text-white">Standings</Link></li>
-                <li><Link href="/schedule" className="hover:text-white">Calendar</Link></li>
-                <li><Link href="/gravel-trap" className="hover:text-white">Incident Ledger</Link></li>
+                <li><Link href="/standings" className="hover:text-white transition-colors">Standings</Link></li>
+                <li><Link href="/schedule" className="hover:text-white transition-colors">Calendar</Link></li>
+                <li><Link href="/gravel-trap" className="hover:text-white transition-colors">Incident Ledger</Link></li>
               </ul>
             </div>
           </div>
