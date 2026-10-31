@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Sidebar } from '../components/navigation/Sidebar';
+import { TopTacticalHUD } from '../components/navigation/TopTacticalHUD';
 
 export const metadata: Metadata = {
-  title: 'GP-Dashboard | Ultimate MotoGP™ Live Timing & 3D Analytics',
+  title: 'GP-Dashboard | MotoGP™ Live Telemetry, Lean Angle & Tactical Pitwall',
   description:
-    'Real-time live timing, TV broadcast delay sync, interactive 3D circuit visualizations, race pace telemetry, and comprehensive Grand Prix analytics.',
-  keywords: ['MotoGP', 'Live Timing', 'Telemetry', 'Grand Prix', 'Race Pace', '3D Circuit', 'Bagnaia', 'Martin', 'Marquez'],
+    'Dedicated MotoGP telemetry dashboard: 68° lean angle dynamics, Michelin asymmetric tyre thermal stress, Brembo carbon braking zones, TV delay buffer, and live pitwall timing.',
+  keywords: ['MotoGP', 'Live Timing', 'Lean Angle', 'Telemetry', 'Tyre Degradation', 'Brembo', 'Bagnaia', 'Martin', 'Marquez', 'Acosta'],
   openGraph: {
-    title: 'GP-Dashboard | MotoGP™ Live Timing & 3D Analytics',
-    description: 'Track live sector splits, gaps, tyre choices, and 3D circuits in real-time.',
+    title: 'GP-Dashboard | MotoGP™ Live Telemetry & Pitwall',
+    description: 'Track live lean angles, asymmetric tyre stress, and sector splits in real-time.',
     type: 'website',
   },
 };
@@ -21,9 +21,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-racing-dark text-slate-100 flex min-h-screen antialiased selection:bg-racing-cyan selection:text-black">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0">
+      <body className="bg-surface-base text-text-primary min-h-screen antialiased selection:bg-apex-cyan selection:text-black font-sans flex flex-col">
+        <TopTacticalHUD />
+        <div className="flex-1 w-full">
           {children}
         </div>
       </body>

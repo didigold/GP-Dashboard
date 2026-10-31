@@ -3,73 +3,79 @@
 @tailwind utilities;
 
 :root {
-  --background: #080a0f;
-  --foreground: #f1f5f9;
+  --background: #07090e;
+  --foreground: #f8fafc;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   overflow-x: hidden;
+  font-feature-settings: 'tnum', 'zero', 'ss01', 'cv02';
 }
 
-/* Custom dark scrollbar */
+/* Custom dark tactical scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b0e14;
+  background: #07090e;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e2638;
-  border-radius: 3px;
+  background: #1e283d;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #2f3e5c;
 }
 
-/* Glassmorphism helpers */
-.glass-panel {
-  background: rgba(16, 20, 30, 0.75);
-  backdrop-filter: blur(12px);
+/* Apex DS Glassmorphic Surfaces */
+.pitwall-panel {
+  background: rgba(18, 24, 36, 0.72);
+  backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
 }
 
-.glass-card {
-  background: linear-gradient(135deg, rgba(22, 28, 42, 0.6) 0%, rgba(12, 16, 24, 0.75) 100%);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+.pitwall-card {
+  background: linear-gradient(145deg, rgba(22, 30, 46, 0.65) 0%, rgba(13, 17, 26, 0.85) 100%);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
-.glass-card:hover {
-  border-color: rgba(0, 245, 212, 0.25);
-  box-shadow: 0 8px 32px -8px rgba(0, 245, 212, 0.15);
+.pitwall-card:hover {
+  border-color: rgba(0, 245, 212, 0.35);
+  box-shadow: 0 10px 30px -10px rgba(0, 245, 212, 0.12), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
 }
 
-/* Text glow utilities */
-.glow-text-cyan {
-  text-shadow: 0 0 10px rgba(0, 245, 212, 0.5);
+/* Glow Utilities */
+.glow-cyan {
+  box-shadow: 0 0 20px -3px rgba(0, 245, 212, 0.45);
 }
 
-.glow-text-purple {
-  text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+.glow-purple {
+  box-shadow: 0 0 20px -3px rgba(168, 85, 247, 0.45);
 }
 
-.glow-text-red {
-  text-shadow: 0 0 10px rgba(255, 42, 84, 0.5);
+.glow-crimson {
+  box-shadow: 0 0 20px -3px rgba(255, 42, 84, 0.45);
 }
 
-/* Subtle carbon fiber pattern */
-.carbon-bg {
-  background-color: #080a0f;
+.glow-amber {
+  box-shadow: 0 0 20px -3px rgba(255, 183, 3, 0.45);
+}
+
+/* Tactical asphalt carbon background pattern */
+.asphalt-texture {
+  background-color: #07090e;
   background-image: 
-    radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0),
-    radial-gradient(rgba(255, 255, 255, 0.03) 1px, #080a0f 1px);
-  background-size: 20px 20px;
-  background-position: 0 0, 10px 10px;
+    radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 0),
+    radial-gradient(rgba(255, 255, 255, 0.035) 1px, #07090e 1px);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
 }
