@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #080a0f;
+  --foreground: #f1f5f9;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  overflow-x: hidden;
+}
+
+/* Custom dark scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0e14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e2638;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Glassmorphism helpers */
+.glass-panel {
+  background: rgba(16, 20, 30, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(22, 28, 42, 0.6) 0%, rgba(12, 16, 24, 0.75) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-card:hover {
+  border-color: rgba(0, 245, 212, 0.25);
+  box-shadow: 0 8px 32px -8px rgba(0, 245, 212, 0.15);
+}
+
+/* Text glow utilities */
+.glow-text-cyan {
+  text-shadow: 0 0 10px rgba(0, 245, 212, 0.5);
+}
+
+.glow-text-purple {
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+.glow-text-red {
+  text-shadow: 0 0 10px rgba(255, 42, 84, 0.5);
+}
+
+/* Subtle carbon fiber pattern */
+.carbon-bg {
+  background-color: #080a0f;
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0),
+    radial-gradient(rgba(255, 255, 255, 0.03) 1px, #080a0f 1px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
