@@ -1,31 +1,29 @@
 'use client';
 
-import { Header } from '../../components/navigation/Header';
+import React from 'react';
 import { SectorDeltaBar } from '../../components/charts/SectorDeltaBar';
-import { GitCompare, Award, Gauge, Zap } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { GitCompare } from 'lucide-react';
 
 export default function HeadToHeadPage() {
   return (
-    <div className="flex-1 flex flex-col min-h-screen">
-      <Header eventName="Head-to-Head Rider Sector Telemetry" />
-
-      <main className="flex-1 p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-racing-cyan">
-            <GitCompare className="w-4 h-4" />
-            <span>RIDER COMPARISON TELEMETRY</span>
+    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto select-none">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-neutral-800">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="motogp">SECTOR COMPARISON</Badge>
+            <Badge variant="outline">TELEMETRY DELTAS</Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+          <h1 className="text-3xl sm:text-4xl font-sans font-black tracking-tight uppercase text-white leading-none">
             Head-to-Head Sector Breakdown
           </h1>
-          <p className="text-xs text-slate-400">
-            Compare mini-sector performance, speed trap maximums, and season qualifying tallies between any two riders.
+          <p className="text-xs sm:text-sm text-neutral-400 font-light mt-1 max-w-2xl leading-relaxed">
+            Compare mini-sector splits (T1 to T4), speed trap maximums, and corner apex speeds between any two premier class riders.
           </p>
         </div>
+      </div>
 
-        {/* Sector Delta Visualizer Component */}
-        <SectorDeltaBar />
-      </main>
+      <SectorDeltaBar />
     </div>
   );
 }

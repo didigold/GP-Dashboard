@@ -1,90 +1,164 @@
 'use client';
 
-import { Header } from '../../components/navigation/Header';
-import { Calendar, MapPin, Flag, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Calendar, MapPin, Flag, Clock, ExternalLink, FileText } from 'lucide-react';
 
-const CALENDAR_EVENTS = [
-  { round: 1, name: 'Qatar Airways Grand Prix of Qatar', circuit: 'Lusail International Circuit', date: 'March 8 - 10', country: 'Qatar', sprint: true },
-  { round: 2, name: 'Grande Prémio Tissot de Portugal', circuit: 'Autódromo Internacional do Algarve', date: 'March 22 - 24', country: 'Portugal', sprint: true },
-  { round: 3, name: 'Red Bull Grand Prix of The Americas', circuit: 'Circuit of The Americas (COTA)', date: 'April 12 - 14', country: 'United States', sprint: true },
-  { round: 4, name: 'Gran Premio Estrella Galicia 0,0 de España', circuit: 'Circuito de Jerez-Ángel Nieto', date: 'April 26 - 28', country: 'Spain', sprint: true },
-  { round: 5, name: 'Michelin® Grand Prix de France', circuit: 'Le Mans Bugatti Circuit', date: 'May 10 - 12', country: 'France', sprint: true },
-  { round: 6, name: 'Gran Premi Monster Energy de Catalunya', circuit: 'Circuit de Barcelona-Catalunya', date: 'May 24 - 26', country: 'Spain', sprint: true },
-  { round: 7, name: 'Gran Premio d’Italia Brembo', circuit: 'Autodromo del Mugello', date: 'May 31 - June 2', country: 'Italy', sprint: true },
-  { round: 8, name: 'Motul TT Assen', circuit: 'TT Circuit Assen', date: 'June 28 - 30', country: 'Netherlands', sprint: true },
-  { round: 9, name: 'Liqui Moly Motorrad Grand Prix Deutschland', circuit: 'Sachsenring', date: 'July 5 - 7', country: 'Germany', sprint: true },
-  { round: 10, name: 'Monster Energy British Grand Prix', circuit: 'Silverstone Circuit', date: 'August 2 - 4', country: 'United Kingdom', sprint: true },
-  { round: 11, name: 'Motorrad Grand Prix von Österreich', circuit: 'Red Bull Ring - Spielberg', date: 'August 16 - 18', country: 'Austria', sprint: true },
-  { round: 12, name: 'Gran Premio Red Bull di San Marino e della Riviera di Rimini', circuit: 'Misano World Circuit Marco Simoncelli', date: 'September 6 - 8', country: 'Italy', sprint: true },
-  { round: 13, name: 'Grand Prix of Japan', circuit: 'Mobility Resort Motegi', date: 'October 4 - 6', country: 'Japan', sprint: true },
-  { round: 14, name: 'Australian Motorcycle Grand Prix', circuit: 'Phillip Island Grand Prix Circuit', date: 'October 18 - 20', country: 'Australia', sprint: true },
-  { round: 15, name: 'Gran Premio Motul de la Comunitat Valenciana', circuit: 'Circuit Ricardo Tormo', date: 'November 15 - 17', country: 'Spain', sprint: true },
+const SEASONS = [
+  { year: 2024, id: 'dd12382e-1d9f-46ee-a5f7-c5104db28e43', label: '2024 Calendar' },
+  { year: 2025, id: 'ae6c6f0d-c652-44f8-94aa-420fc5b3dab4', label: '2025 Calendar' },
+  { year: 2026, id: 'e88b4e43-2209-47aa-8e83-0e0b1cedde6e', label: '2026 Calendar' },
 ];
 
-export default function SchedulePage() {
-  return (
-    <div className="flex-1 flex flex-col min-h-screen">
-      <Header eventName="MotoGP™ Official Grand Prix Schedule" />
+interface EventItem {
+  id: string;
+  name: string;
+  sponsored_name?: string;
+  date_start: string;
+  date_end: string;
+  status: string;
+  test: boolean;
+  circuit?: {
+    name: string;
+    place?: string;
+  };
+  country?: {
+    name: string;
+    iso: string;
+  };
+  event_files?: {
+    circuit_information?: { url: string };
+  };
+}
 
-      <main className="flex-1 p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-racing-cyan">
-            <Calendar className="w-4 h-4" />
-            <span>CALENDAR & SESSIONS</span>
+export default function SchedulePage() {
+  const [selectedSeason, setSelectedSeason] = useState(SEASONS[0]);
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadEvents() {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/motogp/results/events?seasonUuid=${selectedSeason.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setEvents(data);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load events:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadEvents();
+  }, [selectedSeason]);
+
+  const grandPrixEvents = events.filter((e) => !e.test);
+  const testEvents = events.filter((e) => e.test);
+
+  return (
+    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto select-none">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-neutral-800">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="motogp">OFFICIAL CALENDAR</Badge>
+            <Badge variant="outline">api.motogp.pulselive.com</Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-            Grand Prix Schedule
+          <h1 className="text-3xl sm:text-4xl font-sans font-black tracking-tight uppercase text-white leading-none">
+            Official Grand Prix Schedule
           </h1>
-          <p className="text-xs text-slate-400">
-            Sprint and Grand Prix weekend timetables, local track session times, and circuit locations.
+          <p className="text-xs sm:text-sm text-neutral-400 font-light mt-1 max-w-2xl leading-relaxed">
+            Real official Dorna calendar: dates, circuits, countries, and direct links to official FIM circuit specifications.
           </p>
         </div>
 
-        {/* Schedule Table */}
-        <div className="glass-card rounded-2xl border border-racing-border overflow-hidden">
-          <table className="w-full text-left text-sm border-collapse">
-            <thead>
-              <tr className="border-b border-racing-border bg-racing-dark/60 text-[11px] font-mono uppercase tracking-wider text-slate-400">
-                <th className="py-3.5 px-4 w-16 text-center">RND</th>
-                <th className="py-3.5 px-4">EVENT</th>
-                <th className="py-3.5 px-4">CIRCUIT</th>
-                <th className="py-3.5 px-4">DATE</th>
-                <th className="py-3.5 px-4 text-center">FORMAT</th>
+        {/* Season Switcher */}
+        <div className="flex items-center gap-2">
+          {SEASONS.map((season) => (
+            <Button
+              key={season.year}
+              size="sm"
+              variant={selectedSeason.year === season.year ? 'motogp' : 'outline'}
+              onClick={() => setSelectedSeason(season)}
+            >
+              {season.year}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Schedule Table */}
+      <div className="border border-neutral-800 overflow-hidden bg-[#0A0A0A]">
+        <table className="w-full text-left font-mono text-xs">
+          <thead>
+            <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[10px] uppercase tracking-wider">
+              <th className="py-3 px-4 w-14 text-center">RND</th>
+              <th className="py-3 px-4">GRAND PRIX EVENT</th>
+              <th className="py-3 px-4">CIRCUIT &amp; LOCATION</th>
+              <th className="py-3 px-4">DATES</th>
+              <th className="py-3 px-4 text-center">STATUS</th>
+              <th className="py-3 px-4 text-right">OFFICIAL DOCS</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-neutral-800/60">
+            {isLoading ? (
+              <tr>
+                <td colSpan={6} className="py-8 text-center text-neutral-500 font-mono text-xs">
+                  Loading official calendar from Pulselive API...
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-racing-border/40 font-mono text-xs">
-              {CALENDAR_EVENTS.map((event) => (
-                <tr key={event.round} className="hover:bg-racing-cardHover transition-colors">
-                  <td className="py-3.5 px-4 text-center font-bold">
-                    <span className="inline-block w-6 h-6 rounded-md bg-racing-card text-white text-center leading-6">
-                      {event.round}
-                    </span>
+            ) : (
+              grandPrixEvents.map((ev, idx) => (
+                <tr key={ev.id || idx} className="hover:bg-neutral-900/60 transition-colors">
+                  <td className="py-3.5 px-4 text-center font-black text-white">
+                    {idx + 1}
                   </td>
-
-                  <td className="py-3.5 px-4 font-sans font-bold text-white text-sm">
-                    {event.name}
+                  <td className="py-3.5 px-4">
+                    <div className="font-bold text-white text-sm">
+                      {ev.sponsored_name || ev.name}
+                    </div>
+                    <div className="text-[10px] text-neutral-500 uppercase">{ev.country?.name}</div>
                   </td>
-
-                  <td className="py-3.5 px-4 text-slate-300 font-sans flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-racing-cyan" />
-                    <span>{event.circuit}</span>
+                  <td className="py-3.5 px-4 text-neutral-300 font-light">
+                    <div>{ev.circuit?.name || 'Grand Prix Circuit'}</div>
+                    <div className="text-[10px] text-neutral-500">{ev.circuit?.place}</div>
                   </td>
-
-                  <td className="py-3.5 px-4 text-slate-400 font-mono">
-                    {event.date}
+                  <td className="py-3.5 px-4 text-neutral-300 font-medium whitespace-nowrap">
+                    {ev.date_start} — {ev.date_end}
                   </td>
-
                   <td className="py-3.5 px-4 text-center">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-racing-purple/20 text-racing-purple border border-racing-purple/30">
-                      SPRINT + GP
-                    </span>
+                    <Badge variant={ev.status === 'FINISHED' ? 'secondary' : 'motogp'}>
+                      {ev.status || 'SCHEDULED'}
+                    </Badge>
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    {ev.event_files?.circuit_information?.url ? (
+                      <a
+                        href={ev.event_files.circuit_information.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] text-neutral-400 hover:text-white uppercase"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-[#E10600]" />
+                        <span>CIRCUIT PDF</span>
+                      </a>
+                    ) : (
+                      <span className="text-neutral-600">—</span>
+                    )}
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </main>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDelayedLiveTiming } from '../../lib/hooks/useDelayedLiveTiming';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,10 @@ import {
   Eye,
   CircleDot,
   Compass,
+  Activity,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle2,
 } from 'lucide-react';
 
 export default function LiveTimingPage() {
@@ -26,14 +30,117 @@ export default function LiveTimingPage() {
   const [isSimulation, setIsSimulation] = useState<boolean>(true);
   const [selectedRiderNum, setSelectedRiderNum] = useState<string>('1');
 
+  // Real-time Dorna Gateway state
+  const [liveGatewayData, setLiveGatewayData] = useState<any>(null);
+  const [isGatewayActive, setIsGatewayActive] = useState<boolean>(false);
+  const [lastCheckTime, setLastCheckTime] = useState<string>('');
+  const [isCheckingGateway, setIsCheckingGateway] = useState<boolean>(false);
+
+  // Poll Dorna live timing gateway via our edge proxy
+  const checkLiveGateway = async () => {
+    setIsCheckingGateway(true);
+    try {
+      const res = await fetch('/api/live', { cache: 'no-store' });
+      if (res.ok) {
+        const json = await res.json();
+        setLastCheckTime(new Date().toLocaleTimeString());
+        if (json.active && json.data) {
+          setIsGatewayActive(true);
+          setLiveGatewayData(json.data);
+          setIsSimulation(false);
+        } else {
+          setIsGatewayActive(false);
+        }
+      }
+    } catch (err) {
+      console.warn('Error checking live gateway:', err);
+      setIsGatewayActive(false);
+    } finally {
+      setIsCheckingGateway(false);
+    }
+  };
+
+  useEffect(() => {
+    checkLiveGateway();
+    const interval = setInterval(checkLiveGateway, 10000); // Check every 10s
+    return () => clearInterval(interval);
+  }, []);
+
   // Live feed buffered with circular memory queue
-  const currentTimingState = useDelayedLiveTiming(null, delay, isSimulation);
+  const currentTimingState = useDelayedLiveTiming(liveGatewayData, delay, isSimulation);
 
   const ridersList = Object.values(currentTimingState.rider || {}).sort((a, b) => a.pos - b.pos);
   const selectedRider = ridersList.find((r) => r.rider_number === selectedRiderNum) || ridersList[0];
 
   return (
     <div className="w-full min-h-screen bg-black text-white p-4 lg:p-6 space-y-4 max-w-[1920px] mx-auto select-none">
+      {/* Live Data Connection & Source Transparency Banner */}
+      <div className="p-3 bg-[#111111] border border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs font-mono">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <span
+              className={`w-2 h-2 rounded-full ${
+                isGatewayActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
+              }`}
+            />
+            <span className="font-bold text-white uppercase">DATA SOURCE:</span>
+            <span className="text-neutral-400">Dorna Sports Live Gateway</span>
+          </div>
+
+          <span className="text-neutral-600 hidden sm:inline">|</span>
+
+          <div className="flex items-center gap-1.5 text-[11px]">
+            {isGatewayActive ? (
+              <span className="text-emerald-400 font-bold flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                LIVE TRACK SESSION ACTIVE
+              </span>
+            ) : (
+              <span className="text-amber-400 font-medium flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5" />
+                OFF-TRACK / BETWEEN RACES (HIGH-FREQUENCY REPLAY ACTIVE)
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Mode Switcher */}
+          <div className="flex items-center bg-[#0A0A0A] p-0.5 border border-neutral-800 text-[11px]">
+            <button
+              onClick={() => {
+                setIsSimulation(false);
+                checkLiveGateway();
+              }}
+              className={`px-2.5 py-1 font-bold uppercase transition-colors ${
+                !isSimulation ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              LIVE GATEWAY
+            </button>
+            <button
+              onClick={() => setIsSimulation(true)}
+              className={`px-2.5 py-1 font-bold uppercase transition-colors ${
+                isSimulation ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              REPLAY BUFFER
+            </button>
+          </div>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={checkLiveGateway}
+            disabled={isCheckingGateway}
+            className="h-7 px-2 text-[10px] flex items-center gap-1"
+          >
+            <RefreshCw className={`w-3 h-3 ${isCheckingGateway ? 'animate-spin' : ''}`} />
+            <span>PING DORNA</span>
+          </Button>
+        </div>
+      </div>
+
       {/* Session Quick Status & Broadcast Sync Command Strip */}
       <div className="p-3.5 bg-[#111111] border border-neutral-800 flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
         <div className="flex items-center gap-3">

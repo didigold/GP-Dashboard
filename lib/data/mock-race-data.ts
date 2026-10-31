@@ -236,7 +236,7 @@ export const MOCK_STANDINGS: StandingRider[] = [
   },
   {
     position: 5,
-    points: 215,
+    points: 217,
     rider: { id: 'binder-33', full_name: 'Brad Binder', number: 33, country: { iso: 'ZA', name: 'South Africa' } },
     team: { name: 'Red Bull KTM Factory Racing' },
     constructor: { name: 'KTM' },
