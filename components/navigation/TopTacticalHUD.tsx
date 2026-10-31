@@ -40,6 +40,7 @@ export const NAV_ITEMS = [
   { name: '3D Radar', href: '/track-map', icon: Layers },
   { name: 'Standings', href: '/standings', icon: Trophy },
   { name: 'Incident Ledger', href: '/gravel-trap', icon: AlertTriangle },
+  { name: 'Design System', href: '/design-system', icon: Sparkles, isNew: true },
 ];
 
 export function TopTacticalHUD({

@@ -68,6 +68,21 @@ export function CardTitle({
   );
 }
 
+export function CardDescription({
+  children,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement>) {
+  return (
+    <p
+      className={twMerge('text-xs text-text-muted mt-0.5', className)}
+      {...props}
+    >
+      {children}
+    </p>
+  );
+}
+
 export function CardContent({
   children,
   className,
