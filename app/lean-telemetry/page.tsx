@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { LeanMeter } from '../../components/ui/LeanMeter';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
-import { Button } from '../../components/ui/Button';
+import { LeanMeter } from '@/components/ui/LeanMeter';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Compass, Gauge, Zap, Flame, Award, ChevronRight } from 'lucide-react';
 
 interface CornerData {
@@ -48,32 +48,32 @@ export default function LeanTelemetryPage() {
   }[selectedRider];
 
   return (
-    <div className="w-full p-4 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto select-none">
       {/* View Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-surface-border">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-neutral-800">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-apex-cyan">
-            <Compass className="w-4 h-4" />
-            <span>MUSEUM OF CORNERING PHYSICS</span>
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="motogp">GYROSCOPIC SENSORS</Badge>
+            <Badge variant="outline">68.2° ELBOW-DOWN ANGLE</Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-mono font-black text-white mt-1">
-            Lean Angle & Apex Dynamics
+          <h1 className="text-3xl sm:text-4xl font-sans font-black tracking-tight uppercase text-white leading-none">
+            Lean Angle &amp; Apex Dynamics
           </h1>
-          <p className="text-xs text-text-secondary mt-0.5">
-            Real-time gyroscopic angle telemetry, elbow-down thresholds, and corner apex speeds at Mugello.
+          <p className="text-xs sm:text-sm text-neutral-400 font-light mt-1 max-w-2xl leading-relaxed">
+            Real-time gyroscopic angle telemetry, elbow-down thresholds, and corner apex speeds across Mugello&apos;s 15 curves.
           </p>
         </div>
 
         {/* Rider Switcher */}
-        <div className="flex items-center gap-1.5 p-1 bg-surface-subtle rounded-apex-sm border border-surface-border font-mono text-xs">
+        <div className="flex items-center gap-1.5 p-1 bg-[#111111] border border-neutral-800 font-mono text-xs">
           {(['martin', 'bagnaia', 'marquez'] as const).map((r) => (
             <button
               key={r}
               onClick={() => setSelectedRider(r)}
-              className={`px-3 py-1.5 rounded-apex-xs transition-all font-bold ${
+              className={`px-3 py-1.5 font-bold transition-colors ${
                 selectedRider === r
-                  ? 'bg-apex-cyan text-surface-base shadow-glow-cyan'
-                  : 'text-text-secondary hover:text-white'
+                  ? 'bg-white text-black'
+                  : 'text-neutral-400 hover:text-white'
               }`}
             >
               {r.toUpperCase()}
@@ -86,22 +86,24 @@ export default function LeanTelemetryPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Corner Inspector & Curve Profile */}
         <div className="lg:col-span-2 space-y-6">
-          <Card variant="pitwall">
+          <Card>
             <CardHeader>
-              <CardTitle>
-                <span>CORNER TELEMETRY:</span>
-                <span className="text-apex-cyan font-mono">
-                  TURN {corner.number} — {corner.name.toUpperCase()}
-                </span>
-              </CardTitle>
-              <Badge variant="cyan" dot>
-                {corner.type.toUpperCase()} HANDER
-              </Badge>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <span>CORNER TELEMETRY:</span>
+                  <span className="text-[#E10600]">
+                    TURN {corner.number} — {corner.name.toUpperCase()}
+                  </span>
+                </CardTitle>
+                <Badge variant="outline">
+                  {corner.type.toUpperCase()} HANDER
+                </Badge>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-center">
                 {/* Lean Meter Component */}
-                <div className="p-4 rounded-apex-md bg-surface-base/80 border border-surface-border flex justify-center">
+                <div className="p-4 bg-[#0A0A0A] border border-neutral-800 flex justify-center">
                   <LeanMeter
                     angle={corner.angle}
                     direction={corner.type === 'Left' ? 'left' : 'right'}
@@ -111,59 +113,59 @@ export default function LeanTelemetryPage() {
 
                 {/* Corner Metrics */}
                 <div className="sm:col-span-2 grid grid-cols-2 gap-3 font-mono text-xs">
-                  <div className="p-3 rounded-apex-sm bg-surface-subtle border border-surface-border">
-                    <div className="text-[10px] text-text-muted">APEX VELOCITY</div>
-                    <div className="text-xl font-extrabold text-white mt-1">
+                  <div className="p-3 bg-[#0A0A0A] border border-neutral-800">
+                    <div className="text-[10px] text-neutral-400 uppercase">APEX VELOCITY</div>
+                    <div className="text-xl font-black text-white mt-1 tabular-nums">
                       {corner.apexSpeed.toFixed(1)} km/h
                     </div>
-                    <div className="text-[10px] text-text-muted">Gear: {corner.gear}th</div>
+                    <div className="text-[10px] text-neutral-400 font-light mt-0.5">Gear: {corner.gear}th</div>
                   </div>
 
-                  <div className="p-3 rounded-apex-sm bg-surface-subtle border border-surface-border">
-                    <div className="text-[10px] text-text-muted">TIME AT &gt; 60° LEAN</div>
-                    <div className="text-xl font-extrabold text-apex-cyan mt-1">
+                  <div className="p-3 bg-[#0A0A0A] border border-neutral-800">
+                    <div className="text-[10px] text-neutral-400 uppercase">TIME AT &gt; 60° LEAN</div>
+                    <div className="text-xl font-black text-[#E10600] mt-1 tabular-nums">
                       {riderStats.timeInLeanSec}s
                     </div>
-                    <div className="text-[10px] text-text-muted">High tire shear</div>
+                    <div className="text-[10px] text-neutral-400 font-light mt-0.5">High tire shear</div>
                   </div>
 
-                  <div className="p-3 rounded-apex-sm bg-surface-subtle border border-surface-border">
-                    <div className="text-[10px] text-text-muted">ELEVATION GRADIENT</div>
-                    <div className="text-xl font-extrabold text-apex-amber mt-1">
+                  <div className="p-3 bg-[#0A0A0A] border border-neutral-800">
+                    <div className="text-[10px] text-neutral-400 uppercase">ELEVATION GRADIENT</div>
+                    <div className="text-xl font-black text-amber-400 mt-1 tabular-nums">
                       +{corner.elevationM}m Crest
                     </div>
-                    <div className="text-[10px] text-text-muted">Blind apex uphill</div>
+                    <div className="text-[10px] text-neutral-400 font-light mt-0.5">Blind apex uphill</div>
                   </div>
 
-                  <div className="p-3 rounded-apex-sm bg-surface-subtle border border-surface-border">
-                    <div className="text-[10px] text-text-muted">RIDING STYLE MATRIX</div>
-                    <div className="text-sm font-extrabold text-apex-purple mt-1 truncate">
+                  <div className="p-3 bg-[#0A0A0A] border border-neutral-800">
+                    <div className="text-[10px] text-neutral-400 uppercase">RIDING STYLE MATRIX</div>
+                    <div className="text-sm font-black text-purple-400 mt-1 truncate">
                       {riderStats.style}
                     </div>
-                    <div className="text-[10px] text-text-muted">#{riderStats.number} {riderStats.name}</div>
+                    <div className="text-[10px] text-neutral-400 font-light mt-0.5">#{riderStats.number} {riderStats.name}</div>
                   </div>
                 </div>
               </div>
 
               {/* Riding Style Physics Comparison */}
-              <div className="p-4 rounded-apex-sm bg-surface-base border border-surface-border text-xs space-y-2">
-                <div className="font-mono font-bold text-text-primary flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-apex-cyan" />
+              <div className="p-4 bg-[#0A0A0A] border border-neutral-800 text-xs space-y-2 font-mono">
+                <div className="font-bold text-white flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-[#E10600]" />
                   <span>POINT-AND-SHOOT (V-SHAPE) vs CORNER SPEED (U-SHAPE)</span>
                 </div>
-                <p className="text-text-secondary leading-relaxed">
-                  <strong>Bagnaia (V-Shape):</strong> Brakes heavily upright, snaps the bike down to 65° for only 1.95s, then immediately picks the bike up onto the fat part of the tire to unleash 300+ HP out of the exit.
+                <p className="text-neutral-400 font-light leading-relaxed">
+                  <strong className="text-white">Bagnaia (V-Shape):</strong> Brakes heavily upright, snaps the bike down to 65° for only 1.95s, then immediately picks the bike up onto the fat part of the tire to unleash 300+ HP out of the exit.
                   <br />
-                  <strong>Martin (U-Shape):</strong> Carries higher rolling speed at 67.8° lean angle for 2.45s, relying heavily on front edge grip.
+                  <strong className="text-white">Martin (U-Shape):</strong> Carries higher rolling speed at 67.8° lean angle for 2.45s, relying heavily on front edge grip.
                 </p>
               </div>
             </CardContent>
           </Card>
 
           {/* Interactive Circuit Corner Selector Bar */}
-          <div className="glass-card p-4 rounded-apex-md border border-surface-border">
-            <div className="text-xs font-mono text-text-muted mb-2 flex justify-between">
-              <span>SELECT CORNER (1 TO 15)</span>
+          <div className="p-4 bg-[#111111] border border-neutral-800">
+            <div className="text-xs font-mono text-neutral-400 mb-2 flex justify-between">
+              <span className="uppercase tracking-wider font-bold">SELECT CORNER (1 TO 15)</span>
               <span>AUTODROMO DEL MUGELLO</span>
             </div>
             <div className="grid grid-cols-5 sm:grid-cols-15 gap-1.5 font-mono text-xs">
@@ -171,14 +173,14 @@ export default function LeanTelemetryPage() {
                 <button
                   key={c.number}
                   onClick={() => setSelectedCornerIdx(i)}
-                  className={`p-2 rounded-apex-xs border text-center transition-all ${
+                  className={`p-2 border text-center transition-colors ${
                     selectedCornerIdx === i
-                      ? 'bg-apex-cyan text-surface-base font-extrabold border-apex-cyan shadow-glow-cyan'
-                      : 'bg-surface-subtle text-text-secondary hover:text-white border-surface-border'
+                      ? 'bg-[#E10600] text-white font-black border-[#E10600]'
+                      : 'bg-[#0A0A0A] text-neutral-400 hover:text-white border-neutral-800'
                   }`}
                 >
-                  <div className="text-[9px] text-text-muted">T{c.number}</div>
-                  <div className="font-bold">{c.angle.toFixed(0)}°</div>
+                  <div className="text-[9px] text-neutral-400 font-light">T{c.number}</div>
+                  <div className="font-bold tabular-nums">{c.angle.toFixed(0)}°</div>
                 </button>
               ))}
             </div>
@@ -187,13 +189,15 @@ export default function LeanTelemetryPage() {
 
         {/* Right 1 Col: Maximum Lean Leaderboard */}
         <div className="space-y-6">
-          <Card variant="pitwall">
+          <Card>
             <CardHeader>
-              <CardTitle>
-                <Flame className="w-4 h-4 text-apex-crimson" />
-                <span>MAX LEAN LEADERBOARD</span>
-              </CardTitle>
-              <Badge variant="purple">SESSION PEAK</Badge>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-[#E10600]" />
+                  <span>MAX LEAN RECORD</span>
+                </CardTitle>
+                <Badge variant="purple">SESSION PEAK</Badge>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3 font-mono text-xs">
               {[
@@ -205,18 +209,18 @@ export default function LeanTelemetryPage() {
               ].map((r) => (
                 <div
                   key={r.num}
-                  className="p-3 rounded-apex-sm bg-surface-subtle border border-surface-border flex items-center justify-between"
+                  className="p-3 bg-[#0A0A0A] border border-neutral-800 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="w-1.5 h-6 rounded-full" style={{ backgroundColor: r.color }} />
+                    <span className="w-1.5 h-6" style={{ backgroundColor: r.color }} />
                     <div>
                       <div className="font-bold text-white">#{r.num} {r.rider}</div>
-                      <div className="text-[10px] text-text-muted">{r.corner}</div>
+                      <div className="text-[10px] text-neutral-400 font-light">{r.corner}</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-base font-extrabold text-apex-cyan">{r.angle.toFixed(1)}°</div>
-                    <div className="text-[9px] text-text-muted">ELBOW DOWN</div>
+                    <div className="text-base font-black text-white tabular-nums">{r.angle.toFixed(1)}°</div>
+                    <div className="text-[9px] text-[#E10600] font-bold">ELBOW DOWN</div>
                   </div>
                 </div>
               ))}

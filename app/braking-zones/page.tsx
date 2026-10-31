@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BrakingGForceBar } from '../../components/ui/BrakingGForceBar';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
+import { BrakingGForceBar } from '@/components/ui/BrakingGForceBar';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Zap, Gauge, Disc, ShieldAlert, Award } from 'lucide-react';
 
 const BRAKING_ZONES_DATABASE = [
@@ -48,32 +48,34 @@ const BRAKING_ZONES_DATABASE = [
     brakingDistanceM: 298,
     gForce: 1.70,
     discTemp: 890,
-    discSpec: '355mm Carbon Discs',
-    notes: 'Longest braking zone on the calendar: ~300 meters from 6th gear down to 1st gear.',
+    discSpec: '355mm Carbon Carbon Discs',
+    notes: 'Longest continuous straight on calendar into tight first-gear left-hand hairpin.',
   },
 ];
 
 export default function BrakingZonesPage() {
+  const [selectedCircuit, setSelectedCircuit] = useState('All');
+
   return (
-    <div className="w-full p-4 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
-      {/* View Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-surface-border">
+    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto select-none">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-neutral-800 pb-6">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-apex-orange">
-            <Zap className="w-4 h-4" />
-            <span>BREMBO CARBON-CARBON DECELERATION</span>
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="motogp">BREMBO 355MM CARBON</Badge>
+            <Badge variant="outline">DECELERATION KINETICS</Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-mono font-black text-white mt-1">
-            Hard Braking Zones & G-Forces
+          <h1 className="text-3xl sm:text-4xl font-sans font-black tracking-tight uppercase text-white leading-none">
+            Hard Braking Zones &amp; G-Forces
           </h1>
-          <p className="text-xs text-text-secondary mt-0.5">
-            Extreme kinetic energy dissipation: 360 km/h to 70 km/h, 900°C carbon discs, and rear-wheel lift.
+          <p className="text-xs sm:text-sm text-neutral-400 font-light mt-1 max-w-2xl leading-relaxed">
+            Dissipating kinetic energy from 360 km/h: 900°C carbon disc temperatures, 1.80G deceleration loads, and stoppie rear-wheel lift indices.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge variant="amber" dot>
-            BREMBO 355MM CARBON MANDATE
+          <Badge variant="destructive" dot>
+            CRITICAL THERMAL WINDOW &gt;800°C
           </Badge>
         </div>
       </div>
@@ -81,13 +83,15 @@ export default function BrakingZonesPage() {
       {/* Grid of Hardest Braking Points */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {BRAKING_ZONES_DATABASE.map((zone) => (
-          <Card key={zone.corner} variant="pitwall">
+          <Card key={zone.corner}>
             <CardHeader>
-              <CardTitle>
-                <span className="text-apex-orange font-mono">[{zone.circuit}]</span>
-                <span>{zone.corner.toUpperCase()}</span>
-              </CardTitle>
-              <Badge variant="crimson">{zone.gForce.toFixed(2)} G LOAD</Badge>
+              <div className="flex items-center justify-between">
+                <CardTitle>
+                  <span className="text-[#E10600] font-mono mr-2">[{zone.circuit}]</span>
+                  <span>{zone.corner.toUpperCase()}</span>
+                </CardTitle>
+                <Badge variant="destructive">{zone.gForce.toFixed(2)} G LOAD</Badge>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <BrakingGForceBar
@@ -98,7 +102,7 @@ export default function BrakingZonesPage() {
                 gForce={zone.gForce}
                 carbonDiscTemp={zone.discTemp}
               />
-              <p className="text-xs text-text-secondary font-mono leading-relaxed bg-surface-base/80 p-3 rounded-apex-sm border border-surface-border">
+              <p className="text-xs text-neutral-400 font-light leading-relaxed bg-[#0A0A0A] p-3 border border-neutral-800">
                 {zone.notes}
               </p>
             </CardContent>
@@ -108,37 +112,37 @@ export default function BrakingZonesPage() {
 
       {/* Technical Carbon Braking Deep-Dive */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card variant="subtle">
-          <CardContent className="space-y-2 text-xs font-mono">
-            <div className="font-bold text-text-primary flex items-center gap-2">
-              <Disc className="w-4 h-4 text-apex-cyan" />
+        <Card>
+          <CardContent className="space-y-2 text-xs font-mono p-5">
+            <div className="font-bold text-white flex items-center gap-2">
+              <Disc className="w-4 h-4 text-[#E10600]" />
               <span>CARBON OPERATING WINDOW</span>
             </div>
-            <p className="text-text-secondary leading-relaxed">
+            <p className="text-neutral-400 font-light leading-relaxed">
               Carbon discs do not function below 250°C. Peak bite and coefficient of friction occur between 400°C and 800°C. Caliper cooling ducts manage temperature spikes above 950°C.
             </p>
           </CardContent>
         </Card>
 
-        <Card variant="subtle">
-          <CardContent className="space-y-2 text-xs font-mono">
-            <div className="font-bold text-text-primary flex items-center gap-2">
-              <Gauge className="w-4 h-4 text-apex-amber" />
+        <Card>
+          <CardContent className="space-y-2 text-xs font-mono p-5">
+            <div className="font-bold text-white flex items-center gap-2">
+              <Gauge className="w-4 h-4 text-amber-500" />
               <span>REAR THUMB BRAKE LEVER</span>
             </div>
-            <p className="text-text-secondary leading-relaxed">
-              Modern riders use a left-handlebar thumb or finger scooter-style brake to modulate rear slip in deep right-handers where the rider's right foot is scraping the tarmac.
+            <p className="text-neutral-400 font-light leading-relaxed">
+              Modern riders use a left-handlebar thumb or finger scooter-style brake to modulate rear slip in deep right-handers where the rider&apos;s right foot is scraping the tarmac.
             </p>
           </CardContent>
         </Card>
 
-        <Card variant="subtle">
-          <CardContent className="space-y-2 text-xs font-mono">
-            <div className="font-bold text-text-primary flex items-center gap-2">
-              <Award className="w-4 h-4 text-apex-crimson" />
+        <Card>
+          <CardContent className="space-y-2 text-xs font-mono p-5">
+            <div className="font-bold text-white flex items-center gap-2">
+              <Award className="w-4 h-4 text-emerald-500" />
               <span>ENGINE BRAKING MAPS (EBC)</span>
             </div>
-            <p className="text-text-secondary leading-relaxed">
+            <p className="text-neutral-400 font-light leading-relaxed">
               Electronic ride-by-wire butterflies automatically crack open on corner entry to prevent rear-wheel hopping, adjusting engine braking corner-by-corner via GPS mapping.
             </p>
           </CardContent>
