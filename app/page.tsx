@@ -45,8 +45,8 @@ export default function HomePage() {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div className="max-w-3xl space-y-4">
               <div className="flex items-center gap-3">
-                <Badge variant="motogp">Round 07 · Live Pitwall</Badge>
-                <Badge variant="outline">Autodromo Internazionale del Mugello</Badge>
+                <Badge variant="motogp">Round 19 · Live Pitwall</Badge>
+                <Badge variant="outline">Petronas Sepang International Circuit</Badge>
               </div>
 
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-sans font-bold tracking-tight text-white leading-tight">
@@ -208,7 +208,7 @@ export default function HomePage() {
                   </div>
                 </div>
                 <p className="text-xs text-neutral-400 font-light leading-relaxed border-t border-neutral-800/80 pt-3">
-                  Mugello&apos;s 9 right turns push the right carcass into extreme thermal stress while left shoulder drops to 104°C.
+                  Sepang&apos;s dual 900m+ straights and 15 corners push thermal stress across asymmetric Michelin compounds.
                 </p>
               </CardContent>
               <CardFooter className="flex justify-between items-center text-xs font-mono text-neutral-400">
@@ -301,7 +301,7 @@ export default function HomePage() {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <Layers className="w-4 h-4 text-[#E10600]" />
-                      <span>Mugello 3D Sector Radar</span>
+                      <span>Sepang 3D Sector Radar</span>
                     </CardTitle>
                     <CardDescription>
                       WebGL track geometry with speed traps &amp; apex markers
@@ -319,8 +319,8 @@ export default function HomePage() {
                   <CircuitCanvas selectedRiderNumber={selectedRider} />
                   <div className="absolute top-4 left-4 z-10 bg-black/85 border border-neutral-800 p-3 font-mono text-xs">
                     <div className="text-neutral-400 text-[10px]">Active Elevation</div>
-                    <div className="text-white font-bold text-sm">41.2m Elevation Change</div>
-                    <div className="text-[#E10600] text-[10px] mt-0.5">Arrabbiata Crest: 280 km/h</div>
+                    <div className="text-white font-bold text-sm">Petronas Sepang Circuit</div>
+                    <div className="text-[#E10600] text-[10px] mt-0.5">Main Straight Peak: 358+ km/h</div>
                   </div>
                 </div>
               </CardContent>
@@ -337,7 +337,7 @@ export default function HomePage() {
                 Technical Sector Breakdown
               </h3>
               <p className="text-xs text-neutral-400 font-light mt-1">
-                Deep engineering breakdown of the 15 corners at Mugello.
+                Deep engineering breakdown of the 15 corners at Sepang International Circuit.
               </p>
             </div>
 

@@ -9,8 +9,9 @@ import { Trophy, Users, Wrench, ShieldCheck, RefreshCw, ExternalLink } from 'luc
 import { MOCK_STANDINGS } from '@/lib/data/mock-race-data';
 
 const SEASONS = [
-  { year: 2024, id: 'dd12382e-1d9f-46ee-a5f7-c5104db28e43', label: '2024 World Championship (Final)' },
-  { year: 2025, id: 'ae6c6f0d-c652-44f8-94aa-420fc5b3dab4', label: '2025 Championship (Live Pulselive)' },
+  { year: 2026, id: 'e88b4e43-2209-47aa-8e83-0e0b1cedde6e', label: '2026 World Championship (Official Live)' },
+  { year: 2025, id: 'ae6c6f0d-c652-44f8-94aa-420fc5b3dab4', label: '2025 Championship' },
+  { year: 2024, id: 'dd12382e-1d9f-46ee-a5f7-c5104db28e43', label: '2024 World Championship' },
 ];
 
 const MOTOGP_CAT_ID = 'e8c110ad-64aa-4e8e-8a86-f2f152f6a942';

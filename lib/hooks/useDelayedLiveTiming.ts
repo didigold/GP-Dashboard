@@ -18,7 +18,7 @@ export function useDelayedLiveTiming(
   const [displayedState, setDisplayedState] = useState<LiveTimingState>(INITIAL_SIMULATED_LIVE_STATE);
   const simulationTickRef = useRef<number>(0);
 
-  // If live feed arrives, append to buffer
+  // If live feed arrives, append to buffer and immediately display if delay is 0
   useEffect(() => {
     if (liveFeed && !isSimulationActive) {
       const now = Date.now();
@@ -27,8 +27,12 @@ export function useDelayedLiveTiming(
       // Clean up frames older than 4 minutes
       const cutoff = now - 240000;
       bufferRef.current = bufferRef.current.filter((f) => f.timestamp >= cutoff);
+
+      if (delaySeconds === 0) {
+        setDisplayedState(liveFeed);
+      }
     }
-  }, [liveFeed, isSimulationActive]);
+  }, [liveFeed, isSimulationActive, delaySeconds]);
 
   // Simulation generator (generates dynamic lap updates, sector changes, gap shifts)
   useEffect(() => {

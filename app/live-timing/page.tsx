@@ -22,11 +22,13 @@ import {
 
 export default function LiveTimingPage() {
   const [delay, setDelay] = useState<number>(0);
-  const [isSimulation, setIsSimulation] = useState<boolean>(true);
-  const [selectedRiderNum, setSelectedRiderNum] = useState<string>('1');
+  const [isSimulation, setIsSimulation] = useState<boolean>(false);
+  const [selectedRiderNum, setSelectedRiderNum] = useState<string>('37');
   const [liveGatewayData, setLiveGatewayData] = useState<any>(null);
   const [isGatewayActive, setIsGatewayActive] = useState<boolean>(false);
   const [isCheckingGateway, setIsCheckingGateway] = useState<boolean>(false);
+  const [gatewaySource, setGatewaySource] = useState<string>('Dorna Pulselive Official');
+  const [sessionName, setSessionName] = useState<string>('Malaysian GP · Sprint Race');
   const [lastCheckTime, setLastCheckTime] = useState<string>('');
 
   // Function to poll the real-world Dorna live-timing endpoint via our proxy
@@ -39,6 +41,12 @@ export default function LiveTimingPage() {
       if (data && data.active && data.data) {
         setIsGatewayActive(true);
         setLiveGatewayData(data.data);
+        if (data.sessionName) setSessionName(data.sessionName);
+        if (data.source === 'gateway-live') {
+          setGatewaySource('Dorna Live Track Stream');
+        } else {
+          setGatewaySource('Dorna Sports Official Pulselive API');
+        }
       } else {
         setIsGatewayActive(false);
         setLiveGatewayData(null);
@@ -76,7 +84,7 @@ export default function LiveTimingPage() {
               }`}
             />
             <span className="font-semibold text-white">Data Source:</span>
-            <span className="text-neutral-400">Dorna Sports Live Gateway</span>
+            <span className="text-neutral-400">{gatewaySource}</span>
           </div>
 
           <span className="text-neutral-600 hidden sm:inline">|</span>
@@ -85,12 +93,12 @@ export default function LiveTimingPage() {
             {isGatewayActive ? (
               <span className="text-emerald-400 font-medium flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Live track session active
+                {sessionName}
               </span>
             ) : (
               <span className="text-amber-400 font-normal flex items-center gap-1">
                 <AlertCircle className="w-3.5 h-3.5" />
-                Off-track standby • High-frequency replay active
+                Official Sepang Sprint Results Loaded
               </span>
             )}
           </div>

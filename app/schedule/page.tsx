@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, ExternalLink, Flag, FileText } from 'lucide-react';
 
 const SEASONS = [
-  { year: 2024, id: 'dd12382e-1d9f-46ee-a5f7-c5104db28e43' },
-  { year: 2025, id: 'ae6c6f0d-c652-44f8-94aa-420fc5b3dab4' },
   { year: 2026, id: 'e88b4e43-2209-47aa-8e83-0e0b1cedde6e' },
+  { year: 2025, id: 'ae6c6f0d-c652-44f8-94aa-420fc5b3dab4' },
+  { year: 2024, id: 'dd12382e-1d9f-46ee-a5f7-c5104db28e43' },
 ];
 
 interface EventItem {

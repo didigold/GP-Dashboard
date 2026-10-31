@@ -74,7 +74,7 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
                   </span>
                 </div>
                 <Badge variant="outline" size="sm">
-                  Rnd 07 · Mugello
+                  Rnd 19 · Sepang
                 </Badge>
               </div>
               <SheetTitle className="text-xl font-bold tracking-tight text-white mt-1">
@@ -151,7 +151,7 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
                     <span className="font-bold text-neutral-400 w-6">#93</span>
                     <div>
                       <div className="text-white font-semibold">M. Marquez</div>
-                      <div className="text-[10px] text-neutral-500">Gresini Racing MotoGP</div>
+                      <div className="text-[10px] text-neutral-500">Ducati Lenovo Team</div>
                     </div>
                   </div>
                   <div className="text-right">

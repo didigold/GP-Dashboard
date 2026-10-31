@@ -75,8 +75,8 @@ export function TopTacticalHUD({
           {/* Active Round Pill */}
           <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 bg-[#111111] border border-neutral-800 text-xs font-mono">
             <span className="w-1.5 h-1.5 rounded-full bg-[#E10600] animate-pulse" />
-            <span className="text-white font-semibold">Mugello GP</span>
-            <span className="text-[10px] text-neutral-400">Rnd 07</span>
+            <span className="text-white font-semibold">Malaysian GP</span>
+            <span className="text-[10px] text-neutral-400">Sepang · Rnd 19</span>
           </div>
         </div>
 
