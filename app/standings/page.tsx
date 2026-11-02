@@ -1,330 +1,94 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Trophy, Users, Wrench, ShieldCheck, RefreshCw, ExternalLink } from 'lucide-react';
-import { MOCK_STANDINGS } from '@/lib/data/mock-race-data';
+import React, { useMemo, useState } from 'react';
+import { useStandings } from '@/lib/hooks/useStandings';
+import {
+  Season,
+  STANDINGS_ROUNDS,
+  STANDINGS_SEASONS,
+  buildDriverEvolutionDrivers,
+} from '@/lib/data/standings';
+import { buildStandingsEvolution } from '@/lib/data/standings-evolution';
+import { StandingsHeader } from '@/components/standings/StandingsHeader';
+import { StandingsNav } from '@/components/standings/StandingsNav';
+import { StandingsKpis } from '@/components/standings/StandingsKpis';
+import { DriverStandingsTable } from '@/components/standings/DriverStandingsTable';
+import {
+  StandingsPointsEvolution,
+  StandingsRankingEvolution,
+  StandingsPointsByRace,
+} from '@/components/charts/StandingsCharts';
+import {
+  StandingsPointsHeatmap,
+} from '@/components/charts/StandingsInsights';
 
-const SEASONS = [
-  { year: 2026, id: 'e88b4e43-2209-47aa-8e83-0e0b1cedde6e', label: '2026 World Championship (Official Live)' },
-  { year: 2025, id: 'ae6c6f0d-c652-44f8-94aa-420fc5b3dab4', label: '2025 Championship' },
-  { year: 2024, id: 'dd12382e-1d9f-46ee-a5f7-c5104db28e43', label: '2024 World Championship' },
-];
+export default function DriverStandingsPage() {
+  const [season, setSeason] = useState<Season>(STANDINGS_SEASONS[0]);
+  const { standings, isLoading, lastUpdated, refresh } = useStandings(season);
 
-const MOTOGP_CAT_ID = 'e8c110ad-64aa-4e8e-8a86-f2f152f6a942';
-
-interface StandingItem {
-  id: string;
-  position: number;
-  rider: {
-    id: string;
-    full_name: string;
-    number: number;
-    country: { iso: string; name: string };
-  };
-  team: {
-    id: string;
-    name: string;
-  };
-  constructor: {
-    id: string;
-    name: string;
-  };
-  points: number;
-  race_wins?: number;
-  podiums?: number;
-}
-
-const INITIAL_2024_STANDINGS: StandingItem[] = MOCK_STANDINGS.map((s, idx) => ({
-  id: s.rider.id || `standing-${idx}`,
-  position: s.position,
-  rider: {
-    id: s.rider.id || `r-${idx}`,
-    full_name: s.rider.full_name,
-    number: s.rider.number,
-    country: s.rider.country,
-  },
-  team: { id: `team-${idx}`, name: s.team.name },
-  constructor: { id: `const-${idx}`, name: s.constructor.name },
-  points: s.points,
-  race_wins: s.position === 1 ? 7 : (s.position === 2 ? 11 : (s.position === 3 ? 3 : 2)),
-  podiums: s.position === 1 ? 16 : (s.position === 2 ? 16 : (s.position === 3 ? 10 : 8)),
-}));
-
-export default function StandingsPage() {
-  const [selectedSeason, setSelectedSeason] = useState(SEASONS[0]);
-  const [activeTab, setActiveTab] = useState<'riders' | 'teams' | 'constructors'>('riders');
-  const [standings, setStandings] = useState<StandingItem[]>(INITIAL_2024_STANDINGS);
-  const [isLoading, setIsLoading] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<string>('Live Synced');
-
-  useEffect(() => {
-    async function loadStandings() {
-      setIsLoading(true);
-      try {
-        const res = await fetch(
-          `/api/motogp/results/standings?seasonUuid=${selectedSeason.id}&categoryUuid=${MOTOGP_CAT_ID}`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.classification) {
-            setStandings(data.classification);
-            setLastUpdated(new Date().toLocaleTimeString());
-          }
-        }
-      } catch (err) {
-        console.error('Failed to load live standings:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadStandings();
-  }, [selectedSeason]);
-
-  // Aggregate constructor points
-  const constructorStandings = React.useMemo(() => {
-    const map = new Map<string, { name: string; points: number; wins: number; podiums: number }>();
-    standings.forEach((item) => {
-      const cName = item.constructor?.name || 'Independent';
-      const existing = map.get(cName) || { name: cName, points: 0, wins: 0, podiums: 0 };
-      existing.points += item.points;
-      existing.wins += item.race_wins || 0;
-      existing.podiums += item.podiums || 0;
-      map.set(cName, existing);
-    });
-    return Array.from(map.values()).sort((a, b) => b.points - a.points);
-  }, [standings]);
-
-  // Aggregate team points
-  const teamStandings = React.useMemo(() => {
-    const map = new Map<string, { name: string; points: number; wins: number }>();
-    standings.forEach((item) => {
-      const tName = item.team?.name || 'Independent Team';
-      const existing = map.get(tName) || { name: tName, points: 0, wins: 0 };
-      existing.points += item.points;
-      existing.wins += item.race_wins || 0;
-      map.set(tName, existing);
-    });
-    return Array.from(map.values()).sort((a, b) => b.points - a.points);
-  }, [standings]);
+  const evolutionDrivers = useMemo(
+    () => buildDriverEvolutionDrivers(standings),
+    [standings]
+  );
+  const evolution = useMemo(
+    () => buildStandingsEvolution(evolutionDrivers, STANDINGS_ROUNDS),
+    [evolutionDrivers]
+  );
 
   return (
-    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto select-none">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-neutral-800">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="motogp">Official Dorna Sports Feed</Badge>
-            <Badge variant="outline">api.motogp.pulselive.com</Badge>
-            {lastUpdated && (
-              <span className="text-[10px] font-mono text-neutral-400">
-                Synced: {lastUpdated}
-              </span>
-            )}
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-sans font-bold tracking-tight text-white leading-tight">
-            World Championship Standings
-          </h1>
-          <p className="text-xs sm:text-sm text-neutral-400 font-light mt-1 max-w-2xl leading-relaxed">
-            Directly synced from Dorna Sports&apos; official Pulselive timing servers. Live points, podium counts, and constructor classifications.
-          </p>
-        </div>
+    <div className="mx-auto w-full min-h-screen max-w-[1560px] space-y-5 bg-[#07080B] p-4 text-white lg:p-6 select-none font-sans">
+      {/* Header & Navigation */}
+      <StandingsHeader
+        title="Driver Standings"
+        description="Official MotoGP™ World Championship classification, points gaps, ranking evolution, and round-by-round points matrix."
+        selectedSeason={season}
+        onSeasonChange={setSeason}
+        isLoading={isLoading}
+        lastUpdated={lastUpdated}
+        onRefresh={refresh}
+      >
+        <StandingsNav />
+      </StandingsHeader>
 
-        {/* Season Switcher */}
-        <div className="flex items-center gap-2">
-          {SEASONS.map((season) => (
-            <Button
-              key={season.year}
-              size="sm"
-              variant={selectedSeason.year === season.year ? 'motogp' : 'outline'}
-              onClick={() => setSelectedSeason(season)}
-            >
-              {season.year} Season
-            </Button>
-          ))}
+      {/* Bento Top KPI Strip */}
+      <StandingsKpis dataset={evolution} label="Driver" />
+
+      {/* FULL-WIDTH BENTO: Official Driver Classification Table */}
+      <div className="w-full">
+        <DriverStandingsTable
+          standings={standings}
+          evolution={evolution}
+          isLoading={isLoading}
+          className="w-full"
+        />
+      </div>
+
+      {/* Bento Row 1: Title Fight Curves (Points Evolution & Ranking Evolution) */}
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+        <div className="xl:col-span-6">
+          <StandingsPointsEvolution dataset={evolution} label="Driver" />
+        </div>
+        <div className="xl:col-span-6">
+          <StandingsRankingEvolution dataset={evolution} label="Driver" />
         </div>
       </div>
 
-      {/* Category Tabs: Riders, Teams, Constructors */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1 bg-[#111111] p-1 border border-neutral-800 text-xs">
-            <button
-              onClick={() => setActiveTab('riders')}
-              className={`px-4 py-1.5 font-semibold transition-colors ${
-                activeTab === 'riders' ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              Riders Classification
-            </button>
-            <button
-              onClick={() => setActiveTab('constructors')}
-              className={`px-4 py-1.5 font-semibold transition-colors ${
-                activeTab === 'constructors' ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              Constructors
-            </button>
-            <button
-              onClick={() => setActiveTab('teams')}
-              className={`px-4 py-1.5 font-semibold transition-colors ${
-                activeTab === 'teams' ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              Teams
-            </button>
-          </div>
-
-          <div className="text-xs font-mono text-neutral-400 hidden sm:block">
-            {isLoading ? 'Updating live...' : `${standings.length} classified entries`}
-          </div>
+      {/* Bento Row 2: Matrix & Race Contribution */}
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+        <div className="xl:col-span-7">
+          <StandingsPointsHeatmap
+            dataset={evolution}
+            label="Driver"
+            className="w-full"
+          />
         </div>
-
-        {/* Riders Table */}
-        {activeTab === 'riders' && (
-          <div className="border border-neutral-800 overflow-hidden bg-[#0A0A0A]">
-            <table className="w-full text-left font-mono text-xs">
-              <thead>
-                <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[11px] font-sans font-semibold">
-                  <th className="py-3 px-4 w-14 text-center">Pos</th>
-                  <th className="py-3 px-3 w-14 text-center">Num</th>
-                  <th className="py-3 px-4">Rider</th>
-                  <th className="py-3 px-4">Nat</th>
-                  <th className="py-3 px-4">Team / Constructor</th>
-                  <th className="py-3 px-4 text-center">Wins</th>
-                  <th className="py-3 px-4 text-center">Podiums</th>
-                  <th className="py-3 px-4 text-right">Points</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-800/60 font-mono">
-                {isLoading && standings.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="py-8 text-center text-neutral-500 font-mono text-xs">
-                      Fetching live championship data from Pulselive API...
-                    </td>
-                  </tr>
-                ) : (
-                  standings.map((item, idx) => {
-                    const isP1 = item.position === 1;
-                    return (
-                      <tr
-                        key={item.id || idx}
-                        className="hover:bg-neutral-900/60 transition-colors"
-                      >
-                        <td className="py-3 px-4 text-center font-bold">
-                          {isP1 ? (
-                            <span className="text-[#E10600] font-bold text-sm">P1</span>
-                          ) : (
-                            <span className="text-neutral-400">P{item.position}</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-3 text-center font-bold text-white">
-                          #{item.rider?.number}
-                        </td>
-                        <td className="py-3 px-4 font-sans">
-                          <span className="font-semibold text-white text-sm">
-                            {item.rider?.full_name}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-neutral-400 uppercase">
-                          {item.rider?.country?.iso || '—'}
-                        </td>
-                        <td className="py-3 px-4 text-neutral-300 font-light font-sans">
-                          <div>{item.team?.name || '—'}</div>
-                          <div className="text-[10px] text-neutral-500">{item.constructor?.name}</div>
-                        </td>
-                        <td className="py-3 px-4 text-center font-semibold text-white tabular-nums">
-                          {item.race_wins ?? '—'}
-                        </td>
-                        <td className="py-3 px-4 text-center font-semibold text-neutral-300 tabular-nums">
-                          {item.podiums ?? '—'}
-                        </td>
-                        <td className="py-3 px-4 text-right font-bold text-white text-sm tabular-nums">
-                          {item.points} <span className="text-xs text-neutral-500 font-normal">pts</span>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Constructors Table */}
-        {activeTab === 'constructors' && (
-          <div className="border border-neutral-800 overflow-hidden bg-[#0A0A0A]">
-            <table className="w-full text-left font-mono text-xs">
-              <thead>
-                <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[11px] font-sans font-semibold">
-                  <th className="py-3 px-4 w-14 text-center">Pos</th>
-                  <th className="py-3 px-4">Constructor</th>
-                  <th className="py-3 px-4 text-center">Victories</th>
-                  <th className="py-3 px-4 text-center">Podium Finishes</th>
-                  <th className="py-3 px-4 text-right">Total Points</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-800/60 font-mono">
-                {constructorStandings.map((c, idx) => (
-                  <tr key={c.name} className="hover:bg-neutral-900/60 transition-colors">
-                    <td className="py-3.5 px-4 text-center font-bold">
-                      {idx === 0 ? <span className="text-[#E10600]">1</span> : idx + 1}
-                    </td>
-                    <td className="py-3.5 px-4 font-semibold text-white text-sm font-sans">
-                      {c.name}
-                    </td>
-                    <td className="py-3.5 px-4 text-center font-semibold text-white tabular-nums">
-                      {c.wins}
-                    </td>
-                    <td className="py-3.5 px-4 text-center font-semibold text-neutral-300 tabular-nums">
-                      {c.podiums}
-                    </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-white text-sm tabular-nums">
-                      {c.points} <span className="text-xs text-neutral-500 font-normal">pts</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Teams Table */}
-        {activeTab === 'teams' && (
-          <div className="border border-neutral-800 overflow-hidden bg-[#0A0A0A]">
-            <table className="w-full text-left font-mono text-xs">
-              <thead>
-                <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[11px] font-sans font-semibold">
-                  <th className="py-3 px-4 w-14 text-center">Pos</th>
-                  <th className="py-3 px-4">Team</th>
-                  <th className="py-3 px-4 text-center">Race Wins</th>
-                  <th className="py-3 px-4 text-right">Total Points</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-800/60 font-mono">
-                {teamStandings.map((t, idx) => (
-                  <tr key={t.name} className="hover:bg-neutral-900/60 transition-colors">
-                    <td className="py-3.5 px-4 text-center font-bold">
-                      {idx === 0 ? <span className="text-[#E10600]">1</span> : idx + 1}
-                    </td>
-                    <td className="py-3.5 px-4 font-semibold text-white text-sm font-sans">
-                      {t.name}
-                    </td>
-                    <td className="py-3.5 px-4 text-center font-semibold text-white tabular-nums">
-                      {t.wins}
-                    </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-white text-sm tabular-nums">
-                      {t.points} <span className="text-xs text-neutral-500 font-normal">pts</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <div className="xl:col-span-5">
+          <StandingsPointsByRace
+            dataset={evolution}
+            label="Driver"
+            className="w-full"
+          />
+        </div>
       </div>
     </div>
   );

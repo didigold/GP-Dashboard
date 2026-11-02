@@ -42,13 +42,58 @@ const config: Config = {
           crimson: '#E10600',
           blue: '#2563EB',
         },
+        racing: {
+          dark: '#0A0A0A',
+          card: '#161616',
+          cardHover: '#1E1E1E',
+          border: '#262626',
+          subtle: '#737373',
+          cyan: '#00F5D4',
+          yellow: '#EAB308',
+          orange: '#F97316',
+          purple: '#A855F7',
+          red: '#E10600',
+          green: '#16A34A',
+        },
+      },
+      boxShadow: {
+        'elev-1':
+          'inset 0 1px 0 0 rgba(255,255,255,0.03), 0 1px 2px rgba(0,0,0,0.6)',
+        'elev-2':
+          'inset 0 1px 0 0 rgba(255,255,255,0.04), 0 8px 24px -8px rgba(0,0,0,0.8)',
+        'elev-3':
+          'inset 0 1px 0 0 rgba(255,255,255,0.05), 0 24px 48px -12px rgba(0,0,0,0.85)',
+        'glow-red':
+          '0 0 0 1px rgba(225,6,0,0.35), 0 0 24px -6px rgba(225,6,0,0.5)',
+        'glow-cyan':
+          '0 0 0 1px rgba(0,245,212,0.4), 0 0 20px -4px rgba(0,245,212,0.45)',
+        'glow-purple':
+          '0 0 0 1px rgba(168,85,247,0.4), 0 0 20px -4px rgba(168,85,247,0.45)',
       },
       borderRadius: {
         none: '0px',
-        xs: '2px',
-        sm: '4px',
-        md: '6px',
+        xs: '4px',
+        sm: '6px',
+        DEFAULT: '8px',
+        md: '10px',
+        lg: '14px',
+        xl: '18px',
+        '2xl': '24px',
+        '3xl': '32px',
         full: '9999px',
+        'apex-xs': '4px',
+        'apex-sm': '6px',
+        'apex-md': '12px',
+        'apex-lg': '16px',
+      },
+      transitionDuration: {
+        fast: '150ms',
+        base: '300ms',
+        slow: '500ms',
+      },
+      transitionTimingFunction: {
+        precision: 'cubic-bezier(0.22, 0.61, 0.36, 1)',
+        smooth: 'cubic-bezier(0.4, 0, 0.2, 1)',
       },
       fontFamily: {
         sans: ['var(--font-sans)', 'Sora', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],

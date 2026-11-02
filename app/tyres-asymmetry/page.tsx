@@ -7,9 +7,21 @@ import { Badge } from '@/components/ui/badge';
 import { Disc, AlertTriangle, ShieldCheck } from 'lucide-react';
 
 export default function TyresAsymmetryPage() {
-  const [selectedCircuit, setSelectedCircuit] = useState<'sachsenring' | 'mugello' | 'valencia'>('mugello');
+  const [selectedCircuit, setSelectedCircuit] = useState<'sepang' | 'sachsenring' | 'mugello' | 'valencia'>('sepang');
 
   const circuitData = {
+    sepang: {
+      name: 'Petronas Sepang (Malaysia)',
+      turns: '5 Left · 10 Right',
+      severity: 'Extreme Thermal & Asymmetric Load',
+      desc: 'High ambient humidity and tropical tarmac temperatures above 50°C combined with 10 heavy right-handers and dual 900m+ straights drive right shoulder carcass temperatures above 148°C.',
+      frontLeftTemp: 110,
+      frontRightTemp: 138,
+      rearLeftTemp: 118,
+      rearRightTemp: 148,
+      pressureFront: 1.86,
+      pressureRear: 1.72,
+    },
     sachsenring: {
       name: 'Sachsenring (Germany)',
       turns: '10 Left · 3 Right',
@@ -51,7 +63,7 @@ export default function TyresAsymmetryPage() {
   const circuitSpecs = circuitData[selectedCircuit];
 
   return (
-    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto select-none">
+    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-neutral-800">
         <div>
@@ -69,8 +81,8 @@ export default function TyresAsymmetryPage() {
 
         {/* Circuit Switcher */}
         <div className="flex items-center gap-1 p-1 bg-[#111111] border border-neutral-800 text-xs">
-          {(['sachsenring', 'mugello', 'valencia'] as const).map((c) => {
-            const labels = { sachsenring: 'Sachsenring', mugello: 'Mugello', valencia: 'Valencia' };
+          {(['sepang', 'sachsenring', 'mugello', 'valencia'] as const).map((c) => {
+            const labels = { sepang: 'Sepang (Live GP)', sachsenring: 'Sachsenring', mugello: 'Mugello', valencia: 'Valencia' };
             return (
               <button
                 key={c}

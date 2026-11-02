@@ -105,18 +105,16 @@ function DesignSystemContent() {
   ];
 
   const RADII_TOKENS = [
-    { name: 'rounded.none', px: '0px', usage: 'Dominant system radius: buttons, cards, photo frames, inputs, spec cells (BMW M Industrial Precision)', radius: 'rounded-none' },
-    { name: 'rounded.xs', px: '2px', usage: 'Micro legal tags, subtle sector chips', radius: 'rounded-[2px]' },
-    { name: 'rounded.sm', px: '4px', usage: 'Small toggle pills on telemetry switches', radius: 'rounded-sm' },
-    { name: 'rounded.full', px: '9999px', usage: 'Strictly circular icon buttons, carousel arrows, rider numbers', radius: 'rounded-full' },
+    { name: 'rounded.2xl', px: '24px', usage: 'Primary cards, modal dialogues, sheets, containers', radius: 'rounded-2xl' },
+    { name: 'rounded.xl', px: '16px / 18px', usage: 'Buttons, spec cells, inputs, tab bars, feature banners', radius: 'rounded-xl' },
+    { name: 'rounded.lg', px: '14px', usage: 'Interactive dropdowns, tooltips, secondary controls', radius: 'rounded-lg' },
+    { name: 'rounded.md', px: '10px', usage: 'Small chips, keyboard shortcuts, miniature cards', radius: 'rounded-md' },
+    { name: 'rounded.full', px: '9999px', usage: 'Badges, pills, circular avatar indicators, track status', radius: 'rounded-full' },
   ];
 
   return (
     <div className="w-full min-h-screen bg-black text-white">
-      {/* MotoGP Red Speed Stripe */}
-      <div className="h-[3px] bg-[#E10600] w-full" />
-
-      {/* Hero Header (BMW M Editorial Style) */}
+      {/* Hero Header (Editorial Style) */}
       <div className="border-b border-neutral-800 bg-[#0A0A0A] px-6 py-10">
         <div className="max-w-[1560px] mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
@@ -196,13 +194,12 @@ function DesignSystemContent() {
 
                     <div className="p-4 bg-[#0A0A0A] border border-neutral-800">
                       <div className="text-white font-black font-sans text-sm uppercase mb-1 flex items-center gap-2">
-                        <span className="w-2 h-2 bg-[#E10600]" />
-                        <span>2. Rectangular Precision (0px Border Radius Dominance)</span>
+                        <span className="w-2 h-2 bg-[#E10600] rounded-full" />
+                        <span>2. Refined Corner Radii (Corner Rounded Precision)</span>
                       </div>
                       <p className="text-neutral-400">
-                        Buttons, cards, spec tables, inputs, and photo frames use <code className="text-white">rounded-none (0px)</code>.
-                        The sharp rectangular silhouette communicates European motorsport engineering; bubbly rounded pills read as consumer tech.
-                        Circular radii are strictly reserved for circular icon controls and rider number badges.
+                        Cards, dialogs, buttons, and metrics use deliberate rounded contours (<code className="text-white">rounded-2xl (24px)</code> for cards, <code className="text-white">rounded-xl (14-16px)</code> for controls, and <code className="text-white">rounded-full</code> for chips).
+                        This modern aerodynamic silhouette mirrors contemporary race chassis curves and aerodynamic fairings.
                       </p>
                     </div>
 
@@ -249,7 +246,7 @@ function DesignSystemContent() {
                     </div>
                     <div className="flex justify-between items-center py-1.5 border-b border-neutral-800">
                       <span className="text-neutral-400">Default Radius</span>
-                      <span className="text-white font-bold">0px (rounded-none)</span>
+                      <span className="text-white font-bold">14px – 24px (Rounded)</span>
                     </div>
                     <div className="flex justify-between items-center py-1.5 border-b border-neutral-800">
                       <span className="text-neutral-400">Hairlines</span>
@@ -303,7 +300,7 @@ function DesignSystemContent() {
                             {copiedToken === token.name ? (
                               <Check className="w-3.5 h-3.5 text-emerald-400" />
                             ) : (
-                              <Copy className="w-3.5 h-3.5 text-neutral-500 opacity-0 group-hover:opacity-100" />
+                              <Copy className="w-3.5 h-3.5 text-neutral-400 opacity-0 group-hover:opacity-100" />
                             )}
                           </div>
                           <div className="font-mono text-xs text-neutral-400">{token.hex}</div>

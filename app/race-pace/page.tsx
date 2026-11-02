@@ -10,7 +10,7 @@ export default function RacePacePage() {
   const [sessionType, setSessionType] = useState<'sprint' | 'gp'>('gp');
 
   return (
-    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto select-none">
+    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-neutral-800">
         <div>
@@ -124,7 +124,7 @@ export default function RacePacePage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card id="consistency" className="scroll-mt-20">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 font-sans font-bold text-sm">

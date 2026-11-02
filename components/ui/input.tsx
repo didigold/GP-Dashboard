@@ -32,7 +32,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           onChange={onChange}
           className={twMerge(
             clsx(
-              'w-full h-9 rounded-apex-sm bg-surface-subtle border border-surface-border px-3 text-xs font-mono text-text-primary placeholder:text-text-muted focus:outline-none focus:border-apex-cyan focus:ring-1 focus:ring-apex-cyan/50 transition-all disabled:opacity-50',
+              'w-full h-9 rounded-xl bg-surface-subtle border border-surface-border px-3 text-xs font-mono text-text-primary placeholder:text-text-muted focus:outline-none focus:border-[#E10600] focus:ring-1 focus:ring-[#E10600]/40 transition-all disabled:opacity-50',
               (isSearch || icon) && 'pl-9',
               (shortcut || onClear) && 'pr-12',
               className
@@ -45,13 +45,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             <button
               type="button"
               onClick={onClear}
-              className="p-1 text-text-muted hover:text-white rounded hover:bg-surface-card"
+              className="p-1 text-text-muted hover:text-white rounded-lg hover:bg-surface-card"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           )}
           {shortcut && (
-            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-text-muted bg-surface-base border border-surface-border rounded-apex-xs shadow-inner">
+            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-text-muted bg-surface-base border border-surface-border rounded-md shadow-inner">
               {shortcut}
             </kbd>
           )}

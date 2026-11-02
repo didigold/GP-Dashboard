@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { staggerContainer, staggerItem } from '@/lib/motion';
 import {
   Sheet,
   SheetContent,
@@ -30,18 +32,17 @@ interface PitwallDrawerProps {
 
 export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const reduceMotion = useReducedMotion();
 
-  // Open right-side drawer automatically on initial dashboard mount
+  // Open the drawer only when explicitly requested via ?drawer=true
   useEffect(() => {
-    if (defaultOpen) {
-      if (typeof window !== 'undefined' && window.location.search.includes('drawer=false')) {
-        return;
-      }
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
+    if (!defaultOpen) return;
+    if (typeof window === 'undefined') return;
+    if (!window.location.search.includes('drawer=true')) return;
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+    }, 500);
+    return () => clearTimeout(timer);
   }, [defaultOpen]);
 
   return (
@@ -52,7 +53,8 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
           variant="motogp"
           size="sm"
           onClick={() => setIsOpen(true)}
-          className="shadow-2xl flex items-center gap-2 border-none"
+          aria-label="Open pitwall telemetry drawer"
+          className="shadow-2xl flex items-center gap-2 rounded-full px-4 border border-white/10"
         >
           <Activity className="w-3.5 h-3.5 animate-pulse" />
           <span>Pitwall HUD</span>
@@ -61,10 +63,12 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
 
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent side="right" className="overflow-y-auto no-scrollbar flex flex-col justify-between">
-          <div>
-            {/* MotoGP Speed Stripe */}
-            <div className="h-[3px] bg-[#E10600] w-full mb-4 -mx-6 -mt-6" />
-
+          <motion.div
+            variants={staggerContainer}
+            initial={reduceMotion ? false : 'hidden'}
+            animate="show"
+          >
+            <motion.div variants={staggerItem}>
             <SheetHeader className="pb-4 border-b border-neutral-800">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -84,9 +88,10 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
                 Real-time meteorological metrics, sensor feeds, and active rider telemetry.
               </SheetDescription>
             </SheetHeader>
+            </motion.div>
 
             {/* Quick Meteorological Grid (Spec Cells) */}
-            <div className="grid grid-cols-2 gap-2 my-5">
+            <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2 my-5">
               <div className="spec-cell">
                 <div className="flex items-center justify-between text-neutral-400 text-[10px] font-mono mb-1">
                   <span>Track Temp</span>
@@ -122,13 +127,13 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
                 <div className="text-xl font-bold text-white font-mono tabular-nums">363.6</div>
                 <div className="text-[10px] text-neutral-400 font-light mt-0.5">#89 J. Martin</div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Live Rider Watchlist */}
-            <div className="mb-5">
+            <motion.div variants={staggerItem} className="mb-5">
               <div className="text-xs font-semibold text-neutral-300 mb-2 flex items-center justify-between">
                 <span>Active Track Pace</span>
-                <span className="text-[10px] font-mono text-neutral-500 font-normal">Top 3 in Q2</span>
+                <span className="text-[10px] font-mono text-neutral-400 font-normal">Top 3 in Q2</span>
               </div>
 
               <div className="space-y-1.5 font-mono text-xs">
@@ -137,7 +142,7 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
                     <span className="font-bold text-[#E10600] w-6">#1</span>
                     <div>
                       <div className="text-white font-semibold">P. Bagnaia</div>
-                      <div className="text-[10px] text-neutral-500">Ducati Lenovo Team</div>
+                      <div className="text-[10px] text-neutral-400">Ducati Lenovo Team</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -151,7 +156,7 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
                     <span className="font-bold text-neutral-400 w-6">#93</span>
                     <div>
                       <div className="text-white font-semibold">M. Marquez</div>
-                      <div className="text-[10px] text-neutral-500">Ducati Lenovo Team</div>
+                      <div className="text-[10px] text-neutral-400">Ducati Lenovo Team</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -165,7 +170,7 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
                     <span className="font-bold text-neutral-400 w-6">#89</span>
                     <div>
                       <div className="text-white font-semibold">J. Martin</div>
-                      <div className="text-[10px] text-neutral-500">Prima Pramac Racing</div>
+                      <div className="text-[10px] text-neutral-400">Prima Pramac Racing</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -174,10 +179,10 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Accordion Components inside Drawer */}
-            <div className="mb-6">
+            <motion.div variants={staggerItem} className="mb-6">
               <div className="text-xs font-semibold text-neutral-300 mb-2">
                 Engineering Diagnostics
               </div>
@@ -221,8 +226,8 @@ export function PitwallDrawer({ defaultOpen = true }: PitwallDrawerProps) {
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Drawer Footer Actions */}
           <div className="pt-4 border-t border-neutral-800 space-y-2">

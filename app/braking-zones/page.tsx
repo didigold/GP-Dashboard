@@ -8,6 +8,28 @@ import { Zap, Disc } from 'lucide-react';
 
 const BRAKING_ZONES_DATABASE = [
   {
+    circuit: 'Sepang (Malaysia)',
+    corner: 'Turn 1 Main Straight Hairpin',
+    initialSpeed: 362.8,
+    apexSpeed: 72.0,
+    brakingDistanceM: 295,
+    gForce: 1.83,
+    discTemp: 920,
+    discSpec: '355mm Heavy Carbon + Caliper Ducts',
+    notes: 'High-speed 362+ km/h entry into tight 72 km/h 2nd-gear apex. Peak deceleration load of 1.83G sustained for 5.2 seconds.',
+  },
+  {
+    circuit: 'Sepang (Malaysia)',
+    corner: 'Turn 15 Final Hairpin',
+    initialSpeed: 358.5,
+    apexSpeed: 76.0,
+    brakingDistanceM: 282,
+    gForce: 1.78,
+    discTemp: 890,
+    discSpec: '355mm Heavy Carbon Discs',
+    notes: 'Crucial overtaking braking zone coming off the 920m back straight into the off-camber final curve.',
+  },
+  {
     circuit: 'Mugello (Italy)',
     corner: 'Turn 1 San Donato',
     initialSpeed: 361.4,
@@ -55,7 +77,7 @@ const BRAKING_ZONES_DATABASE = [
 
 export default function BrakingZonesPage() {
   return (
-    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto select-none">
+    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-neutral-800 pb-6">
         <div>

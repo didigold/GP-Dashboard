@@ -30,7 +30,7 @@ function getTeamColor(teamName: string): string {
   return '#E10600';
 }
 
-export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {

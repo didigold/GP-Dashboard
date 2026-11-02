@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 
 export default function HeadToHeadPage() {
   return (
-    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto select-none">
+    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-neutral-800">
         <div>
           <div className="flex items-center gap-2 mb-2">

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { LeanMeter } from '@/components/ui/LeanMeter';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,18 +37,19 @@ const MUGELLO_CORNERS: CornerData[] = [
 
 export default function LeanTelemetryPage() {
   const [selectedCornerIdx, setSelectedCornerIdx] = useState(8); // Default Arrabbiata 2
-  const [selectedRider, setSelectedRider] = useState<'martin' | 'bagnaia' | 'marquez'>('martin');
+  const [selectedRider, setSelectedRider] = useState<'marquez' | 'martin' | 'acosta' | 'bagnaia'>('marquez');
 
   const corner = MUGELLO_CORNERS[selectedCornerIdx];
 
   const riderStats = {
-    martin: { name: 'Jorge Martin', number: 89, maxLean: 67.8, style: 'Corner Speed / High Lean', color: '#9333EA', timeInLeanSec: 2.45 },
-    bagnaia: { name: 'Francesco Bagnaia', number: 1, maxLean: 65.4, style: 'Point-and-Shoot V-Shape', color: '#CC0000', timeInLeanSec: 1.95 },
-    marquez: { name: 'Marc Marquez', number: 93, maxLean: 68.2, style: 'Aggressive Front-End Push', color: '#38BDF8', timeInLeanSec: 2.30 },
+    marquez: { name: 'Marc Marquez', number: 93, team: 'Ducati Lenovo Team', teamSlug: 'ducati-lenovo-team', maxLean: 68.2, style: 'Aggressive Front-End Push', color: '#CC0000', timeInLeanSec: 2.30 },
+    martin: { name: 'Jorge Martin', number: 89, team: 'Aprilia Racing', teamSlug: 'aprilia-racing', maxLean: 67.8, style: 'Corner Speed / High Lean', color: '#800020', timeInLeanSec: 2.45 },
+    acosta: { name: 'Pedro Acosta', number: 37, team: 'Red Bull KTM Factory Racing', teamSlug: 'red-bull-ktm-factory-racing', maxLean: 67.9, style: 'Late Braking / Trail Edge', color: '#FF6600', timeInLeanSec: 2.38 },
+    bagnaia: { name: 'Francesco Bagnaia', number: 63, team: 'Ducati Lenovo Team', teamSlug: 'ducati-lenovo-team', maxLean: 66.5, style: 'Point-and-Shoot V-Shape', color: '#CC0000', timeInLeanSec: 1.95 },
   }[selectedRider];
 
   return (
-    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto select-none">
+    <div className="w-full min-h-screen bg-black text-white p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto">
       {/* View Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-neutral-800">
         <div>
@@ -65,15 +67,20 @@ export default function LeanTelemetryPage() {
 
         {/* Rider Switcher */}
         <div className="flex items-center gap-1 p-1 bg-[#111111] border border-neutral-800 text-xs">
-          {(['martin', 'bagnaia', 'marquez'] as const).map((r) => {
-            const labels = { martin: 'Martin #89', bagnaia: 'Bagnaia #1', marquez: 'Marquez #93' };
+          {(['marquez', 'martin', 'acosta', 'bagnaia'] as const).map((r) => {
+            const labels = {
+              marquez: 'Marquez #93',
+              martin: 'Martin #89',
+              acosta: 'Acosta #37',
+              bagnaia: 'Bagnaia #63',
+            };
             return (
               <button
                 key={r}
                 onClick={() => setSelectedRider(r)}
                 className={`px-3 py-1.5 font-semibold transition-colors ${
                   selectedRider === r
-                    ? 'bg-white text-black'
+                    ? 'bg-[#E10600] text-white'
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
@@ -146,6 +153,16 @@ export default function LeanTelemetryPage() {
                     </div>
                     <div className="text-[10px] text-neutral-400 font-light mt-0.5">{riderStats.style}</div>
                   </div>
+
+                  <div className="col-span-2 p-3 bg-[#0A0A0A] border border-neutral-800 flex items-center justify-between">
+                    <span className="text-neutral-400 text-xs">Official Entrant:</span>
+                    <Link
+                      href={`/teams/${riderStats.teamSlug}`}
+                      className="text-white hover:text-[#E10600] hover:underline font-bold text-xs"
+                    >
+                      {riderStats.team} →
+                    </Link>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -176,7 +193,7 @@ export default function LeanTelemetryPage() {
                     <span className="font-sans font-medium text-white">{c.name}</span>
                   </div>
                   <div className="flex items-center gap-2 text-[11px]">
-                    <span className="text-neutral-500">{c.type}</span>
+                    <span className="text-neutral-400">{c.type}</span>
                     <span className="font-bold text-white">{c.angle}°</span>
                   </div>
                 </button>

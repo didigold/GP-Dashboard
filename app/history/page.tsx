@@ -33,10 +33,10 @@ export default function HistoryPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="rounded-none border-[#262626] bg-black text-[#A0A0A0] font-mono text-[11px]">
+          <Badge variant="outline" className="border-[#262626] bg-black text-[#A0A0A0] font-mono text-[11px]">
             Archive
           </Badge>
-          <Badge className="rounded-none bg-[#E10600] text-white hover:bg-[#E10600] font-mono text-[11px]">
+          <Badge className="bg-[#E10600] text-white hover:bg-[#E10600] font-mono text-[11px]">
             FIM Hall of Fame
           </Badge>
         </div>
@@ -58,7 +58,7 @@ export default function HistoryPage() {
 
         {/* Technical Eras Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
+          <Card className="border-[#262626] bg-[#0A0A0A]">
             <CardContent className="p-4">
               <div className="text-[10px] font-mono text-[#888888]">1949 – 2001</div>
               <div className="text-sm font-bold text-white mt-1">500cc Two-Stroke Era</div>
@@ -68,7 +68,7 @@ export default function HistoryPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
+          <Card className="border-[#262626] bg-[#0A0A0A]">
             <CardContent className="p-4">
               <div className="text-[10px] font-mono text-[#888888]">2002 – 2006</div>
               <div className="text-sm font-bold text-white mt-1">990cc Four-Stroke Dawn</div>
@@ -78,7 +78,7 @@ export default function HistoryPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
+          <Card className="border-[#262626] bg-[#0A0A0A]">
             <CardContent className="p-4">
               <div className="text-[10px] font-mono text-[#888888]">2007 – 2011</div>
               <div className="text-sm font-bold text-white mt-1">800cc Corner Speed Era</div>
@@ -88,7 +88,7 @@ export default function HistoryPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
+          <Card className="border-[#262626] bg-[#0A0A0A]">
             <CardContent className="p-4">
               <div className="text-[10px] font-mono text-[#0066FF]">2012 – Present</div>
               <div className="text-sm font-bold text-[#0066FF] mt-1">1000cc Aero &amp; Ride-Height</div>
@@ -100,7 +100,7 @@ export default function HistoryPage() {
         </div>
 
         {/* Legends Table */}
-        <Card className="rounded-none border-[#262626] bg-[#0A0A0A] overflow-hidden">
+        <Card className="border-[#262626] bg-[#0A0A0A] overflow-hidden">
           <div className="border-b border-[#262626] px-5 py-3.5 flex items-center justify-between bg-black">
             <span className="text-xs font-semibold text-white">
               All-Time World Champions

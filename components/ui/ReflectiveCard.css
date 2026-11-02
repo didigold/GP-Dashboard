@@ -1,0 +1,388 @@
+.reflective-card {
+  position: relative;
+  box-sizing: border-box;
+  width: var(--rc-width);
+  height: var(--rc-height);
+  max-width: 100%;
+  perspective: 900px;
+  color: var(--rc-ink);
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+}
+
+.reflective-card--clickable {
+  cursor: pointer;
+}
+
+.reflective-card__body {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--rc-radius);
+  background: var(--rc-base);
+  box-shadow: var(--rc-shadow);
+  transform: translate3d(0, var(--rc-lift, 0px), 0) rotateX(var(--rc-rotate-x, 0deg)) rotateY(var(--rc-rotate-y, 0deg));
+  opacity: 1 !important; /* Always 1 - never invisible */
+  isolation: isolate;
+  will-change: transform;
+}
+
+.reflective-card__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  opacity: 0.85;
+  mix-blend-mode: screen;
+}
+
+/* Big Racing Number / Watermark in Background - Zooms on Card Hover */
+.reflective-card__bg-number {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 160px;
+  font-weight: 900;
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+  color: var(--rc-bg-num-color, var(--rc-team-color, #ffffff));
+  opacity: var(--rc-bg-num-opacity, 0.2);
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  text-shadow: 0 0 50px var(--rc-team-glow, rgba(255, 255, 255, 0.25)), 0 0 12px rgba(255, 255, 255, 0.15);
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.12);
+  filter: contrast(1.25);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.45s ease;
+  will-change: transform, opacity;
+}
+
+.reflective-card:hover .reflective-card__bg-number {
+  transform: translateX(-50%) scale(1.22);
+  opacity: calc(var(--rc-bg-num-opacity, 0.2) * 1.8);
+}
+
+/* Driver Hero Cutout Image anchored from bottom to hips */
+.reflective-card__driver-bottom-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: var(--rc-radius);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.reflective-card__driver-bottom-img {
+  position: absolute;
+  bottom: -2%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  height: 84%;
+  max-width: 145%;
+  object-fit: cover;
+  object-position: top center;
+  filter: drop-shadow(0 -8px 24px rgba(0, 0, 0, 0.8)) contrast(1.08);
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reflective-card:hover .reflective-card__driver-bottom-img {
+  transform: translateX(-50%) scale(1.04);
+}
+
+/* Official Prototype Bike Image for Teams */
+.reflective-card__bike-bottom-img {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 94%;
+  height: auto;
+  max-height: 58%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.85)) contrast(1.1);
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reflective-card:hover .reflective-card__bike-bottom-img {
+  transform: translateX(-50%) scale(1.07);
+}
+
+.reflective-card__driver-vignette {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.04) 40%,
+    rgba(0, 0, 0, 0.65) 75%,
+    rgba(0, 0, 0, 0.94) 100%
+  );
+  pointer-events: none;
+}
+
+.reflective-card__content {
+  position: relative;
+  z-index: 3;
+  box-sizing: border-box;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--rc-pad);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.reflective-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 20px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.reflective-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--rc-ink);
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.reflective-card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.reflective-card__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--rc-status);
+}
+
+.reflective-card__identity {
+  margin-top: auto;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.reflective-card__name {
+  margin: 0;
+  color: var(--rc-ink);
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  text-wrap: balance;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 2px 10px rgba(0, 0, 0, 0.85);
+}
+
+.reflective-card__role {
+  margin: 4px 0 0;
+  color: var(--rc-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+/* Hover Drivers Strip for Team Cards */
+.reflective-card__hover-drivers {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.35s ease;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.reflective-card:hover .reflective-card__hover-drivers {
+  opacity: 1;
+  max-height: 90px;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.reflective-card__hover-drivers-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rc-muted, rgba(255, 255, 255, 0.6));
+}
+
+.reflective-card__hover-drivers-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.reflective-card__hover-driver-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3.5px 9px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.reflective-card__hover-driver-pill:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px) scale(1.04);
+}
+
+.reflective-card__hover-driver-flag {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.reflective-card__footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.reflective-card__id {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.reflective-card__label {
+  color: var(--rc-muted);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 14px;
+  font-weight: 600;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+.reflective-card__value {
+  overflow: hidden;
+  color: var(--rc-ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+.reflective-card__tile {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rc-tile-radius);
+  background: var(--rc-tile);
+  box-shadow: var(--rc-tile-shadow);
+  color: var(--rc-muted);
+}
+
+.reflective-card__tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px var(--rc-tile-edge),
+    inset 0 1px 0 var(--rc-tile-highlight);
+  pointer-events: none;
+}
+
+.reflective-card__tile--interactive {
+  cursor: pointer;
+  text-decoration: none;
+  pointer-events: auto;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reflective-card__tile--interactive:hover {
+  transform: scale(1.12);
+  color: #ffffff;
+  background: linear-gradient(180deg, #e10600 0%, #8b0000 100%);
+  box-shadow: 0 4px 16px -2px rgba(225, 6, 0, 0.55);
+}
+
+.reflective-card__tile--interactive:active {
+  transform: scale(0.95);
+}
+
+.reflective-card__rim {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px var(--rc-rim),
+    inset 0 1px 0 var(--rc-rim-highlight);
+  pointer-events: none;
+}
+
+.reflective-card__media {
+  display: none !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}

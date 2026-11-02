@@ -12,6 +12,9 @@ out/
 build/
 dist/
 
+# TypeScript build info & caches
+*.tsbuildinfo
+
 # Environment Variables & Secrets (CRITICAL FOR SECURITY)
 .env
 .env*.local
@@ -37,6 +40,7 @@ yarn-error.log*
 
 # Operating System & IDE
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
@@ -53,3 +57,7 @@ __pycache__/
 .venv/
 env/
 venv/
+
+# Local Scratch, Agent & Temporary Directories
+scratch/
+.opencode/

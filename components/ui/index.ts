@@ -16,3 +16,5 @@ export * from './sector-pill';
 export * from './LeanMeter';
 export * from './TyreAsymmetryPill';
 export * from './BrakingGForceBar';
+export * from './ReflectiveCard';
+export * from './CountryFlag';

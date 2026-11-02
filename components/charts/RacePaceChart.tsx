@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { Gauge } from 'lucide-react';
 import { MOCK_RACE_PACE_DATA } from '../../lib/data/mock-race-data';
 import { RiderRacePace } from '../../lib/types/motogp';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export function RacePaceChart() {
   const [selectedRiders, setSelectedRiders] = useState<string[]>([
@@ -22,7 +24,7 @@ export function RacePaceChart() {
   );
 
   return (
-    <div className="glass-card p-6 rounded-2xl border border-racing-border space-y-6">
+    <div className="glass-panel p-6 rounded-2xl border border-racing-border shadow-elev-2 space-y-6">
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -42,10 +44,10 @@ export function RacePaceChart() {
               <button
                 key={rider.rider_name}
                 onClick={() => toggleRider(rider.rider_name)}
-                className={`flex items-center gap-2 px-3 py-1 rounded-xl text-xs font-mono transition-all border ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono transition-all border ${
                   isSelected
                     ? 'border-transparent text-white font-bold shadow-sm'
-                    : 'bg-racing-dark text-slate-400 border-racing-border opacity-50'
+                    : 'bg-racing-dark text-slate-400 border-racing-border opacity-50 hover:opacity-80'
                 }`}
                 style={{
                   backgroundColor: isSelected ? `${rider.color}25` : undefined,
@@ -64,6 +66,13 @@ export function RacePaceChart() {
       </div>
 
       {/* Synthetic Boxplot / Pace Matrix Breakdown */}
+      {activeData.length === 0 ? (
+        <EmptyState
+          icon={<Gauge className="h-6 w-6" />}
+          title="No riders selected"
+          description="Select at least one rider above to compare race pace and tyre degradation."
+        />
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {activeData.map((r) => (
           <div
@@ -79,11 +88,11 @@ export function RacePaceChart() {
             </div>
 
             <div className="my-4 grid grid-cols-2 gap-3 text-xs font-mono">
-              <div className="bg-racing-card p-2 rounded-lg border border-racing-border">
+              <div className="bg-racing-card p-2.5 rounded-lg border border-racing-border">
                 <div className="text-[10px] text-slate-400">MEDIAN PACE</div>
-                <div className="text-sm font-bold text-racing-cyan">1'45.78s</div>
+                <div className="text-sm font-bold text-racing-cyan">1&apos;45.78s</div>
               </div>
-              <div className="bg-racing-card p-2 rounded-lg border border-racing-border">
+              <div className="bg-racing-card p-2.5 rounded-lg border border-racing-border">
                 <div className="text-[10px] text-slate-400">BEST LAP</div>
                 <div className="text-sm font-bold text-racing-purple">{r.best_lap}</div>
               </div>
@@ -97,6 +106,7 @@ export function RacePaceChart() {
           </div>
         ))}
       </div>
+      )}
 
       {/* SVG Pace Degradation Line Chart */}
       <div className="p-4 rounded-xl bg-racing-dark/60 border border-racing-border overflow-hidden">

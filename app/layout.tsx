@@ -1,8 +1,12 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+import { Toaster } from 'sonner';
 import './globals.css';
 import { TopTacticalHUD } from '../components/navigation/TopTacticalHUD';
+import { Footer } from '../components/navigation/Footer';
 import { PitwallDrawer } from '../components/navigation/PitwallDrawer';
+import { CommandPalette } from '../components/ux/CommandPalette';
+import { FirstVisitTip } from '../components/ux/FirstVisitTip';
 
 const sora = localFont({
   src: [
@@ -36,11 +40,30 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${sora.variable}`}>
       <body className="bg-black text-white min-h-screen antialiased selection:bg-[#E10600] selection:text-white font-sans flex flex-col font-normal">
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <TopTacticalHUD />
-        <div className="flex-1 w-full">
+        <main id="main-content" className="flex-1 w-full">
           {children}
-        </div>
-        <PitwallDrawer defaultOpen={true} />
+        </main>
+        <Footer />
+        <PitwallDrawer defaultOpen={false} />
+        <CommandPalette />
+        <FirstVisitTip />
+        <Toaster
+          theme="dark"
+          position="bottom-right"
+          closeButton
+          toastOptions={{
+            style: {
+              borderRadius: '14px',
+              background: '#111111',
+              border: '1px solid #262626',
+              color: '#ffffff',
+            },
+          }}
+        />
       </body>
     </html>
   );

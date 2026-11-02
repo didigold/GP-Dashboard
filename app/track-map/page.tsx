@@ -29,10 +29,10 @@ export default function TrackMapPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="rounded-none border-[#262626] bg-black text-[#A0A0A0] font-mono text-[11px]">
+          <Badge variant="outline" className="border-[#262626] bg-black text-[#A0A0A0] font-mono text-[11px]">
             WebGL Renderer
           </Badge>
-          <Badge className="rounded-none bg-[#E10600] text-white hover:bg-[#E10600] font-mono text-[11px]">
+          <Badge className="bg-[#E10600] text-white hover:bg-[#E10600] font-mono text-[11px]">
             3D Track Map
           </Badge>
         </div>
@@ -40,7 +40,7 @@ export default function TrackMapPage() {
 
       <main className="flex-1 p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
         {/* Circuit Selection & Stats Header */}
-        <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
+        <Card className="border-[#262626] bg-[#0A0A0A]">
           <CardContent className="p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-[#0066FF] text-xs font-mono font-bold">
@@ -62,7 +62,7 @@ export default function TrackMapPage() {
               <select
                 value={selectedCircuitIndex}
                 onChange={(e) => setSelectedCircuitIndex(parseInt(e.target.value, 10))}
-                className="bg-black text-white text-xs font-mono px-3.5 py-2 rounded-none border border-[#262626] outline-none cursor-pointer hover:border-[#E10600] transition-colors"
+                className="bg-black text-white text-xs font-mono px-3.5 py-2 rounded-xl border border-[#262626] outline-none cursor-pointer hover:border-[#E10600] transition-colors"
               >
                 {CIRCUITS_DATA.map((c, i) => (
                   <option key={c.name} value={i} className="bg-black text-white">
@@ -74,60 +74,60 @@ export default function TrackMapPage() {
           </CardContent>
         </Card>
 
-        {/* Technical Circuit Specs Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
-            <CardContent className="p-4">
-              <div className="text-[10px] font-mono text-[#888888]">Track Length</div>
-              <div className="text-xl font-bold text-white font-mono mt-1">
-                {circuit.length_meters ? `${(circuit.length_meters / 1000).toFixed(3)} km` : '5.245 km'}
-              </div>
-              <div className="text-[10px] text-[#666666] font-mono mt-0.5">FIM Grade A Approved</div>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
-            <CardContent className="p-4">
-              <div className="text-[10px] font-mono text-[#888888]">Corners</div>
-              <div className="text-xl font-bold text-[#0066FF] font-mono mt-1">
-                {circuit.corners?.total || 15} Turns
-              </div>
-              <div className="text-[10px] text-[#666666] font-mono mt-0.5">
-                {circuit.corners?.left || 6} Left • {circuit.corners?.right || 9} Right
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
-            <CardContent className="p-4">
-              <div className="text-[10px] font-mono text-[#888888]">Longest Straight</div>
-              <div className="text-xl font-bold text-[#E5A93C] font-mono mt-1">
-                {circuit.longest_straight_meters ? `${circuit.longest_straight_meters} m` : '1,141 m'}
-              </div>
-              <div className="text-[10px] text-[#666666] font-mono mt-0.5">Main Start/Finish Straight</div>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-none border-[#262626] bg-[#0A0A0A]">
-            <CardContent className="p-4">
-              <div className="text-[10px] font-mono text-[#888888]">Top Speed Trap</div>
-              <div className="text-xl font-bold text-[#E10600] font-mono mt-1">
-                {circuit.top_speed_record?.speed_kmh || 366.1} km/h
-              </div>
-              <div className="text-[10px] text-[#666666] font-mono mt-0.5">
-                {circuit.top_speed_record?.rider || 'Brad Binder'} (KTM RC16)
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* 3D Canvas Visualizer */}
-        <div className="border border-[#262626] bg-[#0A0A0A]">
+        {/* 3D Canvas Visualizer (Hero Centerpiece) */}
+        <div className="border border-[#262626] bg-[#0A0A0A] h-[600px] relative overflow-hidden">
           <CircuitCanvas
             circuitName={circuit.name}
             selectedRiderNumber={selectedRider}
             onSelectRider={setSelectedRider}
           />
+        </div>
+
+        {/* Technical Circuit Specs Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="border-[#262626] bg-[#0A0A0A]">
+            <CardContent className="p-4">
+              <div className="text-[10px] font-mono text-[#888888]">Track Length</div>
+              <div className="text-xl font-bold text-white font-mono mt-1">
+                {circuit.length_meters ? `${(circuit.length_meters / 1000).toFixed(3)} km` : '5.245 km'}
+              </div>
+              <div className="text-[10px] text-[#888888] font-mono mt-0.5">FIM Grade A Approved</div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-[#262626] bg-[#0A0A0A]">
+            <CardContent className="p-4">
+              <div className="text-[10px] font-mono text-[#888888]">Corners</div>
+              <div className="text-xl font-bold text-[#0066FF] font-mono mt-1">
+                {circuit.corners?.total || 15} Turns
+              </div>
+              <div className="text-[10px] text-[#888888] font-mono mt-0.5">
+                {circuit.corners?.left || 6} Left • {circuit.corners?.right || 9} Right
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-[#262626] bg-[#0A0A0A]">
+            <CardContent className="p-4">
+              <div className="text-[10px] font-mono text-[#888888]">Longest Straight</div>
+              <div className="text-xl font-bold text-[#E5A93C] font-mono mt-1">
+                {circuit.longest_straight_meters ? `${circuit.longest_straight_meters} m` : '1,141 m'}
+              </div>
+              <div className="text-[10px] text-[#888888] font-mono mt-0.5">Main Start/Finish Straight</div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-[#262626] bg-[#0A0A0A]">
+            <CardContent className="p-4">
+              <div className="text-[10px] font-mono text-[#888888]">Top Speed Trap</div>
+              <div className="text-xl font-bold text-[#E10600] font-mono mt-1">
+                {circuit.top_speed_record?.speed_kmh || 366.1} km/h
+              </div>
+              <div className="text-[10px] text-[#888888] font-mono mt-0.5">
+                {circuit.top_speed_record?.rider || 'Brad Binder'} (KTM RC16)
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>

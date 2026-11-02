@@ -2,593 +2,281 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CHAMPIONSHIP_ROUNDS_2026 } from '@/lib/data/circuits-data';
+import { MOTOGP_NEWS } from '@/lib/data/news-data';
+import { UnifiedHeroScheduleCard } from '@/components/dashboard/UnifiedHeroScheduleCard';
+import { CircuitHistoryCarousel } from '@/components/dashboard/CircuitHistoryCarousel';
+import { DriverStandingsTop5 } from '@/components/dashboard/DriverStandingsTop5';
+import { ConstructorStandingsTop5 } from '@/components/dashboard/ConstructorStandingsTop5';
+import { CircuitDetailModal } from '@/components/circuit/CircuitDetailModal';
+import MagicBento from '@/components/ui/MagicBento';
 import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from '@/components/ui/accordion';
-import { CircuitCanvas } from '@/components/3d/CircuitCanvas';
-import { MOCK_STANDINGS } from '@/lib/data/mock-race-data';
-import {
-  Radio,
-  Compass,
-  Disc,
-  Zap,
-  BarChart3,
+  Clock,
   ArrowRight,
-  Layers,
   ChevronRight,
+  Newspaper,
 } from 'lucide-react';
 
 export default function HomePage() {
-  const [selectedRider, setSelectedRider] = useState('1');
+  const [circuitModalOpen, setCircuitModalOpen] = useState(false);
 
-  return (
-    <div className="w-full min-h-screen bg-black text-white select-none">
-      {/* SECTION 1: HERO PHOTO & TELEMETRY BAND (BMW M-inspired layout) */}
-      <section className="relative w-full border-b border-neutral-800 bg-[#0A0A0A]">
-        {/* MotoGP Red Speed Stripe */}
-        <div className="h-[3px] bg-[#E10600] w-full" />
+  // Petronas Sepang Circuit Data (Round 19)
+  const sepangCircuit = CHAMPIONSHIP_ROUNDS_2026.find((c) => c.round_number === 19) || CHAMPIONSHIP_ROUNDS_2026[2];
 
-        <div className="max-w-[1560px] mx-auto px-6 py-12 lg:py-16">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-            <div className="max-w-3xl space-y-4">
-              <div className="flex items-center gap-3">
-                <Badge variant="motogp">Round 19 · Live Pitwall</Badge>
-                <Badge variant="outline">Petronas Sepang International Circuit</Badge>
-              </div>
+  const featuredNews = MOTOGP_NEWS[0];
+  const sideNews = MOTOGP_NEWS.slice(1, 5);
 
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-sans font-bold tracking-tight text-white leading-tight">
-                MotoGP™ Pitwall &amp; <br />
-                <span className="text-[#E10600]">Telemetry Platform</span>
-              </h1>
-
-              <p className="text-sm sm:text-base text-neutral-400 font-light leading-relaxed max-w-2xl">
-                Engineered for motorsport enthusiasts and data engineers. Track gyroscopic 68° lean angles,
-                Michelin asymmetric shoulder heat deltas, Brembo 1.80G carbon braking zones, and Saturday Sprint vs Sunday Grand Prix degradation in real-time.
-              </p>
-            </div>
-
-            {/* Quick Hero Actions */}
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
-              <Link href="/live-timing">
-                <Button variant="motogp" size="lg" className="flex items-center gap-2">
-                  <Radio className="w-4 h-4 animate-pulse" />
-                  <span>Open Live Pitwall</span>
-                </Button>
-              </Link>
-              <Link href="/lean-telemetry">
-                <Button variant="outline" size="lg" className="flex items-center gap-2">
-                  <Compass className="w-4 h-4 text-[#E10600]" />
-                  <span>Lean Dynamics</span>
-                </Button>
-              </Link>
+  // Magic Bento Items for Overview Paddock Intelligence News (Proportioned to match top cards)
+  const newsBentoItems = [
+    {
+      id: `featured-${featuredNews.id}`,
+      colSpan: 2,
+      rowSpan: 2,
+      content: (
+        <div className="w-full h-full flex flex-col justify-between gap-5 p-2 sm:p-3 group">
+          <div className="h-60 sm:h-72 w-full relative overflow-hidden rounded-xl bg-neutral-900 shrink-0">
+            <img
+              src={featuredNews.imageUrl}
+              alt={featuredNews.title}
+              className="w-full h-full object-cover filter brightness-90 contrast-110 group-hover:scale-105 transition-transform duration-500 ease-out"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+            <div className="absolute top-3 left-3 flex items-center gap-2">
+              <span
+                className="text-xs font-sans font-bold uppercase tracking-wider px-3 py-1 rounded-full border shadow-lg"
+                style={{
+                  borderColor: `${featuredNews.categoryColor}60`,
+                  backgroundColor: `${featuredNews.categoryColor}25`,
+                  color: featuredNews.categoryColor,
+                }}
+              >
+                {featuredNews.category}
+              </span>
+              <span className="px-3 py-1 rounded-full bg-black/70 backdrop-blur-md text-white text-xs font-sans font-semibold border border-white/10 shadow-lg">
+                Lead Story
+              </span>
             </div>
           </div>
 
-          {/* Quick Technical Spec Cells (BMW M Spec-Cell Pattern) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-10">
-            <div className="spec-cell">
-              <div className="text-[11px] font-mono text-neutral-400 mb-1">
-                Peak Lean Angle
+          <div className="space-y-3 flex-1 flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-sans text-neutral-400">
+                <Clock className="w-3.5 h-3.5 text-[#E10600]" />
+                <span>{featuredNews.publishedAt}</span>
+                <span>·</span>
+                <span>{featuredNews.readTime}</span>
+                <span>·</span>
+                <span className="text-neutral-300 font-semibold">{featuredNews.author}</span>
               </div>
-              <div className="text-2xl sm:text-3xl font-bold font-mono text-white tabular-nums">
-                68.2°
-              </div>
-              <div className="text-[11px] text-neutral-400 font-light mt-1">
-                M. Marquez #93 · Bucine
-              </div>
-            </div>
-
-            <div className="spec-cell">
-              <div className="text-[11px] font-mono text-neutral-400 mb-1">
-                San Donato Braking
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold font-mono text-[#E10600] tabular-nums">
-                1.80 G
-              </div>
-              <div className="text-[11px] text-neutral-400 font-light mt-1">
-                360 → 91 km/h in 286m
-              </div>
-            </div>
-
-            <div className="spec-cell">
-              <div className="text-[11px] font-mono text-neutral-400 mb-1">
-                Top Speed Trap
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold font-mono text-white tabular-nums">
-                366.1 <span className="text-xs text-neutral-400">km/h</span>
-              </div>
-              <div className="text-[11px] text-neutral-400 font-light mt-1">
-                B. Binder · Red Bull KTM
-              </div>
-            </div>
-
-            <div className="spec-cell">
-              <div className="text-[11px] font-mono text-neutral-400 mb-1">
-                Tyre Thermal Delta
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold font-mono text-amber-400 tabular-nums">
-                +24°C
-              </div>
-              <div className="text-[11px] text-neutral-400 font-light mt-1">
-                Right Shoulder Overload
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 2: 4-COLUMN HIGH-IMPACT MOTORSPORT GRIDS */}
-      <section className="max-w-[1560px] mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <div className="text-xs font-semibold text-[#E10600]">
-              Telemetry Domains
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-sans mt-0.5">
-              MotoGP™ Engineering Pillars
-            </h2>
-          </div>
-          <Link href="/live-timing" className="text-xs font-semibold text-neutral-400 hover:text-white flex items-center gap-1 transition-colors">
-            <span>View All Sectors</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Lean Angle */}
-          <Link href="/lean-telemetry" className="group">
-            <Card className="h-full hover:border-[#E10600] transition-colors">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Compass className="w-4 h-4 text-[#E10600]" />
-                    <span>Lean &amp; Gyroscope</span>
-                  </CardTitle>
-                  <Badge variant="outline">68.2° Max</Badge>
-                </div>
-                <CardDescription>
-                  Extreme centrifugal cornering dynamics
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between items-baseline">
-                  <div className="text-3xl font-bold font-mono text-white group-hover:text-[#E10600] transition-colors">
-                    68.2°
-                  </div>
-                  <div className="text-xs font-mono text-neutral-400 font-semibold">
-                    Turn 9 Arrabbiata
-                  </div>
-                </div>
-                <p className="text-xs text-neutral-400 font-light leading-relaxed border-t border-neutral-800/80 pt-3">
-                  Ground clearance drops to zero as rider knee and elbow scrape the kerb at 230+ km/h apex velocity.
-                </p>
-              </CardContent>
-              <CardFooter className="flex justify-between items-center text-xs font-mono text-neutral-400">
-                <span>V-Line vs U-Line</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-[#E10600]" />
-              </CardFooter>
-            </Card>
-          </Link>
-
-          {/* Card 2: Michelin Asymmetry */}
-          <Link href="/tyres-asymmetry" className="group">
-            <Card className="h-full hover:border-amber-500 transition-colors">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Disc className="w-4 h-4 text-amber-500" />
-                    <span>Tyre Asymmetry</span>
-                  </CardTitle>
-                  <Badge variant="amber">1.84 bar</Badge>
-                </div>
-                <CardDescription>
-                  Left vs Right shoulder compound heat
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between items-baseline">
-                  <div className="text-3xl font-bold font-mono text-white group-hover:text-amber-400 transition-colors">
-                    138°C
-                  </div>
-                  <div className="text-xs font-mono text-neutral-400 font-semibold">
-                    Right Shoulder
-                  </div>
-                </div>
-                <p className="text-xs text-neutral-400 font-light leading-relaxed border-t border-neutral-800/80 pt-3">
-                  Sepang&apos;s dual 900m+ straights and 15 corners push thermal stress across asymmetric Michelin compounds.
-                </p>
-              </CardContent>
-              <CardFooter className="flex justify-between items-center text-xs font-mono text-neutral-400">
-                <span>FIM 1.80 Bar Rule</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-amber-400" />
-              </CardFooter>
-            </Card>
-          </Link>
-
-          {/* Card 3: Brembo Braking */}
-          <Link href="/braking-zones" className="group">
-            <Card className="h-full hover:border-[#E10600] transition-colors">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-[#E10600]" />
-                    <span>Brembo Braking</span>
-                  </CardTitle>
-                  <Badge variant="destructive">1.80 G</Badge>
-                </div>
-                <CardDescription>
-                  355mm carbon-carbon kinetic dissipation
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between items-baseline">
-                  <div className="text-3xl font-bold font-mono text-white group-hover:text-[#E10600] transition-colors">
-                    -269 <span className="text-sm text-neutral-400">km/h</span>
-                  </div>
-                  <div className="text-xs font-mono text-neutral-400 font-semibold">
-                    286 Meters
-                  </div>
-                </div>
-                <p className="text-xs text-neutral-400 font-light leading-relaxed border-t border-neutral-800/80 pt-3">
-                  Braking from 360 km/h into Turn 1 produces 1.80G deceleration loads, pushing carbon disc temps to 900°C.
-                </p>
-              </CardContent>
-              <CardFooter className="flex justify-between items-center text-xs font-mono text-neutral-400">
-                <span>Rear Stoppie Lift</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-[#E10600]" />
-              </CardFooter>
-            </Card>
-          </Link>
-
-          {/* Card 4: Sprint vs GP Pace */}
-          <Link href="/race-pace" className="group">
-            <Card className="h-full hover:border-emerald-500 transition-colors">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-emerald-500" />
-                    <span>Sprint vs GP Pace</span>
-                  </CardTitle>
-                  <Badge variant="green">Lap 16 Cliff</Badge>
-                </div>
-                <CardDescription>
-                  10-lap attack vs 23-lap conservation
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between items-baseline">
-                  <div className="text-3xl font-bold font-mono text-white group-hover:text-emerald-400 transition-colors">
-                    +1.4s
-                  </div>
-                  <div className="text-xs font-mono text-neutral-400 font-semibold">
-                    Tyre Drop-Off
-                  </div>
-                </div>
-                <p className="text-xs text-neutral-400 font-light leading-relaxed border-t border-neutral-800/80 pt-3">
-                  Saturday Sprint permits 100% flat-out riding. Sunday Grand Prix requires managing the sharp Lap 16 degradation cliff.
-                </p>
-              </CardContent>
-              <CardFooter className="flex justify-between items-center text-xs font-mono text-neutral-400">
-                <span>Pace Evolution</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-emerald-400" />
-              </CardFooter>
-            </Card>
-          </Link>
-        </div>
-      </section>
-
-      {/* SECTION 3: INTERACTIVE 3D TRACK & REAL-TIME ACCORDIONS */}
-      <section className="max-w-[1560px] mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left: 3D Circuit Canvas (7 cols) */}
-          <div className="lg:col-span-7 space-y-4">
-            <Card className="p-0 overflow-hidden">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Layers className="w-4 h-4 text-[#E10600]" />
-                      <span>Sepang 3D Sector Radar</span>
-                    </CardTitle>
-                    <CardDescription>
-                      WebGL track geometry with speed traps &amp; apex markers
-                    </CardDescription>
-                  </div>
-                  <Link href="/track-map">
-                    <Button variant="outline" size="sm">
-                      Fullscreen 3D
-                    </Button>
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="h-[460px] w-full bg-black relative">
-                  <CircuitCanvas selectedRiderNumber={selectedRider} />
-                  <div className="absolute top-4 left-4 z-10 bg-black/85 border border-neutral-800 p-3 font-mono text-xs">
-                    <div className="text-neutral-400 text-[10px]">Active Elevation</div>
-                    <div className="text-white font-bold text-sm">Petronas Sepang Circuit</div>
-                    <div className="text-[#E10600] text-[10px] mt-0.5">Main Straight Peak: 358+ km/h</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right: Technical Accordion Breakdown (5 cols) */}
-          <div className="lg:col-span-5 space-y-4">
-            <div>
-              <div className="text-xs font-semibold text-[#E10600]">
-                Circuit Telemetry Manual
-              </div>
-              <h3 className="text-xl font-bold text-white font-sans mt-0.5">
-                Technical Sector Breakdown
+              <h3 className="text-xl sm:text-2xl font-bold font-sans text-white leading-snug tracking-tight group-hover:text-[#FF2A24] transition-colors">
+                {featuredNews.title}
               </h3>
-              <p className="text-xs text-neutral-400 font-light mt-1">
-                Deep engineering breakdown of the 15 corners at Sepang International Circuit.
+              <p className="text-xs sm:text-sm text-neutral-300 font-light leading-relaxed line-clamp-3">
+                {featuredNews.summary}
               </p>
             </div>
 
-            <Accordion type="single" collapsible defaultValue="sector1" className="space-y-2">
-              <AccordionItem value="sector1">
-                <AccordionTrigger>
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-[#E10600]" />
-                    <span>Sector 1: San Donato &amp; Luco (T1-T3)</span>
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-2">
-                    <p>
-                      Begins with the terrifying 1.14 km main straight. Bikes reach 360+ km/h before the uphill braking into San Donato (Turn 1).
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-neutral-800 font-mono text-[11px]">
-                      <div>
-                        <span className="text-neutral-500 block">Braking Distance:</span>
-                        <span className="text-white font-bold">286 Meters</span>
-                      </div>
-                      <div>
-                        <span className="text-neutral-500 block">Apex Speed:</span>
-                        <span className="text-white font-bold">91 km/h</span>
-                      </div>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="sector2">
-                <AccordionTrigger>
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-purple-500" />
-                    <span>Sector 2: Casanova, Savelli &amp; Arrabbiata 1-2 (T4-T9)</span>
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-2">
-                    <p>
-                      The most demanding corner combination in world motorsport. Blind downhill right into Casanova, followed by the uphill right curves of Arrabbiata 1 &amp; 2 at 68° lean.
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-neutral-800 font-mono text-[11px]">
-                      <div>
-                        <span className="text-neutral-500 block">Peak Lean:</span>
-                        <span className="text-purple-400 font-bold">68.2° (Turn 9)</span>
-                      </div>
-                      <div>
-                        <span className="text-neutral-500 block">Thermal Load:</span>
-                        <span className="text-amber-400 font-bold">+24°C Delta</span>
-                      </div>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="sector3">
-                <AccordionTrigger>
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-emerald-500" />
-                    <span>Sector 3: Scarperia &amp; Palagio (T10-T11)</span>
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-2">
-                    <p>
-                      A fast technical chicane requiring rapid change of direction. Bikes transition from full right lean to full left lean in under 0.6 seconds.
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-neutral-800 font-mono text-[11px]">
-                      <div>
-                        <span className="text-neutral-500 block">Roll Rate:</span>
-                        <span className="text-emerald-400 font-bold">88 °/second</span>
-                      </div>
-                      <div>
-                        <span className="text-neutral-500 block">FIM Min Pressure:</span>
-                        <span className="text-white font-bold">1.84 bar (&gt;1.80)</span>
-                      </div>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="sector4">
-                <AccordionTrigger>
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-amber-500" />
-                    <span>Sector 4: Correntaio, Biondetti &amp; Bucine (T12-T15)</span>
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-2">
-                    <p>
-                      Long downhill parabola into Correntaio, high-speed Biondetti kink, and the crucial final Bucine hairpin which decides slipstream drag race to the chequered flag.
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-neutral-800 font-mono text-[11px]">
-                      <div>
-                        <span className="text-neutral-500 block">Exit Acceleration:</span>
-                        <span className="text-white font-bold">0.95G Longitudinal</span>
-                      </div>
-                      <div>
-                        <span className="text-neutral-500 block">Ride-Height Drop:</span>
-                        <span className="text-white font-bold">-70mm Rear Device</span>
-                      </div>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+            <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs sm:text-sm font-sans text-[#E10600] font-semibold group-hover:text-white transition-colors">
+              <span>Read Full Technical Briefing</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </div>
           </div>
         </div>
-      </section>
-
-      {/* SECTION 4: LIVE RIDER STANDINGS & COMPARISON TABLE */}
-      <section className="max-w-[1560px] mx-auto px-6 py-12 border-t border-neutral-800">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <div className="text-xs font-semibold text-[#E10600]">
-              World Championship Classification
+      ),
+    },
+    ...sideNews.map((article) => ({
+      id: `side-${article.id}`,
+      colSpan: 1,
+      rowSpan: 1,
+      content: (
+        <div className="w-full h-full flex flex-col justify-between p-2 sm:p-2.5 group">
+          <div className="space-y-3">
+            {/* Top Bar matching top cards */}
+            <div className="flex items-center justify-between gap-2">
+              <span
+                className="text-[11px] font-sans font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border"
+                style={{
+                  borderColor: `${article.categoryColor}50`,
+                  backgroundColor: `${article.categoryColor}15`,
+                  color: article.categoryColor,
+                }}
+              >
+                {article.category}
+              </span>
+              <span className="text-xs font-sans text-neutral-400">
+                {article.publishedAt}
+              </span>
             </div>
-            <h3 className="text-2xl font-bold text-white font-sans mt-0.5">
-              Live Rider Standings
-            </h3>
-          </div>
-          <Link href="/standings">
-            <Button variant="outline" size="sm">
-              Full 22-Rider Table
-            </Button>
-          </Link>
-        </div>
 
-        <div className="overflow-x-auto no-scrollbar border border-neutral-800 bg-[#0E0E0E]">
-          <table className="w-full text-left font-mono text-xs">
-            <thead>
-              <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-400 text-[11px] font-sans font-semibold">
-                <th className="py-3 px-4">Pos</th>
-                <th className="py-3 px-4">Rider</th>
-                <th className="py-3 px-4">Team / Constructor</th>
-                <th className="py-3 px-4">Best Lap</th>
-                <th className="py-3 px-4">Gap</th>
-                <th className="py-3 px-4">Max Lean</th>
-                <th className="py-3 px-4">Speed Trap</th>
-                <th className="py-3 px-4 text-right">Points</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-800/60 font-mono">
-              {MOCK_STANDINGS.slice(0, 6).map((standing) => (
-                <tr
-                  key={standing.rider.id}
-                  className="hover:bg-neutral-900/60 transition-colors cursor-pointer"
-                  onClick={() => setSelectedRider(standing.rider.number.toString())}
-                >
-                  <td className="py-3.5 px-4 font-bold text-white">
-                    {standing.position === 1 ? (
-                      <span className="text-[#E10600]">P1</span>
-                    ) : (
-                      `P${standing.position}`
-                    )}
-                  </td>
-                  <td className="py-3.5 px-4 font-sans">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-white">#{standing.rider.number}</span>
-                      <span className="font-semibold text-neutral-200">{standing.rider.full_name}</span>
-                    </div>
-                  </td>
-                  <td className="py-3.5 px-4 text-neutral-400 font-light font-sans">
-                    {standing.team.name}
-                  </td>
-                  <td className="py-3.5 px-4 font-bold text-white tabular-nums">
-                    {standing.position === 1 ? "1'44.855" : `1'44.${855 + standing.position * 42}`}
-                  </td>
-                  <td className="py-3.5 px-4 font-semibold tabular-nums">
-                    {standing.position === 1 ? (
-                      <span className="text-emerald-400">Leader</span>
-                    ) : (
-                      <span className="text-neutral-400">+{((standing.position - 1) * 0.082).toFixed(3)}s</span>
-                    )}
-                  </td>
-                  <td className="py-3.5 px-4 tabular-nums">
-                    <span className="text-white font-bold">{64 + standing.position * 0.7}°</span>
-                  </td>
-                  <td className="py-3.5 px-4 tabular-nums">
-                    <span className="text-white font-bold">{364 - standing.position * 1.2} km/h</span>
-                  </td>
-                  <td className="py-3.5 px-4 text-right font-bold text-white tabular-nums">
-                    {standing.points} pts
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+            {/* Title matching top card proportions */}
+            <h4 className="text-sm sm:text-base font-bold font-sans text-white leading-snug group-hover:text-[#FF2A24] transition-colors line-clamp-2">
+              {article.title}
+            </h4>
 
-      {/* SECTION 5: FOOTER (BMW M Style pure black) */}
-      <footer className="border-t border-neutral-800 bg-black py-16 px-6">
-        <div className="max-w-[1560px] mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
-          <div>
-            <div className="h-6 px-2 bg-[#E10600] inline-flex items-center text-white font-bold text-xs tracking-tight mb-3">
-              MotoGP™
-            </div>
-            <div className="text-sm font-bold text-white font-sans">
-              GP-Dashboard Telemetry Platform
-            </div>
-            <p className="text-xs text-neutral-500 font-light mt-1 max-w-md">
-              Motorsport telemetry interface. High-frequency timing, Michelin thermal matrices, and Brembo deceleration dynamics.
+            {/* Narrative Summary matching top card body */}
+            <p className="text-xs sm:text-sm text-neutral-300 font-light leading-relaxed line-clamp-2">
+              {article.summary}
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 text-xs font-mono">
-            <div>
-              <div className="text-white font-semibold mb-3">
-                Telemetry
-              </div>
-              <ul className="space-y-2 text-neutral-400 font-light">
-                <li><Link href="/live-timing" className="hover:text-white transition-colors">Pitwall Timing</Link></li>
-                <li><Link href="/lean-telemetry" className="hover:text-white transition-colors">68° Lean Angle</Link></li>
-                <li><Link href="/tyres-asymmetry" className="hover:text-white transition-colors">Tyre Asymmetry</Link></li>
-                <li><Link href="/braking-zones" className="hover:text-white transition-colors">Braking Zones</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <div className="text-white font-semibold mb-3">
-                Design System
-              </div>
-              <ul className="space-y-2 text-neutral-400 font-light">
-                <li><Link href="/design-system" className="hover:text-white transition-colors">Apex DS Spec</Link></li>
-                <li><Link href="/design-system?tab=tokens" className="hover:text-white transition-colors">Color Tokens</Link></li>
-                <li><Link href="/design-system?tab=components" className="hover:text-white transition-colors">shadcn/ui Suite</Link></li>
-                <li><Link href="/design-system?tab=telemetry" className="hover:text-white transition-colors">Physics Primitives</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <div className="text-white font-semibold mb-3">
-                Championship
-              </div>
-              <ul className="space-y-2 text-neutral-400 font-light">
-                <li><Link href="/standings" className="hover:text-white transition-colors">Standings</Link></li>
-                <li><Link href="/schedule" className="hover:text-white transition-colors">Calendar</Link></li>
-                <li><Link href="/gravel-trap" className="hover:text-white transition-colors">Incident Ledger</Link></li>
-              </ul>
-            </div>
+          {/* Footer matching top cards */}
+          <div className="flex items-center justify-between text-xs font-sans text-neutral-400 pt-3 border-t border-white/[0.08] mt-3">
+            <span className="truncate max-w-[65%]">{article.readTime} · {article.author.split('·')[0].trim()}</span>
+            <span className="text-[#E10600] flex items-center gap-1 font-semibold group-hover:translate-x-0.5 transition-transform shrink-0">
+              <span>Report</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </span>
           </div>
         </div>
+      ),
+    })),
+  ];
 
-        <div className="max-w-[1560px] mx-auto mt-12 pt-6 border-t border-neutral-800/80 flex flex-col sm:flex-row items-center justify-between text-[11px] text-neutral-500 font-mono">
-          <div>© 2026 GP-Dashboard. Official MotoGP™ Timing &amp; Telemetry Data.</div>
-          <div className="mt-2 sm:mt-0">Private &amp; Confidential Engineering Workspace.</div>
+  return (
+    <div className="w-full min-h-screen bg-[#07080B] text-white select-none">
+      {/* =========================================================================
+          FULL-VIEWPORT INITIAL SCREEN: HERO + 3 CARDS FILL 100% OF INITIAL VIEWPORT
+          (News section sits below the fold so user scrolls down to see it)
+         ========================================================================= */}
+      <div className="min-h-[calc(100vh-48px)] flex flex-col justify-between">
+        {/* SECTION 1: HERO SECTION WITH VIBRANT CIRCUIT IMAGE & UNIFIED SCHEDULE CARD */}
+        <section className="relative w-full overflow-hidden flex-1 flex items-center pt-6 pb-4 lg:pt-10 lg:pb-6 px-4 sm:px-6">
+          {/* Dynamic GP Hero Background */}
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-85 scale-100 filter saturate-110 contrast-105"
+            style={{ backgroundImage: `url('/images/circuits/malaysia-sepang.avif')` }}
+          />
+
+          {/* Subtle cinematic gradient overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#07080B] via-black/35 to-black/25" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent" />
+
+          <div className="relative z-10 max-w-[1560px] mx-auto w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+              {/* Left Column: Circuit & GP Identity + Details CTA (5 Cols) */}
+              <div className="lg:col-span-5 space-y-6">
+                <div className="space-y-3 max-w-xl">
+                  {/* Natural-case custom Sora typography */}
+                  <div className="text-xs sm:text-sm font-sans font-medium tracking-normal text-neutral-300">
+                    Petronas Sepang International Circuit · Round 19 of 22
+                  </div>
+
+                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-sans font-black tracking-tight text-white leading-[1.08]">
+                    Petronas Grand Prix of <span className="text-[#E10600]">Malaysia</span>
+                  </h1>
+                </div>
+
+                {/* Details Button - Full rounded button in white */}
+                <div className="pt-1">
+                  <Button
+                    onClick={() => setCircuitModalOpen(true)}
+                    className="rounded-full px-7 py-2.5 font-sans text-xs sm:text-sm font-semibold bg-white hover:bg-neutral-200 text-black border-0 transition-all flex items-center gap-2 shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] group"
+                  >
+                    <span>Details</span>
+                    <ChevronRight className="w-4 h-4 text-black group-hover:translate-x-0.5 transition-transform" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Right Column: Unified Next Session Countdown & Weekend Timetable (7 Cols) */}
+              <div className="lg:col-span-7 w-full self-start">
+                <UnifiedHeroScheduleCard />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 2: 3-COLUMN MAGIC BENTO (1/3 HISTORIC, 1/3 DRIVERS TOP 5, 1/3 CONSTRUCTORS TOP 5) */}
+        <section className="relative w-full bg-[#0A0A0B] pt-4 pb-8 lg:pb-10 px-4 sm:px-6">
+          <div className="max-w-[1560px] mx-auto">
+            <MagicBento
+              columns={3}
+              rowHeight={370}
+              gap={20}
+              radius={20}
+              theme="dark"
+              glowColor="225, 6, 0"
+              enableBorderGlow={true}
+              enableSpotlight={true}
+              spotlightRadius={340}
+              clickEffect={true}
+              items={[
+                {
+                  id: 'sepang-history',
+                  colSpan: 1,
+                  rowSpan: 1,
+                  content: (
+                    <CircuitHistoryCarousel className="w-full h-full bg-transparent border-0 p-1 sm:p-2 shadow-none flex flex-col justify-between" />
+                  ),
+                },
+                {
+                  id: 'driver-standings-top5',
+                  colSpan: 1,
+                  rowSpan: 1,
+                  content: (
+                    <DriverStandingsTop5 className="w-full h-full bg-transparent border-0 p-1 sm:p-2 shadow-none flex flex-col justify-start" />
+                  ),
+                },
+                {
+                  id: 'constructor-standings-top5',
+                  colSpan: 1,
+                  rowSpan: 1,
+                  content: (
+                    <ConstructorStandingsTop5 className="w-full h-full bg-transparent border-0 p-1 sm:p-2 shadow-none flex flex-col justify-start" />
+                  ),
+                },
+              ]}
+            />
+          </div>
+        </section>
+      </div>
+
+      {/* =========================================================================
+          SECTION 3: NEWS & TECHNICAL REPORTS (Visible upon scrolling down)
+         ========================================================================= */}
+      <section className="bg-[#07080B] pt-12 pb-16 px-4 sm:px-6">
+        <div className="max-w-[1560px] mx-auto space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold font-sans text-white tracking-tight">
+                Latest News &amp; Engineering Reports
+              </h2>
+              <p className="text-xs font-sans text-neutral-400 mt-0.5">
+                Direct from MotoGP™ pitwall &amp; steward desks
+              </p>
+            </div>
+            <span className="text-xs font-sans text-neutral-500">
+              Updated hourly during Grand Prix weekends
+            </span>
+          </div>
+
+          {/* Magic Bento News Grid (Proportioned to top cards) */}
+          <MagicBento
+            columns={3}
+            rowHeight={250}
+            gap={20}
+            radius={20}
+            theme="dark"
+            glowColor="225, 6, 0"
+            enableBorderGlow={true}
+            enableSpotlight={true}
+            spotlightRadius={340}
+            clickEffect={true}
+            items={newsBentoItems}
+          />
         </div>
-      </footer>
+      </section>
+
+      {/* =========================================================================
+          CIRCUIT DETAIL MODAL (Opens when clicking "Details")
+         ========================================================================= */}
+      <CircuitDetailModal
+        isOpen={circuitModalOpen}
+        onClose={() => setCircuitModalOpen(false)}
+        circuit={sepangCircuit}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { AnimatedNumber } from './AnimatedNumber';
 
 interface LeanMeterProps {
   angle: number;           // e.g. 64.5
@@ -63,7 +64,7 @@ export function LeanMeter({
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
-            className="transition-all duration-300 ease-out"
+            className="transition-[stroke-dashoffset,stroke] duration-slow ease-precision"
           />
 
           {/* 60 degree elbow-down threshold marker */}
@@ -81,7 +82,7 @@ export function LeanMeter({
         {/* Center Angle Display */}
         <div className="absolute bottom-1 flex flex-col items-center">
           <div className="text-2xl font-mono font-bold text-white tracking-tighter flex items-start">
-            <span>{clampedAngle.toFixed(1)}</span>
+            <AnimatedNumber value={clampedAngle} decimals={1} />
             <span className="text-xs font-bold text-[#0066FF] ml-0.5">°</span>
           </div>
           <div className="text-[10px] font-mono text-neutral-400 capitalize">
@@ -98,7 +99,7 @@ export function LeanMeter({
               ? 'bg-blue-950/40 text-blue-400 border-blue-800'
               : isKneeDown
               ? 'bg-neutral-900 text-neutral-200 border-neutral-700'
-              : 'bg-black text-neutral-500 border-neutral-800'
+              : 'bg-black text-neutral-400 border-neutral-800'
           }`}
         >
           {isElbowDown ? '⚡ Elbow Down' : isKneeDown ? 'Knee Down' : 'Upright'}

@@ -18,12 +18,12 @@ const Slider = React.forwardRef<
     )}
     {...props}
   >
-    <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-none bg-neutral-800">
+    <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-neutral-800">
       <SliderPrimitive.Range className={cn('absolute h-full', motogp ? 'bg-[#E10600]' : 'bg-white')} />
     </SliderPrimitive.Track>
     <SliderPrimitive.Thumb
       className={cn(
-        'block h-4 w-4 rounded-none border border-neutral-900 bg-white ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
+        'block h-4 w-4 rounded-full border border-neutral-900 bg-white ring-offset-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E10600] disabled:pointer-events-none disabled:opacity-50 cursor-pointer shadow-md',
         motogp && 'border-[#E10600] bg-white'
       )}
     />
