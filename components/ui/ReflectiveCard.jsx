@@ -560,7 +560,7 @@ const ReflectiveCard = ({
   status = 'Active',
   statusColor = '#22c55e',
   showStatusDot = false,
-  idLabel = 'ID number',
+  idLabel = null,
   idValue = '8901 2345 6789',
   children,
   theme = 'dark',
@@ -587,6 +587,8 @@ const ReflectiveCard = ({
   style,
   // Custom driver, team & head-to-head extensions
   bgNumber,
+  bgNumColor: customBgNumColor,
+  bgNumOpacity: customBgNumOpacity,
   imageSrc,
   imageAlt,
   isBike = false,
@@ -987,8 +989,13 @@ const ReflectiveCard = ({
   const isDarkNavy =
     (rgb[2] > 0.35 && rgb[0] < 0.15 && rgb[1] < 0.25) ||
     Boolean(tint && ['#001968', '#003399', '#002b7f'].includes(String(tint).toLowerCase()));
-  const bgNumColor = isDarkNavy ? '#38bdf8' : (tint || '#ffffff');
-  const bgNumOpacity = isDarkNavy ? 0.36 : 0.18;
+  // Boost contrast for dark maroon / burgundy teams like Aprilia (#800020)
+  const isDarkRed =
+    Boolean(tint && ['#800020', '#990400', '#5c0017', '#6b001a'].includes(String(tint).toLowerCase())) ||
+    (rgb[0] > 0.35 && rgb[0] < 0.65 && rgb[1] < 0.15 && rgb[2] < 0.25);
+  const bgNumColor = customBgNumColor || (isDarkNavy ? '#38bdf8' : isDarkRed ? '#C92A2A' : (tint || '#ffffff'));
+  const bgNumOpacity = customBgNumOpacity !== undefined ? customBgNumOpacity : (isDarkNavy ? 0.30 : isDarkRed ? 0.23 : 0.18);
+  const teamGlow = isDarkRed ? 'rgba(201, 42, 42, 0.22)' : `${tint || '#ffffff'}40`;
 
   const cardStyle = {
     ...THEMES[palette],
@@ -999,7 +1006,7 @@ const ReflectiveCard = ({
     '--rc-tile-radius': `${Math.round(clamp(corner * 0.5, 8, 14))}px`,
     '--rc-status': statusColor,
     '--rc-team-color': tint || '#ffffff',
-    '--rc-team-glow': `${tint || '#ffffff'}40`,
+    '--rc-team-glow': teamGlow,
     '--rc-bg-num-color': bgNumColor,
     '--rc-bg-num-opacity': bgNumOpacity,
     '--rc-base': tint
@@ -1055,11 +1062,13 @@ const ReflectiveCard = ({
     router.push(cardHref);
   };
 
+  const hasTile = Boolean(tileHref || onTileClick || tileIcon);
+
   return (
     <div
       ref={rootRef}
       onClick={handleCardClick}
-      className={`reflective-card ${cardHref ? 'reflective-card--clickable' : ''} ${className}`.trim()}
+      className={`reflective-card ${cardHref ? 'reflective-card--clickable' : ''} ${hasTile ? 'reflective-card--has-tile' : ''} ${className}`.trim()}
       style={{ ...cardStyle, ...style }}
     >
       <div ref={bodyRef} className="reflective-card__body">
@@ -1135,16 +1144,19 @@ const ReflectiveCard = ({
                     </div>
                   </div>
                 )}
+                {(idLabel || idValue) && (
+                  <div className="reflective-card__footer">
+                    <div className="reflective-card__id">
+                      {idLabel && <span className="reflective-card__label">{idLabel}</span>}
+                      {idValue && <span className="reflective-card__value">{idValue}</span>}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {(idLabel || idValue) && (
-                <div className="reflective-card__footer">
-                  <div className="reflective-card__id">
-                    {idLabel && <span className="reflective-card__label">{idLabel}</span>}
-                    {idValue && <span className="reflective-card__value">{idValue}</span>}
-                  </div>
-
-                  {/* Bottom Right Tile: Head-to-Head Clash / VS Icon (no red pill) */}
+              {/* Bottom Right Tile: Head-to-Head Clash / VS Icon (no red pill) */}
+              {(tileHref || onTileClick || tileIcon) && (
+                <div className="reflective-card__tile-wrap">
                   {tileHref ? (
                     <Link
                       href={tileHref}

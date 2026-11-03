@@ -10,16 +10,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        canvas: '#000000',
+        canvas: '#07080B',
         surface: {
-          base: '#000000',
-          soft: '#0A0A0A',
-          card: '#111111',
-          cardHover: '#181818',
-          elevated: '#1E1E1E',
-          border: '#262626',
-          borderStrong: '#3A3A3A',
-          borderSubtle: '#1A1A1A',
+          base: '#07080B',
+          soft: '#0A0A0B',
+          card: '#0E0F12',
+          cardHover: '#141519',
+          elevated: '#181920',
+          border: 'rgba(255, 255, 255, 0.08)',
+          borderStrong: 'rgba(255, 255, 255, 0.16)',
+          borderSubtle: 'rgba(255, 255, 255, 0.05)',
         },
         motogp: {
           red: '#E10600',
@@ -46,7 +46,7 @@ const config: Config = {
           dark: '#0A0A0A',
           card: '#161616',
           cardHover: '#1E1E1E',
-          border: '#262626',
+          border: 'rgba(255, 255, 255, 0.08)',
           subtle: '#737373',
           cyan: '#00F5D4',
           yellow: '#EAB308',

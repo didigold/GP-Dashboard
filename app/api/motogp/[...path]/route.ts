@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+if (process.env.NODE_ENV !== 'production') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 const PULSELIVE_BASE = 'https://api.motogp.pulselive.com/motogp/v1';
 
 export const dynamic = 'force-dynamic';

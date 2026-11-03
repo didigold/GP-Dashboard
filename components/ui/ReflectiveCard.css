@@ -190,6 +190,8 @@
 .reflective-card__identity {
   margin-top: auto;
   font-family: var(--font-sans), system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
 .reflective-card__name {
@@ -205,7 +207,7 @@
 }
 
 .reflective-card__role {
-  margin: 4px 0 0;
+  margin: 6px 0 0;
   color: var(--rc-muted);
   font-size: 12.5px;
   font-weight: 500;
@@ -281,11 +283,22 @@
 
 .reflective-card__footer {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 14px;
+  align-items: center;
+  margin-top: 6px;
+  width: 100%;
+  min-width: 0;
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.reflective-card--has-tile .reflective-card__footer {
+  max-width: calc(100% - 44px);
+}
+
+.reflective-card__tile-wrap {
+  position: absolute;
+  right: var(--rc-pad);
+  bottom: var(--rc-pad);
+  z-index: 10;
 }
 
 .reflective-card__id {
@@ -308,7 +321,7 @@
 }
 
 .reflective-card__value {
-  overflow: hidden;
+  overflow: visible;
   color: var(--rc-ink);
   font-family: var(--font-sans), system-ui, sans-serif;
   font-size: 12px;
@@ -324,8 +337,8 @@
   position: relative;
   box-sizing: border-box;
   display: flex;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   flex: none;
   align-items: center;
   justify-content: center;

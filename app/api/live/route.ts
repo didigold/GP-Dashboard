@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 
+if (process.env.NODE_ENV !== 'production') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 const LIVE_TIMING_URL = 'https://api.motogp.pulselive.com/motogp/v1/timing-gateway/livetiming-lite';
 const EVENTS_URL = 'https://api.motogp.pulselive.com/motogp/v1/results/events';
 const SESSIONS_URL = 'https://api.motogp.pulselive.com/motogp/v1/results/sessions';

@@ -39,7 +39,7 @@ function CountryFlag({ iso, country, className = 'w-7 h-5' }: { iso?: string; co
         alt={country || resolvedIso.toUpperCase()}
         loading="lazy"
         onError={() => setImageError(true)}
-        className={`${className} object-cover rounded shadow border border-white/10 shrink-0`}
+        className={`${className} object-cover rounded-[2px] ring-1 ring-inset ring-black/30 shrink-0`}
       />
     );
   }
@@ -181,7 +181,7 @@ export function RealMapboxView({
               <div class="w-1.5 h-1.5 rounded-full ${isSelected || isCurrent ? 'bg-white' : 'bg-black'}"></div>
             </div>
           </div>
-          <div class="mt-1 px-2 py-0.5 rounded-md bg-black/85 backdrop-blur-md border border-white/20 text-[10px] font-mono font-bold text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
+          <div class="mt-1 px-2 py-0.5 rounded-md bg-black/85 backdrop-blur-md border border-white/20 text-[10px] font-sans font-bold text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
             R${circuit.round_number} · ${circuit.name}
           </div>
         `;
@@ -247,7 +247,7 @@ export function RealMapboxView({
             <div class="w-1.5 h-1.5 rounded-full ${isSelected || isCurrent ? 'bg-white' : 'bg-black'}"></div>
           </div>
         </div>
-        <div class="mt-1 px-2 py-0.5 rounded-md bg-black/85 backdrop-blur-md border border-white/20 text-[10px] font-mono font-bold text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
+        <div class="mt-1 px-2 py-0.5 rounded-md bg-black/85 backdrop-blur-md border border-white/20 text-[10px] font-sans font-bold text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
           R${roundCircuit?.round_number ?? ''} · ${roundCircuit?.name ?? ''}
         </div>
       `;
@@ -317,7 +317,7 @@ export function RealMapboxView({
         <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-black/75 backdrop-blur-xl border border-white/15 shadow-xl">
           <CountryFlag iso={selectedCircuit.country_code} country={selectedCircuit.country} className="w-6 h-4.5" />
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#E10600]">
+            <span className="text-xs font-sans font-bold uppercase tracking-wider text-[#E10600]">
               Round {selectedCircuit.round_number}
             </span>
             <span className="text-xs text-white font-sans font-bold truncate max-w-[220px]">
@@ -423,7 +423,7 @@ export function RealMapboxView({
               </span>
             </div>
 
-            <div className="text-xs font-mono text-neutral-300 flex items-center gap-2 mt-0.5">
+            <div className="text-xs font-sans text-neutral-300 flex items-center gap-2 mt-0.5">
               <span>{selectedCircuit.length_km} km</span>
               <span>·</span>
               <span>{selectedCircuit.corners} Turns</span>

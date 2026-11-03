@@ -62,7 +62,7 @@ export function TopTacticalHUD() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close telemetry dropdown on click outside
+  // Close mega menus on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuContainerRef.current && !menuContainerRef.current.contains(event.target as Node)) {
@@ -93,7 +93,7 @@ export function TopTacticalHUD() {
   const handleMouseLeave = () => {
     timeoutRef.current = setTimeout(() => {
       setTelemetryOpen(false);
-    }, 200);
+    }, 180);
   };
 
   const handleStatsEnter = () => {
@@ -106,7 +106,7 @@ export function TopTacticalHUD() {
   const handleStatsLeave = () => {
     statsTimeoutRef.current = setTimeout(() => {
       setStatsOpen(false);
-    }, 200);
+    }, 180);
   };
 
   const handleGridEnter = () => {
@@ -119,7 +119,7 @@ export function TopTacticalHUD() {
   const handleGridLeave = () => {
     gridTimeoutRef.current = setTimeout(() => {
       setGridOpen(false);
-    }, 200);
+    }, 180);
   };
 
   const triggerCommandPalette = () => {
@@ -134,30 +134,28 @@ export function TopTacticalHUD() {
     '/gravel-trap',
   ].some((path) => pathname === path || pathname.startsWith(path + '/'));
 
-  const isStatsActive = ['/standings', '/driver-stats', '/head-to-head', '/race-pace', '/history'].some(
+  const isStatsActive = ['/standings', '/head-to-head', '/race-pace', '/history'].some(
     (path) => pathname === path || pathname.startsWith(path + '/')
   );
 
-  const isGridActive = ['/riders', '/teams'].some(
+  const isGridActive = ['/riders', '/teams', '/driver-stats'].some(
     (path) => pathname === path || pathname.startsWith(path + '/')
   );
 
   return (
-    <div className="sticky top-0 z-50 w-full select-none" ref={menuContainerRef}>
-      {/* Top Bar - Apple minimalist style with logo and search closer to tabs */}
+    <div className="sticky top-0 z-[100] w-full select-none" ref={menuContainerRef}>
+      {/* Top Bar - Apple minimalist style with continuous border-b preventing any line flash on exit */}
       <header
-        className={`w-full h-12 transition-all duration-300 ${
-          telemetryOpen || statsOpen || gridOpen
-            ? 'bg-[#0B0B0C] border-none shadow-none'
-            : isScrolled
-            ? 'bg-[#0B0B0C]/90 backdrop-blur-2xl border-b border-white/[0.08] shadow-2xl'
-            : 'bg-[#0B0B0C]/75 backdrop-blur-xl border-b border-white/[0.06]'
+        className={`w-full h-12 transition-colors duration-200 border-b border-white/[0.08] ${
+          isScrolled
+            ? 'bg-[#0B0B0C]/90 backdrop-blur-2xl shadow-2xl'
+            : 'bg-[#0B0B0C]/85 backdrop-blur-xl'
         }`}
       >
         <div className="w-full h-full flex items-center justify-between sm:justify-center px-4 sm:px-6">
           {/* Centered tight cluster: Logo + Tabs + Search Icon */}
           <div className="flex items-center gap-6 sm:gap-8 lg:gap-10">
-            {/* Left: MotoGP Logo Mark (Closer to tabs as requested) */}
+            {/* Left: MotoGP Logo Mark */}
             <Link
               href="/"
               className="flex items-center text-white hover:opacity-85 transition-opacity py-1 shrink-0"
@@ -168,7 +166,7 @@ export function TopTacticalHUD() {
               </span>
             </Link>
 
-            {/* Center: Apple-style pure text tabs (NO borders, NO pill containers) */}
+            {/* Center: Apple-style pure text tabs */}
             <nav
               aria-label="Global Navigation"
               className="hidden md:flex items-center gap-7 lg:gap-8 text-[12px] font-normal tracking-normal text-neutral-300"
@@ -192,7 +190,23 @@ export function TopTacticalHUD() {
                 <span>Live Timing</span>
               </Link>
 
-              {/* Stats Tab with Apple-style Mega-Menu Trigger */}
+              {/* Telemetry Tab with Mega-Menu Trigger */}
+              <div
+                className="relative py-3 cursor-pointer"
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onClick={() => setTelemetryOpen(!telemetryOpen)}
+              >
+                <span
+                  className={`transition-colors duration-200 hover:text-white flex items-center gap-1 ${
+                    isTelemetryActive || telemetryOpen ? 'text-white font-semibold' : 'text-neutral-400'
+                  }`}
+                >
+                  Telemetry
+                </span>
+              </div>
+
+              {/* Stats Tab with Mega-Menu Trigger */}
               <div
                 className="relative py-3 cursor-pointer"
                 onMouseEnter={handleStatsEnter}
@@ -208,16 +222,7 @@ export function TopTacticalHUD() {
                 </span>
               </div>
 
-              <Link
-                href="/schedule"
-                className={`transition-colors duration-200 hover:text-white ${
-                  pathname.startsWith('/schedule') ? 'text-white font-semibold' : 'text-neutral-400'
-                }`}
-              >
-                Calendar
-              </Link>
-
-              {/* Grid Tab with Apple-style Mega-Menu Trigger */}
+              {/* Grid Tab with Mega-Menu Trigger */}
               <div
                 className="relative py-3 cursor-pointer"
                 onMouseEnter={handleGridEnter}
@@ -233,24 +238,17 @@ export function TopTacticalHUD() {
                 </span>
               </div>
 
-              {/* Telemetry Tab with Apple-style Mega-Menu Trigger */}
-              <div
-                className="relative py-3 cursor-pointer"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-                onClick={() => setTelemetryOpen(!telemetryOpen)}
+              <Link
+                href="/schedule"
+                className={`transition-colors duration-200 hover:text-white ${
+                  pathname.startsWith('/schedule') ? 'text-white font-semibold' : 'text-neutral-400'
+                }`}
               >
-                <span
-                  className={`transition-colors duration-200 hover:text-white flex items-center gap-1 ${
-                    isTelemetryActive || telemetryOpen ? 'text-white font-semibold' : 'text-neutral-400'
-                  }`}
-                >
-                  Telemetry
-                </span>
-              </div>
+                Calendar
+              </Link>
             </nav>
 
-            {/* Right: Search Icon (Closer to tabs as requested, white icon, no label) */}
+            {/* Right: Search Icon */}
             <button
               onClick={triggerCommandPalette}
               aria-label="Search telemetry & grid"
@@ -272,27 +270,27 @@ export function TopTacticalHUD() {
         </div>
       </header>
 
-      {/* APPLE-STYLE MEGA DROPDOWN (Same color as topnav, no top separator, smooth in & out animation) */}
+      {/* =========================================================================
+          TELEMETRY MEGA DROPDOWN (No top separator, seamless -mt-px overlap, smooth fade out)
+         ========================================================================= */}
       <AnimatePresence>
         {telemetryOpen && (
           <>
-            {/* Dimmed backdrop covering content below */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 top-12 z-40 bg-black/60 backdrop-blur-md pointer-events-auto"
+              transition={{ duration: 0.18 }}
+              className="fixed inset-0 top-12 z-[90] bg-black/60 backdrop-blur-md pointer-events-auto"
               onClick={() => setTelemetryOpen(false)}
             />
 
-            {/* Fullscreen Categorized Dropdown Panel */}
             <motion.div
-              initial={{ opacity: 0, y: -8 }}
+              initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute top-12 left-0 w-full z-50 bg-[#0B0B0C]/95 backdrop-blur-3xl border-b border-white/[0.08] shadow-2xl py-10 px-6 sm:px-12"
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              className="absolute top-12 left-0 w-full z-[100] bg-[#0B0B0C] border-b border-white/[0.08] shadow-2xl py-9 px-6 sm:px-12 -mt-[1px]"
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
@@ -330,27 +328,13 @@ export function TopTacticalHUD() {
                         Brembo 1.83G forces, 14.1 Bar master cylinder
                       </p>
                     </Link>
-
-                    <Link
-                      href="/track-map"
-                      className="block group"
-                      onClick={() => setTelemetryOpen(false)}
-                    >
-                      <div className="text-sm font-bold text-white group-hover:text-[#FF2A24] transition-colors flex items-center justify-between">
-                        <span>3D Circuit Simulator</span>
-                        <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
-                      </div>
-                      <p className="text-xs text-neutral-400 font-light mt-0.5">
-                        Interactive WebGL circuit mesh &amp; apex data
-                      </p>
-                    </Link>
                   </div>
                 </div>
 
-                {/* Column 2: Tyres & Race Pace */}
+                {/* Column 2: Tyres & Circuit */}
                 <div className="space-y-4">
                   <div className="text-[11px] font-sans font-semibold uppercase tracking-wider text-neutral-400">
-                    Tyres &amp; Degradation
+                    Tyres &amp; Circuit
                   </div>
                   <div className="space-y-2.5">
                     <Link
@@ -368,41 +352,27 @@ export function TopTacticalHUD() {
                     </Link>
 
                     <Link
-                      href="/race-pace"
+                      href="/track-map"
                       className="block group"
                       onClick={() => setTelemetryOpen(false)}
                     >
                       <div className="text-sm font-bold text-white group-hover:text-[#FF2A24] transition-colors flex items-center justify-between">
-                        <span>Sprint vs GP Pace</span>
+                        <span>3D Circuit Simulator</span>
                         <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
                       </div>
                       <p className="text-xs text-neutral-400 font-light mt-0.5">
-                        Lap-by-lap tyre degradation &amp; median curves
+                        Interactive WebGL circuit mesh &amp; apex data
                       </p>
                     </Link>
                   </div>
                 </div>
 
-                {/* Column 3: Analysis & Incidents */}
+                {/* Column 3: Safety & Incidents */}
                 <div className="space-y-4">
                   <div className="text-[11px] font-sans font-semibold uppercase tracking-wider text-neutral-400">
-                    Analysis &amp; Incidents
+                    Safety &amp; Incidents
                   </div>
                   <div className="space-y-2.5">
-                    <Link
-                      href="/head-to-head"
-                      className="block group"
-                      onClick={() => setTelemetryOpen(false)}
-                    >
-                      <div className="text-sm font-bold text-white group-hover:text-[#FF2A24] transition-colors flex items-center justify-between">
-                        <span>Head to Head</span>
-                        <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
-                      </div>
-                      <p className="text-xs text-neutral-400 font-light mt-0.5">
-                        Sector delta split comparison between rivals
-                      </p>
-                    </Link>
-
                     <Link
                       href="/gravel-trap"
                       className="block group"
@@ -422,7 +392,7 @@ export function TopTacticalHUD() {
                 {/* Column 4: Quick Telemetry Links */}
                 <div className="space-y-4 border-l border-white/[0.08] pl-6 hidden md:block">
                   <div className="text-[11px] font-sans font-semibold uppercase tracking-wider text-neutral-400">
-                    Live Operations
+                    Telemetry Suite
                   </div>
                   <div className="space-y-2.5">
                     <Link
@@ -433,22 +403,8 @@ export function TopTacticalHUD() {
                       Live Sector Splits →
                     </Link>
                     <Link
-                      href="/standings"
-                      className="block text-xs font-semibold text-white hover:text-[#FF2A24] transition-colors"
-                      onClick={() => setTelemetryOpen(false)}
-                    >
-                      World Championship Table →
-                    </Link>
-                    <Link
-                      href="/schedule"
-                      className="block text-xs font-semibold text-white hover:text-[#FF2A24] transition-colors"
-                      onClick={() => setTelemetryOpen(false)}
-                    >
-                      2026 Season Calendar →
-                    </Link>
-                    <Link
                       href="/design-system"
-                      className="block text-xs font-semibold text-neutral-400 hover:text-white transition-colors pt-2"
+                      className="block text-xs font-semibold text-neutral-400 hover:text-white transition-colors pt-1"
                       onClick={() => setTelemetryOpen(false)}
                     >
                       Design Tokens &amp; System →
@@ -461,7 +417,9 @@ export function TopTacticalHUD() {
         )}
       </AnimatePresence>
 
-      {/* STATS MEGA DROPDOWN */}
+      {/* =========================================================================
+          STATS MEGA DROPDOWN (Duels, Pace, Standings & History)
+         ========================================================================= */}
       <AnimatePresence>
         {statsOpen && (
           <>
@@ -469,17 +427,17 @@ export function TopTacticalHUD() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 top-12 z-40 bg-black/60 backdrop-blur-md pointer-events-auto"
+              transition={{ duration: 0.18 }}
+              className="fixed inset-0 top-12 z-[90] bg-black/60 backdrop-blur-md pointer-events-auto"
               onClick={() => setStatsOpen(false)}
             />
 
             <motion.div
-              initial={{ opacity: 0, y: -8 }}
+              initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute top-12 left-0 w-full z-50 bg-[#0B0B0C]/95 backdrop-blur-3xl border-b border-white/[0.08] shadow-2xl py-10 px-6 sm:px-12"
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              className="absolute top-12 left-0 w-full z-[100] bg-[#0B0B0C] border-b border-white/[0.08] shadow-2xl py-9 px-6 sm:px-12 -mt-[1px]"
               onMouseEnter={handleStatsEnter}
               onMouseLeave={handleStatsLeave}
             >
@@ -534,23 +492,23 @@ export function TopTacticalHUD() {
                   </div>
                 </div>
 
-                {/* Column 2: Performance */}
+                {/* Column 2: Duels & Pace Analysis */}
                 <div className="space-y-4">
                   <div className="text-[11px] font-sans font-semibold uppercase tracking-wider text-neutral-400">
-                    Performance
+                    Duels &amp; Pace
                   </div>
                   <div className="space-y-2.5">
                     <Link
-                      href="/driver-stats"
+                      href="/head-to-head"
                       className="block group"
                       onClick={() => setStatsOpen(false)}
                     >
                       <div className="text-sm font-bold text-white group-hover:text-[#FF2A24] transition-colors flex items-center justify-between">
-                        <span>Driver Stats</span>
+                        <span>Head to Head</span>
                         <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
                       </div>
                       <p className="text-xs text-neutral-400 font-light mt-0.5">
-                        Sprint vs Sunday splits, finish distributions &amp; telemetry radar
+                        Teammate qualifying gaps, delta plots &amp; rivalries
                       </p>
                     </Link>
 
@@ -560,7 +518,7 @@ export function TopTacticalHUD() {
                       onClick={() => setStatsOpen(false)}
                     >
                       <div className="text-sm font-bold text-white group-hover:text-[#FF2A24] transition-colors flex items-center justify-between">
-                        <span>Race Pace</span>
+                        <span>Race Pace &amp; Tyre Drop</span>
                         <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
                       </div>
                       <p className="text-xs text-neutral-400 font-light mt-0.5">
@@ -574,7 +532,7 @@ export function TopTacticalHUD() {
                       onClick={() => setStatsOpen(false)}
                     >
                       <div className="text-sm font-bold text-white group-hover:text-[#FF2A24] transition-colors flex items-center justify-between">
-                        <span>Consistency</span>
+                        <span>Consistency Index</span>
                         <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
                       </div>
                       <p className="text-xs text-neutral-400 font-light mt-0.5">
@@ -584,26 +542,12 @@ export function TopTacticalHUD() {
                   </div>
                 </div>
 
-                {/* Column 3: Comparisons */}
+                {/* Column 3: Records & Archives */}
                 <div className="space-y-4">
                   <div className="text-[11px] font-sans font-semibold uppercase tracking-wider text-neutral-400">
-                    Comparisons
+                    Archives
                   </div>
                   <div className="space-y-2.5">
-                    <Link
-                      href="/head-to-head"
-                      className="block group"
-                      onClick={() => setStatsOpen(false)}
-                    >
-                      <div className="text-sm font-bold text-white group-hover:text-[#FF2A24] transition-colors flex items-center justify-between">
-                        <span>Head to Head</span>
-                        <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
-                      </div>
-                      <p className="text-xs text-neutral-400 font-light mt-0.5">
-                        Sector-by-sector rider duels &amp; deltas
-                      </p>
-                    </Link>
-
                     <Link
                       href="/history"
                       className="block group"
@@ -614,13 +558,13 @@ export function TopTacticalHUD() {
                         <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
                       </div>
                       <p className="text-xs text-neutral-400 font-light mt-0.5">
-                        Past championship results and archives
+                        Past championship results, wins &amp; title records
                       </p>
                     </Link>
                   </div>
                 </div>
 
-                {/* Column 4: Live Operations */}
+                {/* Column 4: Quick Links */}
                 <div className="space-y-4 border-l border-white/[0.08] pl-6 hidden md:block">
                   <div className="text-[11px] font-sans font-semibold uppercase tracking-wider text-neutral-400">
                     Live Operations
@@ -631,7 +575,7 @@ export function TopTacticalHUD() {
                       className="block text-xs font-semibold text-white hover:text-[#FF2A24] transition-colors"
                       onClick={() => setStatsOpen(false)}
                     >
-                      Live Timing →
+                      Live Timing Tower →
                     </Link>
                     <Link
                       href="/schedule"
@@ -639,13 +583,6 @@ export function TopTacticalHUD() {
                       onClick={() => setStatsOpen(false)}
                     >
                       2026 Season Calendar →
-                    </Link>
-                    <Link
-                      href="/riders"
-                      className="block text-xs font-semibold text-white hover:text-[#FF2A24] transition-colors"
-                      onClick={() => setStatsOpen(false)}
-                    >
-                      Full Rider Grid →
                     </Link>
                   </div>
                 </div>
@@ -655,7 +592,9 @@ export function TopTacticalHUD() {
         )}
       </AnimatePresence>
 
-      {/* GRID MEGA DROPDOWN (Matches Telemetry & Stats) */}
+      {/* =========================================================================
+          GRID MEGA DROPDOWN (Riders & Teams Paddock)
+         ========================================================================= */}
       <AnimatePresence>
         {gridOpen && (
           <>
@@ -663,25 +602,25 @@ export function TopTacticalHUD() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 top-12 z-40 bg-black/60 backdrop-blur-md pointer-events-auto"
+              transition={{ duration: 0.18 }}
+              className="fixed inset-0 top-12 z-[90] bg-black/60 backdrop-blur-md pointer-events-auto"
               onClick={() => setGridOpen(false)}
             />
 
             <motion.div
-              initial={{ opacity: 0, y: -8 }}
+              initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute top-12 left-0 w-full z-50 bg-[#0B0B0C]/95 backdrop-blur-3xl border-b border-white/[0.08] shadow-2xl py-10 px-6 sm:px-12"
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              className="absolute top-12 left-0 w-full z-[100] bg-[#0B0B0C] border-b border-white/[0.08] shadow-2xl py-9 px-6 sm:px-12 -mt-[1px]"
               onMouseEnter={handleGridEnter}
               onMouseLeave={handleGridLeave}
             >
               <div className="w-full max-w-[960px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12 font-sans">
-                {/* Column 1: Riders */}
+                {/* Column 1: Riders Paddock */}
                 <div className="space-y-4">
                   <div className="text-[11px] font-sans font-semibold uppercase tracking-wider text-neutral-400">
-                    Riders &amp; Grid
+                    Riders Paddock
                   </div>
                   <div className="space-y-2.5">
                     <Link
@@ -708,27 +647,13 @@ export function TopTacticalHUD() {
                         <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
                       </div>
                       <p className="text-xs text-neutral-400 font-light mt-0.5">
-                        Sprint vs Sunday, finish distribution &amp; telemetry
-                      </p>
-                    </Link>
-
-                    <Link
-                      href="/head-to-head"
-                      className="block group"
-                      onClick={() => setGridOpen(false)}
-                    >
-                      <div className="text-sm font-bold text-white group-hover:text-[#FF2A24] transition-colors flex items-center justify-between">
-                        <span>Head-to-Head Duels</span>
-                        <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
-                      </div>
-                      <p className="text-xs text-neutral-400 font-light mt-0.5">
-                        Teammate qualifying &amp; race pace comparisons
+                        Sprint vs Sunday, finish distribution &amp; telemetry radar
                       </p>
                     </Link>
                   </div>
                 </div>
 
-                {/* Column 2: Teams & Constructors */}
+                {/* Column 2: Teams Paddock */}
                 <div className="space-y-4">
                   <div className="text-[11px] font-sans font-semibold uppercase tracking-wider text-neutral-400">
                     Teams &amp; Paddock
@@ -740,7 +665,7 @@ export function TopTacticalHUD() {
                       onClick={() => setGridOpen(false)}
                     >
                       <div className="text-sm font-bold text-white group-hover:text-[#FF2A24] transition-colors flex items-center justify-between">
-                        <span>Teams Paddock</span>
+                        <span>Teams Directory</span>
                         <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
                       </div>
                       <p className="text-xs text-neutral-400 font-light mt-0.5">
@@ -778,57 +703,57 @@ export function TopTacticalHUD() {
                   </div>
                 </div>
 
-                {/* Column 3: Championships */}
+                {/* Column 3: Factory Prototypes */}
                 <div className="space-y-4">
                   <div className="text-[11px] font-sans font-semibold uppercase tracking-wider text-neutral-400">
-                    Championships
+                    Factory Machinery
                   </div>
                   <div className="space-y-2.5">
                     <Link
-                      href="/standings"
+                      href="/teams"
                       className="block group"
                       onClick={() => setGridOpen(false)}
                     >
                       <div className="text-sm font-bold text-white group-hover:text-[#FF2A24] transition-colors flex items-center justify-between">
-                        <span>Driver Standings</span>
+                        <span>Ducati Desmosedici GP25</span>
                         <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
                       </div>
                       <p className="text-xs text-neutral-400 font-light mt-0.5">
-                        Official 2026 World Championship standings
+                        1000cc 90° V4 Desmo, 300+ hp at 18,500 rpm
                       </p>
                     </Link>
 
                     <Link
-                      href="/standings/constructors"
+                      href="/teams"
                       className="block group"
                       onClick={() => setGridOpen(false)}
                     >
                       <div className="text-sm font-bold text-white group-hover:text-[#FF2A24] transition-colors flex items-center justify-between">
-                        <span>Constructor Standings</span>
+                        <span>KTM RC16 Prototype</span>
                         <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
                       </div>
                       <p className="text-xs text-neutral-400 font-light mt-0.5">
-                        Manufacturer points &amp; specs comparison
+                        Carbon-composite beam chassis &amp; WP Apex suspension
                       </p>
                     </Link>
 
                     <Link
-                      href="/standings/teams"
+                      href="/teams"
                       className="block group"
                       onClick={() => setGridOpen(false)}
                     >
                       <div className="text-sm font-bold text-white group-hover:text-[#FF2A24] transition-colors flex items-center justify-between">
-                        <span>Team Standings</span>
+                        <span>Aprilia RS-GP25</span>
                         <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#E10600]" />
                       </div>
                       <p className="text-xs text-neutral-400 font-light mt-0.5">
-                        Championship points accumulated per garage
+                        Counter-rotating crankshaft &amp; ground-effect aero
                       </p>
                     </Link>
                   </div>
                 </div>
 
-                {/* Column 4: Grid Operations */}
+                {/* Column 4: Paddock Operations */}
                 <div className="space-y-4 border-l border-white/[0.08] pl-6 hidden md:block">
                   <div className="text-[11px] font-sans font-semibold uppercase tracking-wider text-neutral-400">
                     Grid Operations
@@ -848,20 +773,6 @@ export function TopTacticalHUD() {
                     >
                       2026 Season Calendar →
                     </Link>
-                    <Link
-                      href="/track-map"
-                      className="block text-xs font-semibold text-white hover:text-[#FF2A24] transition-colors"
-                      onClick={() => setGridOpen(false)}
-                    >
-                      3D Track Simulator →
-                    </Link>
-                    <Link
-                      href="/gravel-trap"
-                      className="block text-xs font-semibold text-white hover:text-[#FF2A24] transition-colors"
-                      onClick={() => setGridOpen(false)}
-                    >
-                      Incident Crash Ledger →
-                    </Link>
                   </div>
                 </div>
               </div>
@@ -870,7 +781,9 @@ export function TopTacticalHUD() {
         )}
       </AnimatePresence>
 
-      {/* Mobile Drawer */}
+      {/* =========================================================================
+          MOBILE DRAWER
+         ========================================================================= */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-white/[0.08] bg-[#0B0B0C]/95 backdrop-blur-2xl px-6 py-6 space-y-4 animate-in slide-in-from-top-2 duration-200">
           <div className="space-y-3 text-sm">
@@ -890,32 +803,11 @@ export function TopTacticalHUD() {
               Live Timing
             </Link>
             <Link
-              href="/standings"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-white font-medium"
-            >
-              Stats
-            </Link>
-            <Link
               href="/schedule"
               onClick={() => setMobileMenuOpen(false)}
               className="block text-white font-medium"
             >
               Calendar
-            </Link>
-            <Link
-              href="/riders"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-white font-medium"
-            >
-              Riders Grid
-            </Link>
-            <Link
-              href="/teams"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-white font-medium"
-            >
-              Teams &amp; Bikes
             </Link>
           </div>
 
@@ -932,13 +824,6 @@ export function TopTacticalHUD() {
                 Lean &amp; Gyro
               </Link>
               <Link
-                href="/tyres-asymmetry"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2 rounded-lg bg-white/[0.04] text-neutral-200"
-              >
-                Tyre Thermals
-              </Link>
-              <Link
                 href="/braking-zones"
                 onClick={() => setMobileMenuOpen(false)}
                 className="p-2 rounded-lg bg-white/[0.04] text-neutral-200"
@@ -946,11 +831,25 @@ export function TopTacticalHUD() {
                 Braking Zones
               </Link>
               <Link
+                href="/tyres-asymmetry"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-lg bg-white/[0.04] text-neutral-200"
+              >
+                Tyre Thermals
+              </Link>
+              <Link
                 href="/track-map"
                 onClick={() => setMobileMenuOpen(false)}
                 className="p-2 rounded-lg bg-white/[0.04] text-neutral-200"
               >
                 3D Track Map
+              </Link>
+              <Link
+                href="/gravel-trap"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-lg bg-white/[0.04] text-neutral-200 col-span-2"
+              >
+                Incident Crash Ledger
               </Link>
             </div>
           </div>
@@ -979,14 +878,7 @@ export function TopTacticalHUD() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="p-2 rounded-lg bg-white/[0.04] text-neutral-200"
               >
-                Teams
-              </Link>
-              <Link
-                href="/driver-stats"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2 rounded-lg bg-white/[0.04] text-neutral-200"
-              >
-                Driver Stats
+                Team Standings
               </Link>
               <Link
                 href="/head-to-head"
@@ -1008,6 +900,35 @@ export function TopTacticalHUD() {
                 className="p-2 rounded-lg bg-white/[0.04] text-neutral-200"
               >
                 History
+              </Link>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-white/[0.08] space-y-2">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+              Grid &amp; Paddock
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <Link
+                href="/riders"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-lg bg-white/[0.04] text-neutral-200"
+              >
+                Riders Grid
+              </Link>
+              <Link
+                href="/driver-stats"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-lg bg-white/[0.04] text-neutral-200"
+              >
+                Driver Stats &amp; Radar
+              </Link>
+              <Link
+                href="/teams"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-lg bg-white/[0.04] text-neutral-200 col-span-2"
+              >
+                Teams Paddock &amp; Bikes
               </Link>
             </div>
           </div>

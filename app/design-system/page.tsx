@@ -86,12 +86,12 @@ function DesignSystemContent() {
   };
 
   const MOTOGP_SURFACES = [
-    { name: 'canvas', hex: '#000000', role: 'True asphalt floor, edge-to-edge pure black', class: 'bg-black' },
-    { name: 'surface-card', hex: '#111111', role: 'Engineered carbon card background', class: 'bg-[#111111]' },
-    { name: 'surface-elevated', hex: '#1A1A1A', role: 'Elevated panel / hover state', class: 'bg-[#1A1A1A]' },
-    { name: 'surface-soft', hex: '#0A0A0A', role: 'Spec table cells & contrast bands', class: 'bg-[#0A0A0A]' },
-    { name: 'hairline', hex: '#262626', role: 'Precision 1px structural hairlines', class: 'bg-[#262626]' },
-    { name: 'hairline-strong', hex: '#383838', role: 'Focused input & table headers', class: 'bg-[#383838]' },
+    { name: 'canvas', hex: '#07080B', role: 'Overview deep obsidian floor, edge-to-edge canvas', class: 'bg-[#07080B]' },
+    { name: 'surface-card', hex: '#0E0F12', role: 'Overview dark glassmorphic card background', class: 'bg-[#0E0F12]' },
+    { name: 'surface-elevated', hex: '#141519', role: 'Elevated pill / control panel / hover state', class: 'bg-[#141519]' },
+    { name: 'surface-soft', hex: '#0A0A0B', role: 'Magic bento & schedule section background', class: 'bg-[#0A0A0B]' },
+    { name: 'hairline', hex: 'rgba(255, 255, 255, 0.08)', role: 'Precision 1px glassmorphic border hairline', class: 'border-white/[0.08]' },
+    { name: 'hairline-strong', hex: 'rgba(255, 255, 255, 0.16)', role: 'Focused input & active card borders', class: 'border-white/[0.16]' },
   ];
 
   const MOTOGP_BRAND_COLORS = [
@@ -113,7 +113,7 @@ function DesignSystemContent() {
   ];
 
   return (
-    <div className="w-full min-h-screen bg-black text-white">
+    <div className="w-full min-h-screen bg-[#07080B] text-white">
       {/* Hero Header (Editorial Style) */}
       <div className="border-b border-neutral-800 bg-[#0A0A0A] px-6 py-10">
         <div className="max-w-[1560px] mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">

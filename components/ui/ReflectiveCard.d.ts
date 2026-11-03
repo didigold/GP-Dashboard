@@ -16,9 +16,9 @@ export interface ReflectiveCardProps {
   /** Whether to show the colored status dot in top right */
   showStatusDot?: boolean;
   /** Small label above the ID number */
-  idLabel?: string;
+  idLabel?: ReactNode;
   /** ID number / stats value shown in the footer */
-  idValue?: string;
+  idValue?: ReactNode;
   /** Custom content for the card. Replaces the badge, name and footer */
   children?: ReactNode;
   /** Dark graphite or light silver metal, with matching text */
@@ -67,6 +67,10 @@ export interface ReflectiveCardProps {
   style?: CSSProperties;
   /** Oversized background number / watermark displayed behind the driver */
   bgNumber?: string | number;
+  /** Custom color for the background racing number */
+  bgNumColor?: string;
+  /** Custom opacity for the background racing number */
+  bgNumOpacity?: number;
   /** Driver image URL or motorcycle image URL displayed in the card */
   imageSrc?: string;
   /** Alt text for image */

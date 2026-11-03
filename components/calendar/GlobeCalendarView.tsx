@@ -3,25 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { CircuitInfo, CHAMPIONSHIP_ROUNDS_2026 } from '@/lib/data/circuits-data';
-import { Badge } from '@/components/ui/badge';
-import {
-  RotateCcw,
-  Play,
-  Pause,
-  Compass,
-  MapPin,
-  ExternalLink,
-  FileText,
-  ChevronRight,
-  Maximize2,
-  Crosshair,
-  Sparkles,
-  Info,
-  Globe,
-  Map as MapIcon,
-  ZoomIn,
-  ZoomOut,
-} from 'lucide-react';
+import { Crosshair } from 'lucide-react';
 
 interface GlobeCalendarViewProps {
   selectedCircuit: CircuitInfo;
@@ -47,7 +29,7 @@ function CountryFlag({ iso, country, className = 'w-7 h-5' }: { iso?: string; co
         alt={country || resolvedIso.toUpperCase()}
         loading="lazy"
         onError={() => setImageError(true)}
-        className={`${className} object-cover rounded shadow border border-white/10 shrink-0`}
+        className={`${className} object-cover rounded-[2px] ring-1 ring-inset ring-black/30 shrink-0`}
       />
     );
   }
@@ -64,97 +46,186 @@ function latLngToVector3(lat: number, lng: number, radius: number): THREE.Vector
   return new THREE.Vector3(x, y, z);
 }
 
-// Procedural tactical Earth texture with vibrant continents, navy ocean, and graticule grid (matching Image 1)
-function createTacticalEarthTexture(): THREE.CanvasTexture {
+// Simplified but recognizable continent outlines (equirectangular, lng/lat)
+const CONTINENTS: [number, number][][] = [
+  // North America
+  [
+    [-168, 65], [-160, 71], [-140, 70], [-125, 70], [-110, 68], [-95, 70], [-85, 73],
+    [-80, 70], [-75, 62], [-65, 60], [-55, 52], [-60, 45], [-70, 42], [-75, 35],
+    [-81, 25], [-90, 29], [-97, 26], [-105, 22], [-115, 30], [-125, 40], [-130, 48],
+    [-140, 58], [-150, 60], [-165, 62],
+  ],
+  // Central America
+  [
+    [-92, 17], [-85, 16], [-80, 9], [-77, 8], [-82, 12], [-88, 18],
+  ],
+  // South America
+  [
+    [-81, 10], [-75, 11], [-70, 12], [-60, 10], [-52, 5], [-45, -2], [-38, -6],
+    [-35, -10], [-40, -20], [-45, -24], [-50, -30], [-55, -38], [-60, -42],
+    [-65, -48], [-68, -55], [-72, -52], [-73, -45], [-75, -38], [-71, -30],
+    [-70, -20], [-75, -15], [-78, -5], [-80, 2],
+  ],
+  // Africa
+  [
+    [-17, 15], [-10, 20], [0, 24], [10, 32], [20, 33], [30, 32], [35, 25], [40, 15],
+    [43, 10], [51, 12], [48, 2], [42, -5], [40, -15], [35, -22], [32, -28],
+    [25, -34], [18, -34], [13, -25], [10, -15], [9, -5], [0, 5], [-8, 5], [-15, 10],
+  ],
+  // Eurasia (Europe + Asia)
+  [
+    [-10, 36], [-9, 44], [-2, 49], [3, 52], [6, 58], [12, 60], [18, 60], [22, 65],
+    [28, 70], [35, 72], [45, 70], [60, 70], [75, 72], [90, 75], [105, 76], [120, 73],
+    [135, 72], [150, 72], [165, 68], [170, 62], [160, 58], [150, 55], [143, 48],
+    [138, 42], [130, 35], [122, 32], [120, 25], [112, 22], [105, 10], [100, 8],
+    [98, 15], [92, 20], [88, 22], [80, 15], [76, 8], [72, 20], [66, 25], [58, 25],
+    [50, 28], [44, 38], [38, 42], [34, 36], [28, 38], [22, 38], [16, 42], [12, 45],
+    [8, 44], [3, 43], [-2, 37], [-6, 36],
+  ],
+  // Australia
+  [
+    [113, -22], [115, -33], [120, -34], [129, -32], [137, -35], [145, -38], [150, -37],
+    [153, -28], [153, -25], [146, -19], [142, -11], [136, -12], [130, -11], [125, -14],
+    [117, -20],
+  ],
+  // Greenland
+  [
+    [-45, 60], [-30, 68], [-22, 70], [-20, 76], [-30, 82], [-45, 83], [-58, 82],
+    [-68, 77], [-55, 70], [-50, 65],
+  ],
+  // Japan
+  [
+    [130, 32], [136, 35], [140, 36], [142, 40], [145, 44], [142, 45], [140, 42],
+    [136, 37], [132, 34],
+  ],
+  // United Kingdom / Ireland
+  [
+    [-8, 50], [-2, 50], [1, 51], [2, 53], [-1, 56], [-3, 58], [-6, 58], [-5, 55],
+    [-6, 53], [-5, 52],
+  ],
+  // Madagascar
+  [
+    [44, -12], [50, -15], [50, -22], [46, -26], [43, -22], [43, -16],
+  ],
+  // Indonesia / Malaysia archipelago
+  [
+    [95, 5], [105, 2], [115, -1], [125, 1], [135, -2], [140, -5], [130, -8],
+    [120, -9], [110, -8], [100, -5], [95, 0],
+  ],
+  // New Zealand
+  [
+    [172, -34], [176, -38], [178, -40], [174, -45], [168, -47], [166, -44], [170, -40],
+  ],
+];
+
+// Procedural Earth texture: deep ocean gradient, recognizable continents, soft coastal glow
+function createEarthTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 2048;
   canvas.height = 1024;
   const ctx = canvas.getContext('2d');
 
+  const project = (lng: number, lat: number): [number, number] => [
+    ((lng + 180) / 360) * canvas.width,
+    ((90 - lat) / 180) * canvas.height,
+  ];
+
   if (ctx) {
-    // Rich deep navy ocean base
-    ctx.fillStyle = '#0B1426';
+    // Ocean depth gradient (lighter equator, darker poles)
+    const oceanGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    oceanGradient.addColorStop(0, '#060d1a');
+    oceanGradient.addColorStop(0.5, '#0d2145');
+    oceanGradient.addColorStop(1, '#060d1a');
+    ctx.fillStyle = oceanGradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Subtle latitude and longitude graticule grid
-    ctx.strokeStyle = 'rgba(70, 110, 180, 0.15)';
-    ctx.lineWidth = 1;
+    // Soft radial ocean light around the equator
+    const oceanGlow = ctx.createRadialGradient(
+      canvas.width * 0.5,
+      canvas.height * 0.5,
+      40,
+      canvas.width * 0.5,
+      canvas.height * 0.5,
+      canvas.width * 0.55
+    );
+    oceanGlow.addColorStop(0, 'rgba(40, 110, 200, 0.22)');
+    oceanGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = oceanGlow;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // Graticule
+    ctx.strokeStyle = 'rgba(90, 140, 210, 0.12)';
+    ctx.lineWidth = 1;
     for (let lat = -75; lat <= 75; lat += 15) {
-      const y = ((90 - lat) / 180) * canvas.height;
+      const [, y] = project(0, lat);
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(canvas.width, y);
       ctx.stroke();
     }
-
     for (let lng = -180; lng <= 180; lng += 15) {
-      const x = ((lng + 180) / 360) * canvas.width;
+      const [x] = project(lng, 0);
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, canvas.height);
       ctx.stroke();
     }
 
-    // Equator line in vibrant racing red
-    ctx.strokeStyle = 'rgba(225, 6, 0, 0.4)';
+    // Equator
+    ctx.strokeStyle = 'rgba(225, 6, 0, 0.35)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(0, canvas.height / 2);
     ctx.lineTo(canvas.width, canvas.height / 2);
     ctx.stroke();
 
-    // Stylized continent landmasses (tactical aerospace theme)
-    const landClusters = [
-      { x: 460, y: 320, rx: 220, ry: 140 }, // North America
-      { x: 620, y: 680, rx: 130, ry: 200 }, // South America
-      { x: 1060, y: 300, rx: 130, ry: 90 }, // Europe
-      { x: 1090, y: 550, rx: 160, ry: 180 }, // Africa
-      { x: 1470, y: 340, rx: 290, ry: 160 }, // Asia
-      { x: 1660, y: 730, rx: 130, ry: 100 }, // Australia
-      { x: 990, y: 260, rx: 35, ry: 40 },   // UK
-      { x: 1720, y: 380, rx: 40, ry: 60 },  // Japan
-      { x: 1540, y: 640, rx: 90, ry: 45 },  // Indonesia / Malaysia
-    ];
+    // Build combined land path
+    const landPath = new Path2D();
+    CONTINENTS.forEach((poly) => {
+      poly.forEach(([lng, lat], i) => {
+        const [x, y] = project(lng, lat);
+        if (i === 0) landPath.moveTo(x, y);
+        else landPath.lineTo(x, y);
+      });
+      landPath.closePath();
+    });
 
     // Land base fill
-    ctx.fillStyle = '#182740';
-    landClusters.forEach((cluster) => {
+    const landGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    landGradient.addColorStop(0, '#1d3a2f');
+    landGradient.addColorStop(0.5, '#274b38');
+    landGradient.addColorStop(1, '#1d3a2f');
+    ctx.fillStyle = landGradient;
+    ctx.fill(landPath);
+
+    // Subtle terrain patches clipped to land
+    ctx.save();
+    ctx.clip(landPath);
+    for (let i = 0; i < 900; i++) {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height;
+      const r = 6 + Math.random() * 26;
+      const shade = Math.random() > 0.5 ? 'rgba(70, 110, 70, 0.18)' : 'rgba(30, 55, 40, 0.20)';
+      ctx.fillStyle = shade;
       ctx.beginPath();
-      ctx.ellipse(cluster.x, cluster.y, cluster.rx, cluster.ry, 0, 0, Math.PI * 2);
+      ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fill();
-    });
+    }
+    ctx.restore();
 
-    // Coastal glowing outline
-    ctx.strokeStyle = 'rgba(0, 245, 212, 0.35)';
+    // Coastal glow
+    ctx.strokeStyle = 'rgba(0, 245, 212, 0.45)';
     ctx.lineWidth = 2;
-    landClusters.forEach((cluster) => {
-      ctx.beginPath();
-      ctx.ellipse(cluster.x, cluster.y, cluster.rx, cluster.ry, 0, 0, Math.PI * 2);
-      ctx.stroke();
-    });
+    ctx.stroke(landPath);
 
-    // High density telemetry dot grid over land
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-    landClusters.forEach((cluster) => {
-      const dotsX = Math.floor(cluster.rx / 7);
-      const dotsY = Math.floor(cluster.ry / 7);
-      for (let i = -dotsX; i <= dotsX; i++) {
-        for (let j = -dotsY; j <= dotsY; j++) {
-          const normDist = (i * i) / (dotsX * dotsX) + (j * j) / (dotsY * dotsY);
-          if (normDist <= 0.95 && Math.random() > 0.18) {
-            const px = cluster.x + i * 7 + (Math.random() * 2 - 1);
-            const py = cluster.y + j * 7 + (Math.random() * 2 - 1);
-            ctx.beginPath();
-            ctx.arc(px, py, 1.4, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-      }
-    });
+    // Coastline highlight
+    ctx.strokeStyle = 'rgba(180, 255, 240, 0.25)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke(landPath);
   }
 
   const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.ClampToEdgeWrapping;
   return texture;
@@ -163,13 +234,14 @@ function createTacticalEarthTexture(): THREE.CanvasTexture {
 export function GlobeCalendarView({
   selectedCircuit,
   onSelectCircuit,
-  onOpenModal,
 }: GlobeCalendarViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [displayMode, setDisplayMode] = useState<'globe' | 'map'>('globe');
   const [hoveredCircuit, setHoveredCircuit] = useState<CircuitInfo | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
-  const [isAutoRotating, setIsAutoRotating] = useState(true);
+
+  const isAutoRotatingRef = useRef(true);
+  const selectedCircuitRef = useRef(selectedCircuit);
+  selectedCircuitRef.current = selectedCircuit;
 
   const globeGroupRef = useRef<THREE.Group | null>(null);
   const targetRotationRef = useRef<{ x: number; y: number } | null>(null);
@@ -183,11 +255,8 @@ export function GlobeCalendarView({
   // Directly center the globe on the selected circuit
   const focusOnCircuit = useCallback((circuit: CircuitInfo) => {
     if (!globeGroupRef.current) return;
-
-    // Mathematical formula to align (lat, lng) with +Z camera vector
     const targetY = (-90 - circuit.lng) * (Math.PI / 180);
     const targetX = -(circuit.lat) * (Math.PI / 180);
-
     targetRotationRef.current = { x: targetX, y: targetY };
   }, []);
 
@@ -198,20 +267,19 @@ export function GlobeCalendarView({
   }, [selectedCircuit, focusOnCircuit]);
 
   useEffect(() => {
-    if (displayMode !== 'globe' || !containerRef.current) return;
+    if (!containerRef.current) return;
     const container = containerRef.current;
     const width = container.clientWidth;
     const height = container.clientHeight || 580;
 
-    // 1. Scene
+    // Scene
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    // 2. Space Starfield (twinkling star background like Image 1)
-    const starCount = 1600;
+    // Starfield
+    const starCount = 1400;
     const starGeometry = new THREE.BufferGeometry();
     const starPositions = new Float32Array(starCount * 3);
-
     for (let i = 0; i < starCount * 3; i += 3) {
       starPositions[i] = (Math.random() - 0.5) * 1600;
       starPositions[i + 1] = (Math.random() - 0.5) * 1600;
@@ -219,20 +287,20 @@ export function GlobeCalendarView({
     }
     starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
     const starMaterial = new THREE.PointsMaterial({
-      color: 0xaaccff,
-      size: 1.3,
+      color: 0x9fc4ff,
+      size: 1.1,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.7,
     });
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // 3. Camera
+    // Camera
     const camera = new THREE.PerspectiveCamera(45, width / height, 1, 2500);
     camera.position.set(0, 0, 310);
     cameraRef.current = camera;
 
-    // 4. Renderer
+    // Renderer
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
@@ -244,118 +312,95 @@ export function GlobeCalendarView({
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
-    // 5. Globe Root Group
+    // Globe root group
     const globeGroup = new THREE.Group();
     globeGroupRef.current = globeGroup;
     scene.add(globeGroup);
 
     const GLOBE_RADIUS = 100;
 
-    // 6. Earth Sphere Mesh
-    const earthGeometry = new THREE.SphereGeometry(GLOBE_RADIUS, 64, 64);
-    const earthTexture = createTacticalEarthTexture();
+    // Earth sphere
+    const earthGeometry = new THREE.SphereGeometry(GLOBE_RADIUS, 96, 96);
+    const earthTexture = createEarthTexture();
+    earthTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
     const earthMaterial = new THREE.MeshPhongMaterial({
       map: earthTexture,
       color: 0xffffff,
-      emissive: 0x07111e,
-      specular: 0x4466aa,
-      shininess: 25,
+      emissive: 0x020a14,
+      specular: 0x2a4a78,
+      shininess: 18,
     });
     const earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
     globeGroup.add(earthMesh);
 
-    // 7. Atmospheric Fresnel Rim Glow
-    const atmosphereGeometry = new THREE.SphereGeometry(GLOBE_RADIUS * 1.025, 48, 48);
+    // Atmosphere rim glow
+    const atmosphereGeometry = new THREE.SphereGeometry(GLOBE_RADIUS * 1.02, 48, 48);
     const atmosphereMaterial = new THREE.MeshBasicMaterial({
-      color: 0x3366cc,
+      color: 0x2f6fcc,
       transparent: true,
-      opacity: 0.28,
+      opacity: 0.22,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
     });
     const atmosphereMesh = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
     globeGroup.add(atmosphereMesh);
 
-    // Outer Cyan Halo
-    const outerHaloGeometry = new THREE.SphereGeometry(GLOBE_RADIUS * 1.065, 32, 32);
-    const outerHaloMaterial = new THREE.MeshBasicMaterial({
-      color: 0x00f5d4,
-      transparent: true,
-      opacity: 0.08,
-      side: THREE.BackSide,
-      blending: THREE.AdditiveBlending,
-    });
-    const outerHaloMesh = new THREE.Mesh(outerHaloGeometry, outerHaloMaterial);
-    globeGroup.add(outerHaloMesh);
-
-    // 8. Lighting (Direct Front Light to ensure entire earth is beautifully visible)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.8);
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2.1);
     scene.add(ambientLight);
 
-    const frontLight = new THREE.DirectionalLight(0xffffff, 2.4);
+    const frontLight = new THREE.DirectionalLight(0xffffff, 1.8);
     frontLight.position.set(0, 50, 320);
     scene.add(frontLight);
 
-    const sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
     sunLight.position.set(300, 200, 250);
     scene.add(sunLight);
 
-    const rimLight = new THREE.DirectionalLight(0x2266cc, 1.8);
+    const rimLight = new THREE.DirectionalLight(0x2266cc, 1.2);
     rimLight.position.set(-300, -100, -150);
     scene.add(rimLight);
 
-    // 9. Add Grand Prix Markers
+    // GP markers
     const markerHitMeshes: THREE.Mesh[] = [];
 
     CHAMPIONSHIP_ROUNDS_2026.forEach((circuit) => {
       const position = latLngToVector3(circuit.lat, circuit.lng, GLOBE_RADIUS);
       const isSelected = selectedCircuit?.id === circuit.id;
       const isCurrent = circuit.status === 'CURRENT';
-
-      // Matching colors from user's Image 1: Green for scheduled/finished events, Red with pulse for selected/active
-      const markerColor = isSelected ? 0xe10600 : isCurrent ? 0xe10600 : 0x00f5d4;
+      const markerColor = isSelected || isCurrent ? 0xe10600 : 0x00f5d4;
 
       const markerGroup = new THREE.Group();
       markerGroup.position.copy(position);
-
       markerGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), position.clone().normalize());
 
-      // Vertical laser beacon
-      const pinHeight = isSelected || isCurrent ? 14 : 9;
-      const pinGeom = new THREE.CylinderGeometry(0.7, 0.7, pinHeight, 8);
+      const pinHeight = isSelected || isCurrent ? 12 : 8;
+      const pinGeom = new THREE.CylinderGeometry(0.6, 0.6, pinHeight, 8);
       pinGeom.translate(0, pinHeight / 2, 0);
       const pinMat = new THREE.MeshBasicMaterial({
         color: markerColor,
         transparent: true,
         opacity: isSelected || isCurrent ? 0.95 : 0.75,
       });
-      const pinMesh = new THREE.Mesh(pinGeom, pinMat);
-      markerGroup.add(pinMesh);
+      markerGroup.add(new THREE.Mesh(pinGeom, pinMat));
 
-      // Marker Head Sphere (prominent pin head)
-      const headGeom = new THREE.SphereGeometry(isSelected ? 3.6 : 2.5, 16, 16);
+      const headGeom = new THREE.SphereGeometry(isSelected ? 3.2 : 2.2, 16, 16);
       headGeom.translate(0, pinHeight, 0);
-      const headMat = new THREE.MeshBasicMaterial({
-        color: markerColor,
-      });
-      const headMesh = new THREE.Mesh(headGeom, headMat);
-      markerGroup.add(headMesh);
+      markerGroup.add(new THREE.Mesh(headGeom, new THREE.MeshBasicMaterial({ color: markerColor })));
 
-      // Selected white ring around pin head (matching Image 1!)
       if (isSelected) {
-        const ringBorderGeom = new THREE.RingGeometry(3.6, 4.4, 32);
+        const ringBorderGeom = new THREE.RingGeometry(3.2, 4.0, 32);
         ringBorderGeom.translate(0, pinHeight, 0);
-        const ringBorderMat = new THREE.MeshBasicMaterial({
-          color: 0xffffff,
-          side: THREE.DoubleSide,
-        });
-        const ringBorderMesh = new THREE.Mesh(ringBorderGeom, ringBorderMat);
-        markerGroup.add(ringBorderMesh);
+        markerGroup.add(
+          new THREE.Mesh(
+            ringBorderGeom,
+            new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+          )
+        );
       }
 
-      // Radar pulse ring on ground for selected or active circuit
       if (isSelected || isCurrent) {
-        const ringGeom = new THREE.RingGeometry(2, 6.5, 32);
+        const ringGeom = new THREE.RingGeometry(2, 6, 32);
         ringGeom.rotateX(-Math.PI / 2);
         const ringMat = new THREE.MeshBasicMaterial({
           color: markerColor,
@@ -368,13 +413,9 @@ export function GlobeCalendarView({
         markerGroup.add(ringMesh);
       }
 
-      // Hit mesh for clicking & hovering
-      const hitGeom = new THREE.SphereGeometry(7, 12, 12);
+      const hitGeom = new THREE.SphereGeometry(6, 12, 12);
       hitGeom.translate(0, pinHeight, 0);
-      const hitMat = new THREE.MeshBasicMaterial({
-        visible: false,
-      });
-      const hitMesh = new THREE.Mesh(hitGeom, hitMat);
+      const hitMesh = new THREE.Mesh(hitGeom, new THREE.MeshBasicMaterial({ visible: false }));
       hitMesh.userData = { circuit };
       markerGroup.add(hitMesh);
       markerHitMeshes.push(hitMesh);
@@ -386,13 +427,14 @@ export function GlobeCalendarView({
       focusOnCircuit(selectedCircuit);
     }
 
-    // 10. Pointer Events
+    // Pointer events
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
     const handlePointerDown = (e: MouseEvent | TouchEvent) => {
       isDraggingRef.current = true;
       targetRotationRef.current = null;
+      isAutoRotatingRef.current = false;
       const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
       const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
       previousMousePositionRef.current = { x: clientX, y: clientY };
@@ -405,32 +447,24 @@ export function GlobeCalendarView({
       if (isDraggingRef.current && globeGroupRef.current) {
         const deltaX = clientX - previousMousePositionRef.current.x;
         const deltaY = clientY - previousMousePositionRef.current.y;
-
         globeGroupRef.current.rotation.y += deltaX * 0.005;
         globeGroupRef.current.rotation.x += deltaY * 0.005;
-
         globeGroupRef.current.rotation.x = Math.max(-1.2, Math.min(1.2, globeGroupRef.current.rotation.x));
-
         previousMousePositionRef.current = { x: clientX, y: clientY };
         return;
       }
 
-      // Hover Raycast
       if ('clientX' in e && containerRef.current && cameraRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
         mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
         raycaster.setFromCamera(mouse, cameraRef.current);
         const intersects = raycaster.intersectObjects(markerHitMeshes);
 
         if (intersects.length > 0) {
           const hovered = intersects[0].object.userData.circuit as CircuitInfo;
           setHoveredCircuit(hovered);
-          setTooltipPos({
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top,
-          });
+          setTooltipPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
           container.style.cursor = 'pointer';
         } else {
           setHoveredCircuit(null);
@@ -457,11 +491,8 @@ export function GlobeCalendarView({
         const clickedCircuit = intersects[0].object.userData.circuit as CircuitInfo;
         onSelectCircuit(clickedCircuit);
         focusOnCircuit(clickedCircuit);
-
         const cardElem = document.getElementById(`circuit-card-${clickedCircuit.id}`);
-        if (cardElem) {
-          cardElem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        if (cardElem) cardElem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     };
 
@@ -483,24 +514,21 @@ export function GlobeCalendarView({
     };
     domElement.addEventListener('wheel', handleWheel, { passive: false });
 
-    // 11. Animation Loop
-    let clock = new THREE.Clock();
+    // Animation loop
+    const clock = new THREE.Clock();
 
     const animate = () => {
       reqIdRef.current = requestAnimationFrame(animate);
-      const delta = clock.getDelta();
       const time = clock.getElapsedTime();
 
-      // Pulsing radar ring
       const radar = globeGroup.getObjectByName('radarRing') as THREE.Mesh | undefined;
       if (radar) {
-        const scale = 1 + (time * 1.5) % 2.5;
+        const scale = 1 + ((time * 1.5) % 2.5);
         radar.scale.set(scale, scale, scale);
         const mat = radar.material as THREE.MeshBasicMaterial;
         mat.opacity = Math.max(0, 0.8 - (scale - 1) * 0.35);
       }
 
-      // Smooth camera interpolation towards target circuit
       if (targetRotationRef.current && globeGroupRef.current) {
         const target = targetRotationRef.current;
         globeGroupRef.current.rotation.x += (target.x - globeGroupRef.current.rotation.x) * 0.08;
@@ -508,16 +536,12 @@ export function GlobeCalendarView({
         let diffY = target.y - globeGroupRef.current.rotation.y;
         while (diffY > Math.PI) diffY -= Math.PI * 2;
         while (diffY < -Math.PI) diffY += Math.PI * 2;
-
         globeGroupRef.current.rotation.y += diffY * 0.08;
 
-        if (
-          Math.abs(diffY) < 0.005 &&
-          Math.abs(target.x - globeGroupRef.current.rotation.x) < 0.005
-        ) {
+        if (Math.abs(diffY) < 0.005 && Math.abs(target.x - globeGroupRef.current.rotation.x) < 0.005) {
           targetRotationRef.current = null;
         }
-      } else if (isAutoRotating && !isDraggingRef.current && globeGroupRef.current) {
+      } else if (isAutoRotatingRef.current && !isDraggingRef.current && globeGroupRef.current) {
         globeGroupRef.current.rotation.y += 0.0018;
       }
 
@@ -553,112 +577,55 @@ export function GlobeCalendarView({
 
       earthGeometry.dispose();
       earthMaterial.dispose();
+      earthTexture.dispose();
       starGeometry.dispose();
       starMaterial.dispose();
       renderer.dispose();
     };
-  }, [displayMode, focusOnCircuit, isAutoRotating, onSelectCircuit, selectedCircuit]);
+  }, [focusOnCircuit, onSelectCircuit, selectedCircuit]);
+
+  const handleRecenter = () => {
+    isAutoRotatingRef.current = true;
+    focusOnCircuit(selectedCircuitRef.current);
+  };
 
   return (
-    <div className="relative w-full h-full min-h-[500px] lg:min-h-[600px] rounded-3xl bg-[#060810] border border-white/[0.08] overflow-hidden select-none shadow-2xl flex flex-col justify-between">
-      {/* Top HUD Controls Overlay (Inspired by reference Image 1 & 2) */}
-      <div className="relative z-20 p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 pointer-events-auto bg-gradient-to-b from-black/80 via-black/40 to-transparent">
-        <div className="flex items-center gap-2.5">
-          <CountryFlag iso={selectedCircuit.country_code} country={selectedCircuit.country} className="w-7 h-5" />
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#E10600]">
-                Round {selectedCircuit.round_number}
-              </span>
-              <span className="text-xs text-neutral-400 font-sans">· {selectedCircuit.country}</span>
-            </div>
-            <div className="text-sm font-sans font-bold text-white leading-tight">
-              {selectedCircuit.name}
-            </div>
+    <div className="relative w-full h-full bg-[#05070E] overflow-hidden select-none">
+      {/* Top-left circuit identity */}
+      <div className="absolute top-4 left-4 z-20 flex items-center gap-2.5 pointer-events-none">
+        <CountryFlag iso={selectedCircuit.country_code} country={selectedCircuit.country} className="w-7 h-5" />
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#E10600]">
+              Round {selectedCircuit.round_number}
+            </span>
+            <span className="text-[11px] text-neutral-400 font-sans">· {selectedCircuit.country}</span>
           </div>
-        </div>
-
-        {/* View mode toggle: 3D Globe vs Circuit Map (Direct inspired by Image 1 & 2 transition!) */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center p-1 bg-white/[0.06] border border-white/[0.1] rounded-full text-xs font-sans">
-            <button
-              onClick={() => setDisplayMode('globe')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all ${
-                displayMode === 'globe'
-                  ? 'bg-[#E10600] text-white font-bold shadow'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span>Globe</span>
-            </button>
-
-            <button
-              onClick={() => setDisplayMode('map')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all ${
-                displayMode === 'map'
-                  ? 'bg-cyan-500 text-black font-bold shadow'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              <MapIcon className="w-3.5 h-3.5" />
-              <span>Circuit Map</span>
-            </button>
+          <div className="text-sm font-sans font-bold text-white leading-tight">
+            {selectedCircuit.name}
           </div>
-
-          {displayMode === 'globe' && (
-            <button
-              onClick={() => setIsAutoRotating(!isAutoRotating)}
-              className={`p-2 rounded-full border text-xs transition-all ${
-                isAutoRotating
-                  ? 'bg-white/10 text-white border-white/20'
-                  : 'bg-white/[0.04] text-neutral-400 border-white/[0.08] hover:text-white'
-              }`}
-              title="Toggle Auto Rotation"
-            >
-              {isAutoRotating ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-            </button>
-          )}
-
-          {displayMode === 'globe' && (
-            <button
-              onClick={() => focusOnCircuit(selectedCircuit)}
-              className="p-2 rounded-full bg-white/[0.06] hover:bg-[#E10600]/20 text-neutral-300 hover:text-[#FF2A24] border border-white/[0.08] text-xs transition-colors"
-              title="Recenter on Track"
-            >
-              <Crosshair className="w-3.5 h-3.5" />
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Main View Area: 3D Globe or Circuit Map (Image 2 Street View!) */}
-      {displayMode === 'globe' ? (
-        <div ref={containerRef} className="absolute inset-0 w-full h-full z-10 cursor-grab active:cursor-grabbing" />
-      ) : (
-        /* Circuit Map Mode (High-res dark OpenStreetMap view showing exact track roads & layout in town, exactly like Image 2!) */
-        <div className="absolute inset-0 w-full h-full z-10 bg-[#090C15] overflow-hidden">
-          <iframe
-            title={`Map of ${selectedCircuit.name}`}
-            src={`https://www.openstreetmap.org/export/embed.html?bbox=${selectedCircuit.lng - 0.035}%2C${selectedCircuit.lat - 0.02}%2C${selectedCircuit.lng + 0.035}%2C${selectedCircuit.lat + 0.02}&layer=mapnik&marker=${selectedCircuit.lat}%2C${selectedCircuit.lng}`}
-            className="w-full h-full border-none filter invert-[90%] hue-rotate-180 contrast-[115%] brightness-[90%]"
-            loading="lazy"
-          />
-          {/* Subtle dark vignette overlay */}
-          <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_80px_rgba(0,0,0,0.8)]" />
-        </div>
-      )}
+      {/* Globe canvas */}
+      <div ref={containerRef} className="absolute inset-0 w-full h-full z-10 cursor-grab active:cursor-grabbing" />
 
-      {/* Hover Tooltip in 3D mode */}
-      {hoveredCircuit && tooltipPos && displayMode === 'globe' && (
+      {/* Recenter / auto-locate icon */}
+      <button
+        onClick={handleRecenter}
+        className="absolute bottom-5 right-5 z-30 p-2.5 rounded-full bg-black/70 backdrop-blur-xl hover:bg-[#E10600]/25 text-neutral-300 hover:text-[#FF2A24] border border-white/15 transition-colors shadow-xl"
+        title="Recenter on selected circuit"
+      >
+        <Crosshair className="w-4 h-4" />
+      </button>
+
+      {/* Hover tooltip */}
+      {hoveredCircuit && tooltipPos && (
         <div
-          className="absolute z-30 pointer-events-none transform -translate-x-1/2 -translate-y-full mb-3 px-3.5 py-2.5 rounded-2xl bg-[#11131C]/95 backdrop-blur-xl border border-white/[0.15] shadow-2xl text-left min-w-[200px]"
-          style={{
-            left: `${tooltipPos.x}px`,
-            top: `${tooltipPos.y}px`,
-          }}
+          className="absolute z-30 pointer-events-none transform -translate-x-1/2 -translate-y-full mb-3 px-3.5 py-2.5 rounded-xl bg-[#11131C]/95 backdrop-blur-xl border border-white/[0.15] shadow-2xl text-left min-w-[200px]"
+          style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
         >
-          <div className="flex items-center justify-between gap-2 text-xs font-mono text-[#E10600]">
+          <div className="flex items-center justify-between gap-2 text-xs font-sans text-[#E10600]">
             <CountryFlag iso={hoveredCircuit.country_code} country={hoveredCircuit.country} className="w-5 h-3.5" />
             <span className="font-bold">Round {hoveredCircuit.round_number}</span>
           </div>
@@ -670,77 +637,6 @@ export function GlobeCalendarView({
           </div>
         </div>
       )}
-
-      {/* Bottom Floating Tactical Circuit Bar */}
-      <div className="relative z-30 p-3.5 sm:p-4 bg-[#0B0F1C] backdrop-blur-2xl border-t border-white/[0.12] rounded-b-3xl flex flex-wrap items-center justify-between gap-3 pointer-events-auto shadow-2xl">
-        <div className="flex items-center gap-3">
-          {/* Track SVG mini preview */}
-          <div className="w-14 h-11 bg-white/[0.04] rounded-xl p-1 flex items-center justify-center shrink-0 border border-white/[0.08]">
-            <svg viewBox="0 0 200 120" className="w-full h-full max-h-9">
-              <path
-                d={selectedCircuit.svg_path}
-                fill="none"
-                stroke={selectedCircuit.status === 'CURRENT' ? '#E10600' : '#FFFFFF'}
-                strokeWidth="4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-
-          <div>
-            <div className="text-xs font-mono text-neutral-400 flex items-center gap-2">
-              <span>{selectedCircuit.length_km} km</span>
-              <span>·</span>
-              <span>{selectedCircuit.corners} Turns</span>
-              <span>·</span>
-              <span className="text-[#FF2A24] font-semibold">{selectedCircuit.longest_straight_m}m Straight</span>
-            </div>
-            <div className="text-xs text-neutral-300 font-mono mt-0.5">
-              Lap Record: <span className="text-white font-bold">{selectedCircuit.lap_record.time}</span> ({selectedCircuit.lap_record.rider})
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {selectedCircuit.pdf_url && (
-            <a
-              href={selectedCircuit.pdf_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-[#E10600]/25 hover:text-[#FF2A24] text-xs font-sans font-semibold text-neutral-200 transition-colors border border-white/[0.08]"
-              title="Official MotoGP Circuit Information Sheet (PDF)"
-            >
-              <FileText className="w-3.5 h-3.5 text-[#E10600]" />
-              <span>MotoGP Sheet</span>
-              <ExternalLink className="w-3 h-3 opacity-60" />
-            </a>
-          )}
-
-          {selectedCircuit.osm_url && (
-            <a
-              href={selectedCircuit.osm_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-cyan-500/25 hover:text-cyan-300 text-xs font-sans font-semibold text-neutral-200 transition-colors border border-white/[0.08]"
-              title="Open on OpenStreetMap"
-            >
-              <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Map</span>
-              <ExternalLink className="w-3 h-3 opacity-60" />
-            </a>
-          )}
-
-          {onOpenModal && (
-            <button
-              onClick={() => onOpenModal(selectedCircuit)}
-              className="px-3.5 py-1.5 rounded-full bg-[#E10600] hover:bg-[#FF2A24] text-white text-xs font-sans font-bold transition-all shadow-md"
-            >
-              Specs
-            </button>
-          )}
-        </div>
-      </div>
     </div>
   );
 }

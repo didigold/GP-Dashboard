@@ -38,6 +38,7 @@ export interface CircuitInfo {
   motogp_url: string;
   svg_path: string; // ViewBox: 0 0 200 120
   description: string;
+  image_url?: string;
 }
 
 export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
@@ -825,3 +826,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     description: 'The traditional season climax! Stadium amphitheater venue where fans witness the entire circuit from any grandstand seat.',
   },
 ];
+
+export function getCircuitImageUrl(circuit: CircuitInfo): string {
+  return circuit.image_url || '/images/circuits/' + circuit.id + '.jpg';
+}
