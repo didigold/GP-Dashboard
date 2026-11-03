@@ -74,7 +74,7 @@ GP-Dashboard/
 ├── components/               # React components
 │   ├── 3d/                   # Three.js CircuitCanvas & WebGL track models
 │   ├── charts/               # Recharts & custom SVG telemetry charts
-│   ├── navigation/           # Sidebar, Tactical HUD, and Pitwall Drawer
+│   ├── navigation/           # Header navigation, mega menus, command palette, and footer
 │   ├── timing/               # Timing boards & sector delta tables
 │   └── ui/                   # Apex UI design system primitives (Radix + Tailwind)
 ├── lib/                      # Core utility functions, hooks, and static datasets

@@ -18,3 +18,5 @@ export * from './TyreAsymmetryPill';
 export * from './BrakingGForceBar';
 export * from './ReflectiveCard';
 export * from './CountryFlag';
+export { default as ScrollStack, ScrollStackItem } from './ScrollStack';
+export * from './ScrollStack';

@@ -187,12 +187,12 @@ export function ExpandedCircuitView({
         </div>
 
         <div className="h-44 w-full bg-black/50 rounded-xl p-3 flex items-center justify-center relative">
-          <svg viewBox="0 0 200 120" className="w-full h-full max-h-36 filter drop-shadow-lg">
+          <svg viewBox="0 0 500 500" className="w-full h-full max-h-36 filter drop-shadow-lg">
             <path
               d={circuit.svg_path}
               fill="none"
               stroke="#FFFFFF"
-              strokeWidth="4"
+              strokeWidth="16"
               strokeLinecap="round"
               strokeLinejoin="round"
             />

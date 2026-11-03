@@ -4,7 +4,6 @@ import { Toaster } from 'sonner';
 import './globals.css';
 import { TopTacticalHUD } from '../components/navigation/TopTacticalHUD';
 import { Footer } from '../components/navigation/Footer';
-import { PitwallDrawer } from '../components/navigation/PitwallDrawer';
 import { CommandPalette } from '../components/ux/CommandPalette';
 import { FirstVisitTip } from '../components/ux/FirstVisitTip';
 
@@ -48,7 +47,6 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
-        <PitwallDrawer defaultOpen={false} />
         <CommandPalette />
         <FirstVisitTip />
         <Toaster

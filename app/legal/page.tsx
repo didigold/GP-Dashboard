@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ShieldCheck, Server, Mail, AlertCircle, Lock, BookOpen } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Server, Mail, AlertCircle, Lock, BookOpen, MapPin } from 'lucide-react';
 
 export default function LegalNoticePage() {
   return (
@@ -150,6 +150,103 @@ export default function LegalNoticePage() {
                 <strong>Hosting Logs:</strong> Standard HTTP request headers (IP address, user agent, requested paths) are automatically processed by Vercel edge networks solely for denial-of-service mitigation and infrastructure security.
               </li>
             </ul>
+          </div>
+        </section>
+
+        {/* Section 6: Third-Party Mapping Services & Geospatial Attribution */}
+        <section id="mapbox" className="space-y-3 bg-[#0D0D0E]/80 border border-white/[0.08] rounded-2xl p-6 sm:p-7 shadow-xl scroll-mt-8">
+          <div className="flex items-center gap-2.5 text-base sm:text-lg font-bold text-white">
+            <MapPin className="w-5 h-5 text-[#E10600]" />
+            <h2>Third-Party Mapping Services &amp; Geospatial Attribution (Mapbox &amp; OpenStreetMap)</h2>
+          </div>
+          <div className="text-xs sm:text-sm text-neutral-300 font-light leading-relaxed space-y-4">
+            <p>
+              The interactive calendar and track views incorporate mapping technology powered by <strong>Mapbox GL JS</strong> (
+              <a
+                href="https://github.com/mapbox/mapbox-gl-js"
+                target="_blank"
+                rel="noreferrer"
+                className="text-white underline underline-offset-4 hover:text-[#00F5D4]"
+              >
+                https://github.com/mapbox/mapbox-gl-js
+              </a>
+              ) developed by <strong>Mapbox Inc.</strong> In compliance with the Mapbox Service Terms, Mapbox Brand Guidelines, and OpenStreetMap open database licensing, our implementation strictly adheres to the following governance requirements:
+            </p>
+
+            <div className="space-y-3 pl-1">
+              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.06] space-y-1.5">
+                <h3 className="font-bold text-white text-xs sm:text-sm">1. Mapbox Logo &amp; Brand Preservation</h3>
+                <p>
+                  As mandated by Mapbox Service Terms (Section 3), the official Mapbox Logo (wordmark paired with icon) is visibly rendered without deletion, obscuration, or color modification, maintaining legibility and mandatory clear spacing in all digital map presentations.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.06] space-y-1.5">
+                <h3 className="font-bold text-white text-xs sm:text-sm">2. Mandatory Text Attribution &amp; Active Hyperlinks</h3>
+                <p>
+                  All map interfaces surface clear and active hyperlinks acknowledging intellectual property and community data contributions:
+                </p>
+                <ul className="list-disc list-inside space-y-1 text-neutral-300 pl-2">
+                  <li>
+                    <strong>Mapbox:</strong>{' '}
+                    <a
+                      href="https://www.mapbox.com/about/maps/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-white underline hover:text-[#00F5D4]"
+                    >
+                      © Mapbox
+                    </a>{' '}
+                    (Geospatial vector tiles, style rendering engines, and imagery distribution).
+                  </li>
+                  <li>
+                    <strong>OpenStreetMap:</strong>{' '}
+                    <a
+                      href="https://www.openstreetmap.org/about/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-white underline hover:text-[#00F5D4]"
+                    >
+                      © OpenStreetMap contributors
+                    </a>{' '}
+                    (Cartographic baseline licensed under the Open Data Commons Open Database License / ODbL).
+                  </li>
+                  <li>
+                    <strong>Data Feedback:</strong> Direct access to Mapbox's map improvement reporting interface via{' '}
+                    <a
+                      href="https://www.mapbox.com/contribute/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-white underline hover:text-[#00F5D4]"
+                    >
+                      Improve this map
+                    </a>.
+                  </li>
+                </ul>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.06] space-y-1.5">
+                <h3 className="font-bold text-white text-xs sm:text-sm">3. Telemetry &amp; GDPR / LCEN Privacy Compliance</h3>
+                <p>
+                  Mapbox GL SDKs may transmit anonymous network-level diagnostic telemetry to optimize routing and tile performance. GP-Dashboard does not transmit personal identity metrics, user accounts, or private location data to Mapbox. Users may inspect Mapbox's privacy principles at{' '}
+                  <a
+                    href="https://www.mapbox.com/legal/privacy/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-white underline hover:text-[#00F5D4]"
+                  >
+                    https://www.mapbox.com/legal/privacy/
+                  </a>.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.06] space-y-1.5">
+                <h3 className="font-bold text-white text-xs sm:text-sm">4. Public Circuit Coordinates Nominative Usage</h3>
+                <p>
+                  Geographic coordinates (latitude, longitude, elevation) and track contours of motorsport racing circuits are public venue landmarks utilized strictly under nominative fair use for non-commercial educational analysis and simulated race trajectory tracking.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
       </div>

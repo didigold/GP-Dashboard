@@ -1,3 +1,5 @@
+import circuitSvgs from './circuit-svgs.json';
+
 export interface CircuitInfo {
   id: string;
   name: string;
@@ -41,7 +43,7 @@ export interface CircuitInfo {
   image_url?: string;
 }
 
-export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
+const RAW_CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
   {
     id: 'round-01-thailand',
     name: 'Chang International Circuit',
@@ -105,8 +107,8 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     race_distance_km: 107.5,
     top_speed_kmh: 342.1,
     lap_record: { time: "1'24.890", rider: 'Francesco Bagnaia', year: 2026, bike: 'Ducati' },
-    lat: -16.6975,
-    lng: -49.1983,
+    lat: -16.7181,
+    lng: -49.1922,
     short_name: 'BRA',
     pdf_url: 'https://resources.motogp.com/files/results/2026/BRA/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=-16.6975&mlon=-49.1983#map=15/-16.6975/-49.1983',
@@ -255,7 +257,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/CAT/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=41.5700&mlon=2.2611#map=15/41.5700/2.2611',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/catalunya',
-    svg_path: 'M 25,45 L 140,45 C 160,45 175,55 175,70 C 175,85 160,95 135,95 L 110,85 C 95,80 90,95 75,95 L 45,95 C 25,95 20,70 25,45 Z',
+    svg_path: 'M 35,95 L 145,95 C 160,95 172,88 168,76 C 162,62 148,60 135,62 C 122,64 115,72 105,72 C 95,72 90,58 98,48 C 105,38 118,32 135,32 C 152,32 165,40 168,52 L 176,52 C 185,52 188,38 175,25 C 160,12 128,15 102,22 L 72,30 C 56,34 50,48 55,60 C 60,72 75,72 78,80 C 82,88 72,95 55,95 L 35,95 Z',
     description: 'A 1,047m high-velocity straight into Elf chicane, long sweeping right-handers testing tyre thermal durability on the right shoulder.',
   },
   {
@@ -327,7 +329,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/HUN/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=47.0167&mlon=18.1833#map=15/47.0167/18.1833',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/hungary',
-    svg_path: 'M 35,45 C 45,30 75,30 110,35 C 145,40 175,50 170,70 C 165,90 140,95 110,95 C 80,95 65,85 50,85 C 35,85 25,65 35,45 Z',
+    svg_path: 'M 35,80 L 75,80 L 85,92 L 120,92 L 130,78 L 155,78 C 168,78 172,65 165,52 L 145,35 C 135,25 115,25 105,35 L 90,50 L 70,35 L 45,35 C 32,35 28,50 35,65 Z',
     description: 'Hungary brand-new state-of-the-art facility next to Lake Balaton with tight technical hairpins and high-speed directional changes.',
   },
   {
@@ -363,7 +365,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/CZE/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=49.2044&mlon=16.4447#map=15/49.2044/16.4447',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/czechia',
-    svg_path: 'M 30,55 C 35,35 60,30 90,30 C 120,30 150,35 170,50 C 185,65 175,85 155,85 L 120,85 C 105,85 95,95 80,95 L 50,95 C 35,95 25,75 30,55 Z',
+    svg_path: 'M 40,88 L 110,88 C 125,88 135,78 130,65 L 145,65 C 160,65 168,50 160,35 L 140,25 C 125,18 105,25 95,38 L 82,55 L 68,45 L 45,45 C 30,45 28,65 35,78 Z',
     description: 'Natural forest amphitheatre with dramatic elevation changes, flowing chicanes, and iconic uphill climb to the finish.',
   },
   {
@@ -399,7 +401,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/NED/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=52.9622&mlon=6.5236#map=15/52.9622/6.5236',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/netherlands',
-    svg_path: 'M 25,65 C 30,45 55,45 70,55 L 100,55 C 120,40 145,40 160,50 C 175,60 175,80 160,90 L 130,90 C 115,90 105,80 90,80 L 60,95 C 45,100 25,85 25,65 Z',
+    svg_path: 'M 35,82 L 80,82 C 92,82 102,72 115,72 L 140,85 C 155,92 168,85 168,70 L 165,45 C 162,30 145,28 130,35 L 105,45 L 85,32 L 60,32 C 45,32 35,48 40,62 L 32,70 Z',
     description: 'The Cathedral of Speed! Celebrated for rapid camber changes, flat-out Ramshoek kink, and the heartbeat Geert Timmer chicane.',
   },
   {
@@ -435,7 +437,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/GER/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=50.7917&mlon=12.6903#map=15/50.7917/12.6903',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/germany',
-    svg_path: 'M 40,40 C 60,25 110,25 150,35 C 175,45 170,70 150,75 L 120,75 C 105,75 95,65 80,75 C 65,85 55,100 40,95 C 25,90 20,60 40,40 Z',
+    svg_path: 'M 45,88 L 85,88 C 100,88 115,75 110,60 L 125,60 C 145,60 165,50 160,32 C 155,18 130,20 115,30 L 95,45 L 75,32 L 50,32 C 35,32 25,48 30,65 L 35,78 Z',
     description: 'A twisting counter-clockwise bullring with 10 left-hand corners, the heart-stopping downhill Waterfall Turn 11 blind entry.',
   },
   {
@@ -471,7 +473,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/GBR/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=52.0786&mlon=-1.0169#map=15/52.0786/-1.0169',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/great-britain',
-    svg_path: 'M 25,50 L 50,30 L 100,30 L 140,45 L 175,45 C 185,55 180,75 165,80 L 125,80 L 105,100 L 65,100 L 40,85 Z',
+    svg_path: 'M 30,60 L 55,35 L 105,35 L 145,48 L 175,48 C 185,58 180,75 165,80 L 125,80 L 105,100 L 65,100 L 40,85 Z',
     description: 'One of the fastest and longest circuits in the world, featuring legendary Maggotts-Becketts-Chapel high-speed direction changes.',
   },
   {
@@ -507,7 +509,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/ARA/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=41.0772&mlon=-0.2056#map=15/41.0772/-0.2056',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/aragon',
-    svg_path: 'M 30,40 C 45,25 80,25 115,30 L 165,30 C 180,45 175,70 155,80 L 110,80 C 95,80 90,95 70,100 L 45,100 C 25,95 20,70 30,40 Z',
+    svg_path: 'M 35,85 L 120,85 C 135,85 145,78 150,65 L 165,65 C 175,65 178,50 168,38 L 138,25 C 120,18 95,25 85,40 L 70,55 L 55,42 L 35,50 C 22,58 25,75 35,85 Z',
     description: 'Spectacular layout designed by Hermann Tilke with reverse corkscrew downhill drop and nearly 1km back straight.',
   },
   {
@@ -543,7 +545,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/RSM/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=43.9625&mlon=12.6842#map=15/43.9625/12.6842',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/san-marino',
-    svg_path: 'M 35,45 C 50,30 95,30 130,35 C 160,40 175,60 165,75 L 140,85 C 125,90 120,105 105,105 L 60,105 C 40,100 25,80 35,45 Z',
+    svg_path: 'M 40,90 L 95,90 C 110,90 120,80 130,80 L 155,90 C 168,95 175,82 170,68 L 160,45 C 150,28 130,30 115,40 L 95,55 L 75,42 L 50,42 C 35,42 28,60 35,75 Z',
     description: 'The adrenaline heart of the Adriatic Riviera with the 300 km/h flat-out Curvone right kink and intense braking points.',
   },
   {
@@ -579,7 +581,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/AUT/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=47.2197&mlon=14.7647#map=15/47.2197/14.7647',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/austria',
-    svg_path: 'M 30,70 L 45,35 L 85,25 L 135,35 L 170,45 C 180,55 175,75 160,85 L 120,95 C 95,95 75,90 50,90 Z',
+    svg_path: 'M 35,85 L 70,85 L 75,55 L 115,30 C 125,22 135,25 130,35 L 115,55 L 145,55 C 160,55 170,68 165,80 L 145,95 L 90,95 C 75,95 65,85 50,85 Z',
     description: 'Alpine speed temple featuring massive uphill acceleration into Turn 3 hairpin, demanding extreme rear grip and wheelie management.',
   },
   {
@@ -615,7 +617,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/JPN/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=36.5333&mlon=140.2281#map=15/36.5333/140.2281',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/japan',
-    svg_path: 'M 35,45 C 45,30 90,30 120,35 L 165,35 C 180,50 175,70 160,80 L 130,80 C 115,80 110,95 90,95 L 50,95 C 30,90 25,65 35,45 Z',
+    svg_path: 'M 35,85 L 130,85 C 145,85 155,75 150,60 L 165,60 C 175,60 175,42 160,32 L 135,22 C 120,18 105,25 95,42 L 80,55 L 60,40 L 40,40 C 25,40 25,65 35,85 Z',
     description: 'Ultimate Brembo stop-and-go punishment test. 90-degree corners, downhill braking from bridge section into Turn 11 hairpin.',
   },
   {
@@ -651,7 +653,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/INA/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=-8.8953&mlon=116.2950#map=15/-8.8953/116.2950',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/indonesia',
-    svg_path: 'M 30,50 L 80,25 C 110,20 145,30 165,45 C 175,60 165,85 140,85 L 90,85 C 65,85 45,75 30,50 Z',
+    svg_path: 'M 35,82 L 125,82 C 140,82 152,72 160,58 L 165,40 C 168,25 150,22 135,30 L 110,45 L 85,32 L 65,45 L 45,45 C 30,45 25,65 35,82 Z',
     description: 'Scenic coastal circuit with rapid fluid transitions from Turn 6 through Turn 9, punishing tropical heat and humidity.',
   },
   {
@@ -687,7 +689,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/AUS/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=-38.5028&mlon=145.2347#map=15/-38.5028/145.2347',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/australia',
-    svg_path: 'M 25,75 C 35,45 60,30 95,30 C 130,30 150,45 165,55 C 180,65 185,85 165,95 C 145,105 110,85 85,90 C 60,95 40,95 25,75 Z',
+    svg_path: 'M 40,85 C 55,85 85,95 110,95 C 135,95 160,85 168,70 C 175,55 165,35 145,28 C 125,20 100,25 80,40 L 60,50 C 42,58 30,72 40,85 Z',
     description: 'Rider favorite on ocean cliffs. High-speed 220 km/h Stoner Corner, Lukey Heights crest, and the breathtaking Gardner Straight.',
   },
   {
@@ -723,7 +725,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/MAL/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=2.7608&mlon=101.7381#map=15/2.7608/101.7381',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/malaysia',
-    svg_path: 'M 20,40 L 170,35 C 185,35 188,50 175,60 L 115,75 C 100,80 90,95 105,105 C 120,115 150,110 165,95 L 175,80 C 185,95 170,115 145,115 L 45,115 C 25,115 20,95 35,85 L 85,55 C 95,45 80,42 70,42 L 25,42 C 15,42 12,40 20,40 Z',
+    svg_path: 'M 30,88 L 155,88 C 170,88 178,75 168,60 L 125,60 C 110,60 105,45 115,35 C 125,25 145,28 155,40 L 165,30 C 172,18 155,15 135,22 L 85,45 L 65,35 L 40,35 C 25,35 20,65 30,88 Z',
     description: 'Wide, fast, and technically challenging with dual 900m parallel straights, severe thermal tyre degradation and intense braking zones.',
   },
   {
@@ -789,7 +791,7 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/POR/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=37.2319&mlon=-8.6278#map=15/37.2319/-8.6278',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/portugal',
-    svg_path: 'M 25,50 C 40,20 80,25 110,25 C 145,25 175,40 175,65 C 175,90 140,95 110,95 C 75,95 40,85 25,50 Z',
+    svg_path: 'M 35,85 L 140,85 C 158,85 168,72 160,55 L 145,35 C 135,22 115,22 105,35 L 85,52 L 65,40 L 45,40 C 30,40 25,65 35,85 Z',
     description: 'The European roller-coaster! Dramatic undulating topography, blind crest wheelies, and sweeping downhill plunge onto the main straight.',
   },
   {
@@ -822,11 +824,30 @@ export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = [
     pdf_url: 'https://resources.motogp.com/files/results/2026/VAL/CircuitInformation.pdf',
     osm_url: 'https://www.openstreetmap.org/?mlat=39.4839&mlon=-0.6314#map=15/39.4839/-0.6314',
     motogp_url: 'https://www.motogp.com/en/calendar/2026/event/valencia',
-    svg_path: 'M 35,40 C 50,20 120,20 150,30 C 175,40 175,70 155,85 C 135,100 80,100 50,90 C 25,80 20,60 35,40 Z',
+    svg_path: 'M 35,82 L 135,82 C 150,82 165,72 160,55 L 145,35 C 130,22 110,25 95,40 L 80,55 L 65,42 L 45,42 C 30,42 25,62 35,82 Z',
     description: 'The traditional season climax! Stadium amphitheater venue where fans witness the entire circuit from any grandstand seat.',
   },
 ];
 
+export const CHAMPIONSHIP_ROUNDS_2026: CircuitInfo[] = RAW_CHAMPIONSHIP_ROUNDS_2026.map((c) => ({
+  ...c,
+  svg_path: (circuitSvgs as Record<string, string>)[c.id] || c.svg_path,
+}));
+
+const WEBP_ROUNDS = new Set([
+  'round-03-usa',
+  'round-04-spain',
+  'round-05-france',
+  'round-08-hungary',
+  'round-11-germany',
+  'round-12-great-britain',
+  'round-16-japan',
+  'round-19-malaysia',
+  'round-20-qatar',
+]);
+
 export function getCircuitImageUrl(circuit: CircuitInfo): string {
-  return circuit.image_url || '/images/circuits/' + circuit.id + '.jpg';
+  if (circuit.image_url) return circuit.image_url;
+  const ext = WEBP_ROUNDS.has(circuit.id) ? '.webp' : '.jpg';
+  return '/images/circuits/' + circuit.id + ext;
 }

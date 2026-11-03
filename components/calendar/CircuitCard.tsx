@@ -2,20 +2,18 @@
 
 import React, { useState } from 'react';
 import { CircuitInfo, getCircuitImageUrl } from '@/lib/data/circuits-data';
-import { Maximize2 } from 'lucide-react';
 
 interface CircuitCardProps {
   circuit: CircuitInfo;
   isSelected: boolean;
   onSelect: (circuit: CircuitInfo) => void;
-  onExpand: (circuit: CircuitInfo) => void;
 }
 
 // Crisp cross-platform Country Flag component
 export function CountryFlag({
   iso,
   country,
-  className = 'w-6 h-4.5',
+  className = 'w-7 h-4.5',
 }: {
   iso?: string;
   country?: string;
@@ -37,156 +35,174 @@ export function CountryFlag({
         alt={country || resolvedIso.toUpperCase()}
         loading="lazy"
         onError={() => setImageError(true)}
-        className={`${className} object-cover rounded-[2px] ring-1 ring-inset ring-black/30 shrink-0`}
+        className={`${className} object-cover rounded-[3px] ring-1 ring-inset ring-black/40 shrink-0 shadow-sm`}
       />
     );
   }
   return <span className="text-base shrink-0">🏁</span>;
 }
 
-// Helper to format country/title like official MotoGP presentation
-function getDisplayTitle(circuit: CircuitInfo): string {
-  if (circuit.id.includes('catalonia')) return 'CATALONIA';
-  if (circuit.id.includes('aragon')) return 'ARAGON';
-  if (circuit.id.includes('san-marino')) return 'SAN MARINO';
-  if (circuit.id.includes('valencia')) return 'VALENCIA';
-  if (circuit.country.toLowerCase() === 'united states') return 'USA';
-  if (circuit.country.toLowerCase() === 'united kingdom') return 'GREAT BRITAIN';
-  return circuit.country.toUpperCase();
+// Format dates with natural case (e.g. "15 May – 17 May", not full caps)
+function formatDisplayDates(dates: string): string {
+  const clean = dates.replace(/,?\s*\d{4}$/, '').trim();
+  const parts = clean.split('-').map((p) => p.trim());
+  if (parts.length === 2) {
+    const parsePart = (str: string) => {
+      const match = str.match(/([a-zA-Z]+)\s*(\d+)/);
+      if (match) {
+        const month = match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
+        return `${match[2].padStart(2, '0')} ${month}`;
+      }
+      return str;
+    };
+    return `${parsePart(parts[0])} – ${parsePart(parts[1])}`;
+  }
+  return clean;
 }
 
-export function CircuitCard({ circuit, isSelected, onSelect, onExpand }: CircuitCardProps) {
+// Natural title case for circuit headers
+function getDisplayTitle(circuit: CircuitInfo): string {
+  if (circuit.id.includes('catalonia')) return 'Catalonia';
+  if (circuit.id.includes('aragon')) return 'Aragón';
+  if (circuit.id.includes('san-marino')) return 'San Marino';
+  if (circuit.id.includes('valencia')) return 'Valencia';
+  if (circuit.country.toLowerCase() === 'united states') return 'USA';
+  if (circuit.country.toLowerCase() === 'united kingdom') return 'Great Britain';
+  return circuit.country;
+}
+
+// Crisp, dedicated PDF Document Icon (exact 20x20px with explicit dimensions)
+function CleanPdfIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-white/80"
+    >
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="9" y1="13" x2="15" y2="13" />
+      <line x1="9" y1="17" x2="13" y2="17" />
+    </svg>
+  );
+}
+
+export function CircuitCard({ circuit, isSelected, onSelect }: CircuitCardProps) {
   const [imgError, setImgError] = useState(false);
   const bgImage = imgError ? '/images/circuits/round-01-thailand.jpg' : getCircuitImageUrl(circuit);
   const isLive = circuit.status === 'CURRENT';
   const isFinished = circuit.status === 'FINISHED';
+  const displayDates = formatDisplayDates(circuit.dates);
   const displayTitle = getDisplayTitle(circuit);
 
   return (
     <div
       id={`circuit-card-${circuit.id}`}
       onClick={() => onSelect(circuit)}
-      className={`relative rounded-xl overflow-hidden cursor-pointer group transition-all duration-300 select-none flex flex-col justify-between ${
+      className={`relative w-full h-full p-4 flex flex-col justify-between cursor-pointer select-none group text-white overflow-hidden rounded-2xl transition-all duration-300 font-sans border-none shadow-none bg-[#070913] ${
         isSelected
-          ? 'border-2 border-white ring-2 ring-[#E10600]/60 shadow-[0_0_24px_rgba(225,6,0,0.35)] scale-[1.01]'
-          : isLive
-          ? 'border-2 border-[#E10600] shadow-[0_0_20px_rgba(225,6,0,0.25)] hover:border-[#FF2A24]'
-          : 'border border-white/10 hover:border-white/30 hover:shadow-xl'
+          ? 'ring-1 ring-white/35'
+          : 'ring-1 ring-white/10 hover:ring-white/20'
       }`}
-      style={{ minHeight: '172px' }}
     >
-      {/* GP photo background */}
+      {/* Background authentic circuit photo */}
+      {/* When selected: highlighted image (brighter, sharper, more vivid) */}
       <div
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+        className={`absolute inset-0 bg-cover bg-center transition-all duration-500 ease-out ${
+          isSelected
+            ? 'brightness-125 scale-105 saturate-110'
+            : 'brightness-90 group-hover:brightness-105 group-hover:scale-102 saturate-95'
+        }`}
         style={{ backgroundImage: `url(${bgImage})` }}
       />
 
-      {/* Darkening & vignette overlay for readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#07080B] via-[#07080B]/85 to-[#07080B]/55 group-hover:via-[#07080B]/75 transition-all duration-300" />
-      <div className="absolute inset-0 bg-black/35 pointer-events-none" />
+      {/* Dark gradient overlay */}
+      <div
+        className={`absolute inset-0 transition-all duration-300 ${
+          isSelected
+            ? 'bg-gradient-to-t from-[#05070E] via-[#05070E]/60 to-[#05070E]/30'
+            : 'bg-gradient-to-t from-[#070913] via-[#070913]/85 to-[#070913]/60 group-hover:via-[#070913]/70'
+        }`}
+      />
 
-      {/* Selected / Live ambient accent glow */}
-      {(isSelected || isLive) && (
+      {/* TOP ROW: Country Flag (Left) & Angled Status Ribbon (Right) */}
+      <div className="relative z-10 flex items-start justify-between">
+        <CountryFlag iso={circuit.country_code} country={circuit.country} className="w-8 h-5" />
+
+        {/* Angled Status Ribbon in Natural Case (Finished, Up next, Upcoming) */}
         <div
-          className={`absolute -top-12 -right-12 w-36 h-36 rounded-full blur-2xl pointer-events-none ${
-            isLive ? 'bg-[#E10600]/30' : 'bg-white/15'
+          className={`px-3 py-0.5 text-[10px] sm:text-[11px] font-sans font-bold tracking-wider flex items-center justify-center shrink-0 ${
+            isFinished
+              ? 'bg-black/95 text-neutral-300'
+              : isLive
+              ? 'bg-[#E10600] text-white'
+              : 'bg-black/80 text-neutral-400'
           }`}
-        />
-      )}
-
-      {/* Card content */}
-      <div className="relative z-10 p-3.5 flex flex-col justify-between h-full space-y-2.5">
-        {/* Top row: Flag + date and status */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <CountryFlag
-              iso={circuit.country_code}
-              country={circuit.country}
-              className="w-6 h-4"
-            />
-            <span className="text-[11px] font-sans font-semibold tracking-wide text-neutral-300 uppercase">
-              {circuit.dates}
-            </span>
-          </div>
-
-          <div>
-            {isFinished ? (
-              <div
-                className="px-2.5 py-0.5 text-[9px] font-sans font-bold tracking-widest uppercase text-neutral-200 bg-black/85 border border-white/15 shadow-sm"
-                style={{ clipPath: 'polygon(6px 0%, 100% 0%, 100% 100%, 0% 100%)' }}
-              >
-                FINISHED
-              </div>
-            ) : isLive ? (
-              <div
-                className="px-2.5 py-0.5 text-[9px] font-sans font-black tracking-widest uppercase text-white bg-[#E10600] shadow-[0_0_12px_rgba(225,6,0,0.8)] flex items-center gap-1.5"
-                style={{ clipPath: 'polygon(6px 0%, 100% 0%, 100% 100%, 0% 100%)' }}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                <span>UP NEXT</span>
-              </div>
-            ) : (
-              <div
-                className="px-2.5 py-0.5 text-[9px] font-sans font-medium tracking-wider uppercase text-neutral-400 bg-white/[0.08] border border-white/10"
-                style={{ clipPath: 'polygon(6px 0%, 100% 0%, 100% 100%, 0% 100%)' }}
-              >
-                UPCOMING
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Identity row */}
-        <div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xs sm:text-sm font-sans font-black text-[#E10600] shrink-0 tabular-nums">
-              {circuit.round_number}
-            </span>
-            <h3 className="text-base sm:text-lg font-sans font-black tracking-tight text-white uppercase transition-colors truncate">
-              {displayTitle}
-            </h3>
-          </div>
-          <div className="text-[10.5px] font-sans text-neutral-400 uppercase tracking-wide truncate mt-0.5">
-            {circuit.official_name}
-          </div>
-        </div>
-
-        {/* Bottom row: track silhouette + specs + expand */}
-        <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5">
-            <div className="w-12 h-8 bg-black/40 rounded-md p-0.5 flex items-center justify-center shrink-0 border border-white/10">
-              <svg viewBox="0 0 200 120" className="w-full h-full max-h-7">
-                <path
-                  d={circuit.svg_path}
-                  fill="none"
-                  stroke={isSelected ? '#FFFFFF' : isLive ? '#E10600' : 'rgba(255,255,255,0.7)'}
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-
-            <div className="text-[10px] font-sans text-neutral-300">
-              <span className="font-semibold text-white tabular-nums">{circuit.length_km} km</span>
-              <span className="mx-1 text-neutral-500">·</span>
-              <span className="tabular-nums">{circuit.corners} Turns</span>
-            </div>
-          </div>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onExpand(circuit);
-            }}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-[#E10600] text-white text-[11px] font-sans font-semibold backdrop-blur-md transition-all border border-white/15 hover:border-[#E10600] shadow-sm hover:scale-105"
-            title="Expand circuit telemetry and technical data"
-          >
-            <Maximize2 className="w-3 h-3 text-white" />
-            <span>Expand</span>
-          </button>
+          style={{ clipPath: 'polygon(10px 0%, 100% 0%, 100% 100%, 0% 100%)' }}
+        >
+          {isFinished ? 'Finished' : isLive ? 'Up next' : 'Upcoming'}
         </div>
       </div>
+
+      {/* MAIN BODY: Left side (Dates, Sora Number + Country, Subtitle) pushed down & Right side (Authentic Track Silhouette) */}
+      <div className="relative z-10 flex items-center justify-between gap-3 flex-1 min-h-0 pt-1">
+        {/* Left Column: Pushed down toward the bottom of the card */}
+        <div className="flex-1 min-w-0 flex flex-col justify-end self-end space-y-1 pb-0.5">
+          {/* Dates Row (natural case) */}
+          <div className="text-xs sm:text-[13px] font-sans font-medium tracking-wide text-neutral-300">
+            {displayDates}
+          </div>
+
+          {/* Identity Row: Sora Number is thinner than title and grey, does not turn red */}
+          <div className="flex items-baseline">
+            <span className="font-sans font-light text-2xl sm:text-3xl text-neutral-400 mr-2.5 select-none leading-none">
+              {circuit.round_number}
+            </span>
+            <span className="font-sans font-black text-xl sm:text-2xl tracking-tight text-white leading-none truncate">
+              {displayTitle}
+            </span>
+          </div>
+
+          {/* Official Grand Prix Name (Natural Case) */}
+          <p className="text-[11px] font-sans font-normal text-neutral-300/90 tracking-normal truncate">
+            {circuit.official_name}
+          </p>
+        </div>
+
+        {/* Right Column: High-Fidelity Track Layout Silhouette (Centered, balanced, official 500x500 vector) */}
+        <div className="shrink-0 w-32 sm:w-36 h-20 sm:h-24 flex items-center justify-center self-center pr-2">
+          <svg viewBox="0 0 500 500" className="w-full h-full filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+            <path
+              d={circuit.svg_path}
+              fill="none"
+              stroke="#FFFFFF"
+              strokeWidth="16"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+      </div>
+
+      {/* PDF Icon at Bottom Right: Clean, unclipped, NO bg, NO border, NO hover color change */}
+      {circuit.pdf_url && (
+        <a
+          href={circuit.pdf_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="absolute bottom-2.5 right-3 z-30 p-1 bg-transparent border-none ring-0 outline-none text-white/80 hover:text-white/80 transition-none flex items-center justify-center cursor-pointer select-none"
+          title="Official Circuit Information Sheet"
+        >
+          <CleanPdfIcon />
+        </a>
+      )}
     </div>
   );
 }

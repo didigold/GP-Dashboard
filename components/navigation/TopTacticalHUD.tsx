@@ -159,7 +159,7 @@ export function TopTacticalHUD() {
             <Link
               href="/"
               className="flex items-center text-white hover:opacity-85 transition-opacity py-1 shrink-0"
-              aria-label="MotoGP Pitwall Home"
+              aria-label="MotoGP Home"
             >
               <span className="font-sans font-black text-sm tracking-tighter text-white">
                 Moto<span className="text-[#E10600]">GP</span>™

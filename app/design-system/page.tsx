@@ -266,7 +266,7 @@ function DesignSystemContent() {
                 <div className="p-4 bg-[#111111] border border-neutral-800 text-xs font-mono">
                   <div className="text-[#E10600] font-bold uppercase mb-1">Right-Side Drawer Built-In</div>
                   <p className="text-neutral-400 font-light mb-3">
-                    Click below or use the HUD trigger in the header to preview the sliding telemetry drawer.
+                    Click below to preview the sliding telemetry drawer.
                   </p>
                   <Button variant="outline" size="sm" onClick={() => setIsSheetOpen(true)} className="w-full">
                     Open Drawer-Right
@@ -681,7 +681,7 @@ function DesignSystemContent() {
         <SheetContent side="right">
           <div className="h-[3px] bg-[#E10600] w-full mb-4 -mx-6 -mt-6" />
           <SheetHeader>
-            <SheetTitle>Pitwall Telemetry Drawer</SheetTitle>
+            <SheetTitle>Telemetry Drawer</SheetTitle>
             <SheetDescription>
               Interactive right-hand drawer built with shadcn/ui Sheet
             </SheetDescription>

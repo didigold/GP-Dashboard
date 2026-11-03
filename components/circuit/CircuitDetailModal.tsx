@@ -115,14 +115,14 @@ export function CircuitDetailModal({
           <div className="w-full h-56 bg-black/60 rounded-2xl border border-white/[0.08] p-4 flex items-center justify-center relative overflow-hidden group">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(225,6,0,0.1)_0%,transparent_70%)] pointer-events-none" />
             <svg
-              viewBox="0 0 200 120"
+              viewBox="0 0 500 500"
               className="w-full h-full max-h-48 filter drop-shadow-[0_0_16px_rgba(225,6,0,0.4)] transition-transform duration-500 group-hover:scale-105"
             >
               <path
                 d={currentCircuit.svg_path}
                 fill="none"
                 stroke="#E10600"
-                strokeWidth="4"
+                strokeWidth="16"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
