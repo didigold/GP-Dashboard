@@ -11,10 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { abbreviateRiderName } from '@/lib/utils/rider-name';
+import { abbreviateRiderName, getRiderPillParts } from '@/lib/utils/rider-name';
 import { CountryFlag } from '@/components/ui/CountryFlag';
+import { TeamLogo } from '@/components/ui/TeamLogo';
 import { Swords, Users, Search, X, SlidersHorizontal, Check, ArrowUpDown } from 'lucide-react';
-import { GiLaurelCrown, GiTrophyCup, GiSpeedometer, GiPowerLightning } from 'react-icons/gi';
+import { GiLaurelCrown, GiTrophyCup, GiSpeedometer, GiPowerLightning, GiFullMotorcycleHelmet, GiVibratingShield } from 'react-icons/gi';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 
 const CONSTRUCTOR_COUNTRY_ISOS: Record<string, string> = {
@@ -38,6 +39,54 @@ const TEAM_COUNTRY_ISOS: Record<string, string> = {
   'honda-hrc-castrol': 'JP',
   'pro-honda-lcr': 'MC',
 };
+
+const COUNTRY_CODES_3: Record<string, string> = {
+  ES: 'ESP',
+  Spain: 'ESP',
+  IT: 'ITA',
+  Italy: 'ITA',
+  FR: 'FRA',
+  FRA: 'FRA',
+  France: 'FRA',
+  ZA: 'RSA',
+  'South Africa': 'RSA',
+  AU: 'AUS',
+  Australia: 'AUS',
+  JP: 'JPN',
+  Japan: 'JPN',
+  BR: 'BRA',
+  Brazil: 'BRA',
+  PT: 'POR',
+  Portugal: 'POR',
+  DE: 'GER',
+  Germany: 'GER',
+  GB: 'GBR',
+  UK: 'GBR',
+  'United Kingdom': 'GBR',
+  US: 'USA',
+  USA: 'USA',
+  AT: 'AUT',
+  Austria: 'AUT',
+  MC: 'MCO',
+  Monaco: 'MCO',
+  TH: 'THA',
+  Thailand: 'THA',
+  MY: 'MAS',
+  Malaysia: 'MAS',
+  ID: 'INA',
+  Indonesia: 'INA',
+  QA: 'QAT',
+  Qatar: 'QAT',
+  NL: 'NED',
+  Netherlands: 'NED',
+};
+
+function getCountryCode3(country: { iso: string; name?: string }): string {
+  const isoUpper = (country.iso || '').toUpperCase().trim();
+  if (COUNTRY_CODES_3[isoUpper]) return COUNTRY_CODES_3[isoUpper];
+  if (country.name && COUNTRY_CODES_3[country.name]) return COUNTRY_CODES_3[country.name];
+  return (country.name || country.iso || '').replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase();
+}
 
 const gridContainerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -172,11 +221,16 @@ export default function GridPage() {
     return list;
   }, [searchQuery, achievementFilter, teamFilter, sortBy]);
 
-  const hasActiveFilters =
-    searchQuery.trim() !== '' ||
-    achievementFilter !== 'all' ||
-    teamFilter !== 'all' ||
-    sortBy !== 'default';
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (searchQuery.trim() !== '') count++;
+    if (achievementFilter !== 'all') count++;
+    if (teamFilter !== 'all') count++;
+    if (sortBy !== 'default') count++;
+    return count;
+  }, [searchQuery, achievementFilter, teamFilter, sortBy]);
+
+  const hasActiveFilters = activeFilterCount > 0;
 
   const resetFilters = () => {
     setSearchQuery('');
@@ -190,26 +244,28 @@ export default function GridPage() {
       {/* TOP HEADER: Centered Drivers vs Teams Central Pill + Single Round Dropdownable Filter Button on the Right */}
       <div className="w-full relative z-10 flex items-center justify-center pt-1 pb-1">
         {/* The Clean Central Pill */}
-        <div className="inline-flex items-center p-1 rounded-full bg-white/[0.04] border border-white/[0.08] backdrop-blur-md shadow-lg">
+        <div className="h-9 p-0.5 inline-flex items-center rounded-full liquid-glass-pill shadow-lg">
           <button
             onClick={() => setActiveView('drivers')}
-            className={`px-7 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 ${
+            className={`h-full px-3.5 sm:px-4 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
               activeView === 'drivers'
-                ? 'bg-white text-black shadow-md scale-[1.02]'
+                ? 'bg-white text-black shadow-md'
                 : 'text-neutral-400 hover:text-white'
             }`}
           >
-            Drivers ({MOTOGP_RIDERS.length})
+            <GiFullMotorcycleHelmet className="w-4 h-4 shrink-0" />
+            <span>Riders</span>
           </button>
           <button
             onClick={() => setActiveView('teams')}
-            className={`px-7 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 ${
+            className={`h-full px-3.5 sm:px-4 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
               activeView === 'teams'
-                ? 'bg-white text-black shadow-md scale-[1.02]'
+                ? 'bg-white text-black shadow-md'
                 : 'text-neutral-400 hover:text-white'
             }`}
           >
-            Teams ({MOTOGP_TEAMS.length})
+            <GiVibratingShield className="w-4 h-4 shrink-0" />
+            <span>Teams</span>
           </button>
         </div>
 
@@ -219,18 +275,20 @@ export default function GridPage() {
             <Popover open={filterDropdownOpen} onOpenChange={setFilterDropdownOpen}>
               <PopoverTrigger asChild>
                 <button
-                  className={`relative p-2.5 sm:px-4 sm:py-2 rounded-full text-xs font-semibold flex items-center gap-2 border transition-all duration-200 shadow-xl ${
+                  className={`relative h-9 px-3.5 sm:px-4 rounded-full text-xs font-semibold flex items-center gap-2 transition-all duration-200 shadow-xl cursor-pointer ${
                     hasActiveFilters || filterDropdownOpen
-                      ? 'bg-white text-black border-white shadow-white/10'
-                      : 'bg-white/[0.04] border-white/[0.08] text-neutral-300 hover:text-white hover:bg-white/[0.08]'
+                      ? 'bg-white text-black shadow-white/10'
+                      : 'liquid-glass-pill text-neutral-300 hover:text-white'
                   }`}
-                  title="Filter & Sort Drivers"
-                  aria-label="Filter & Sort Drivers"
+                  title="Filter & Sort Riders"
+                  aria-label="Filter & Sort Riders"
                 >
-                  <SlidersHorizontal className="w-4 h-4" />
+                  <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
                   <span className="hidden sm:inline">Filter</span>
-                  {hasActiveFilters && (
-                    <span className="w-2 h-2 rounded-full bg-[#E10600] animate-pulse" />
+                  {activeFilterCount > 0 && (
+                    <span className="w-4 h-4 rounded-full bg-[#E10600] text-white text-[10px] font-bold flex items-center justify-center shrink-0 leading-none">
+                      {activeFilterCount}
+                    </span>
                   )}
                 </button>
               </PopoverTrigger>
@@ -238,7 +296,7 @@ export default function GridPage() {
               <PopoverContent
                 align="end"
                 sideOffset={8}
-                className="w-[320px] sm:w-[360px] p-4 rounded-2xl bg-[#111217] border border-white/20 shadow-[0_25px_65px_rgba(0,0,0,0.95)] z-30 space-y-4 font-sans"
+                className="w-[320px] sm:w-[360px] p-4 rounded-2xl liquid-glass-dropdown shadow-[0_25px_65px_rgba(0,0,0,0.95)] z-30 space-y-4 font-sans text-white"
               >
                 {/* Search Input */}
                 <div className="relative w-full">
@@ -274,7 +332,7 @@ export default function GridPage() {
                           : 'bg-[#1c1d25] text-neutral-300 hover:text-white hover:bg-white/10'
                       }`}
                     >
-                      All (22)
+                      All
                     </button>
                     <button
                       onClick={() => setAchievementFilter('champions')}
@@ -285,7 +343,7 @@ export default function GridPage() {
                       }`}
                     >
                       <GiLaurelCrown className="w-3.5 h-3.5" />
-                      <span>Titles (6)</span>
+                      <span>Titles</span>
                     </button>
                     <button
                       onClick={() => setAchievementFilter('winners')}
@@ -296,7 +354,7 @@ export default function GridPage() {
                       }`}
                     >
                       <GiTrophyCup className="w-3.5 h-3.5" />
-                      <span>Wins (13)</span>
+                      <span>Wins</span>
                     </button>
                   </div>
                 </div>
@@ -349,7 +407,7 @@ export default function GridPage() {
 
                 {/* Footer Actions: Reset only (Removed 'Showing 17 of 17') */}
                 {hasActiveFilters && (
-                  <div className="pt-2 border-t border-white/[0.08] flex items-center justify-end text-xs">
+                  <div className="pt-1 flex items-center justify-end text-xs">
                     <button
                       onClick={resetFilters}
                       className="text-[#E10600] hover:text-white font-semibold transition-colors flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-white/5"
@@ -378,6 +436,7 @@ export default function GridPage() {
           >
             {filteredRiders.map((rider) => {
               const team = getTeamBySlug(rider.team_id);
+              const teamName = team?.short_name || rider.team_name;
               const age = calculateAge(rider.birth_date);
 
               // Aprilia drivers refined subtle watermark (visible without being overly bright)
@@ -394,11 +453,20 @@ export default function GridPage() {
                 >
                   <ReflectiveCard
                     name={rider.full_name}
-                    role={`${team?.short_name || rider.team_name} · ${rider.bike_name}`}
+                    role={
+                      <span className="inline-flex items-center gap-1.5 min-w-0">
+                        <TeamLogo
+                          teamId={rider.team_id}
+                          constructorName={rider.constructor_name}
+                          className="h-4 w-5"
+                        />
+                        <span className="truncate">{teamName}</span>
+                      </span>
+                    }
                     badge={
                       <span className="inline-flex items-center gap-2 font-bold tracking-wider text-xs">
                         <CountryFlag iso={rider.country.iso} width={18} height={12} />
-                        <span>#{rider.number}</span>
+                        <span>{getCountryCode3(rider.country)}</span>
                       </span>
                     }
                     badgeIcon={null}
@@ -439,6 +507,10 @@ export default function GridPage() {
                     clashBadge={false}
                     theme="dark"
                     tint={cardTint}
+                    glowColor="225, 6, 0"
+                    enableBorderGlow={true}
+                    enableSpotlight={true}
+                    spotlightRadius={340}
                     metalness={0.92}
                     roughness={0.28}
                     blurStrength={6}
@@ -492,13 +564,18 @@ export default function GridPage() {
               const teamRiders: GridRider[] = MOTOGP_RIDERS.filter(
                 (r) => r.team_id === team.id || team.rider_ids?.includes(r.id)
               );
-              const hoverDrivers = teamRiders.map((r) => ({
-                id: r.id,
-                name: abbreviateRiderName(r.name, r.surname),
-                number: r.number,
-                flag: <CountryFlag iso={r.country.iso} width={15} height={10} />,
-                url: `/driver-stats?rider=${r.id}`,
-              }));
+              const hoverDrivers = teamRiders.map((r) => {
+                const { initial, surname } = getRiderPillParts(r.name, r.surname);
+                return {
+                  id: r.id,
+                  name: `${initial}${surname}`,
+                  initial,
+                  surname,
+                  number: r.number,
+                  flag: <CountryFlag iso={r.country.iso} width={15} height={10} />,
+                  url: `/driver-stats?rider=${r.id}`,
+                };
+              });
 
               const isApriliaTeam = team.id === 'aprilia-racing';
               const teamBgNumColor = isApriliaTeam ? '#C92A2A' : undefined;
@@ -565,6 +642,10 @@ export default function GridPage() {
                     hoverDrivers={hoverDrivers}
                     theme="dark"
                     tint={team.color}
+                    glowColor="225, 6, 0"
+                    enableBorderGlow={true}
+                    enableSpotlight={true}
+                    spotlightRadius={340}
                     metalness={0.92}
                     roughness={0.28}
                     blurStrength={6}

@@ -3,6 +3,8 @@ import localFont from 'next/font/local';
 import { Toaster } from 'sonner';
 import './globals.css';
 import { TopTacticalHUD } from '../components/navigation/TopTacticalHUD';
+import { SeasonProvider } from '../lib/context/SeasonContext';
+import { SeasonSelectorPill } from '../components/navigation/SeasonSelectorPill';
 import { Footer } from '../components/navigation/Footer';
 import { CommandPalette } from '../components/ux/CommandPalette';
 import { FirstVisitTip } from '../components/ux/FirstVisitTip';
@@ -42,6 +44,7 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
+        <SeasonProvider>
         <TopTacticalHUD />
         <main id="main-content" className="flex-1 w-full">
           {children}
@@ -62,6 +65,8 @@ export default function RootLayout({
             },
           }}
         />
+        <SeasonSelectorPill />
+        </SeasonProvider>
       </body>
     </html>
   );

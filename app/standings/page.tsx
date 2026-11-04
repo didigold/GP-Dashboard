@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { useStandings } from '@/lib/hooks/useStandings';
+import { useSeason } from '@/lib/context/SeasonContext';
 import {
   Season,
   STANDINGS_ROUNDS,
@@ -23,16 +24,17 @@ import {
 } from '@/components/charts/StandingsInsights';
 
 export default function DriverStandingsPage() {
-  const [season, setSeason] = useState<Season>(STANDINGS_SEASONS[0]);
+  const { season, setSeason } = useSeason();
   const { standings, isLoading, lastUpdated, refresh } = useStandings(season);
 
   const evolutionDrivers = useMemo(
     () => buildDriverEvolutionDrivers(standings),
     [standings]
   );
+    const roundsCount = season.year === 2024 ? 20 : 22;
   const evolution = useMemo(
-    () => buildStandingsEvolution(evolutionDrivers, STANDINGS_ROUNDS),
-    [evolutionDrivers]
+    () => buildStandingsEvolution(evolutionDrivers, roundsCount),
+    [evolutionDrivers, roundsCount]
   );
 
   return (

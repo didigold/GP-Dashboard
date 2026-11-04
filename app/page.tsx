@@ -170,13 +170,14 @@ export default function HomePage() {
 
                 {/* Details Button - Full rounded button in white */}
                 <div className="pt-1">
-                  <Button
+                  <button
+                    type="button"
                     onClick={() => setCircuitModalOpen(true)}
-                    className="rounded-full px-7 py-2.5 font-sans text-xs sm:text-sm font-semibold bg-white hover:bg-neutral-200 text-black border-0 transition-all flex items-center gap-2 shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] group"
+                    className="h-10 px-6 rounded-full font-sans text-xs sm:text-sm font-bold text-white liquid-glass-btn transition-all flex items-center gap-2 shadow-xl hover:scale-[1.03] active:scale-[0.98] cursor-pointer group"
                   >
                     <span>Details</span>
-                    <ChevronRight className="w-4 h-4 text-black group-hover:translate-x-0.5 transition-transform" />
-                  </Button>
+                    <ChevronRight className="w-4 h-4 text-white group-hover:translate-x-0.5 transition-transform" />
+                  </button>
                 </div>
               </div>
 

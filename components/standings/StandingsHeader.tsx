@@ -29,7 +29,7 @@ export function StandingsHeader({
   children,
 }: StandingsHeaderProps) {
   return (
-    <header className="rounded-2xl border border-white/[0.08] bg-[#0A0A0C] p-4 sm:p-5 shadow-2xl backdrop-blur-2xl font-sans">
+    <header className="rounded-2xl liquid-glass-card p-4 sm:p-5 shadow-2xl font-sans">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -55,7 +55,7 @@ export function StandingsHeader({
               disabled={isLoading}
               aria-label="Refresh standings"
               title="Refresh standings"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-neutral-400 transition-colors hover:border-white/[0.16] hover:text-white disabled:opacity-60"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full liquid-glass-circle text-neutral-300 transition-all hover:text-white disabled:opacity-60 cursor-pointer"
             >
               <RefreshCw
                 className={cn('h-4 w-4', isLoading && 'animate-spin')}

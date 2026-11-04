@@ -15,7 +15,7 @@ export function StandingsNav() {
   const pathname = usePathname();
 
   return (
-    <div className="inline-flex w-full items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.04] p-1 sm:w-auto overflow-x-auto scrollbar-none">
+    <div className="inline-flex w-full items-center gap-1 rounded-full liquid-glass-pill p-1 sm:w-auto overflow-x-auto scrollbar-none">
       {TABS.map((tab) => {
         const isActive =
           tab.href === '/standings'

@@ -79,7 +79,7 @@ function HeadToHeadContent() {
         {/* Sleek Top Mode Selector (No banners, full width layout matching Overview tab) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           {/* Mode Switcher Pills */}
-          <div className="flex items-center p-1 rounded-full bg-[#121316] border border-white/[0.08] shadow-lg self-start">
+          <div className="flex items-center p-1 rounded-full liquid-glass-pill shadow-lg self-start">
             <button
               onClick={() => setActiveMode('grid')}
               className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-semibold transition-all duration-200 ${

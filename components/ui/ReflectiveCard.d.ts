@@ -4,7 +4,7 @@ export interface ReflectiveCardProps {
   /** Name shown on the card */
   name?: ReactNode | string;
   /** Role shown under the name */
-  role?: string;
+  role?: ReactNode | string;
   /** Label or element of the badge in the top left corner */
   badge?: ReactNode | string;
   /** Optional custom icon or ReactNode for the badge in top left (pass null to suppress default icon) */
@@ -31,6 +31,14 @@ export interface ReflectiveCardProps {
   onWebcamError?: (error: Error) => void;
   /** Color of the metal / team color */
   tint?: string;
+  /** Magic Bento spotlight & border glow RGB or hex (defaults to '225, 6, 0') */
+  glowColor?: string;
+  /** Whether to enable the reactive masked glowing border */
+  enableBorderGlow?: boolean;
+  /** Whether to enable the cursor spotlight */
+  enableSpotlight?: boolean;
+  /** Spotlight radius in px (defaults to 340) */
+  spotlightRadius?: number;
   /** How strongly the surface mirrors the scene, from 0 to 1. At 0 the card turns matte */
   metalness?: number;
   /** Brushed grain of the metal, from 0 to 1. Stretches reflections along the grain */
@@ -92,7 +100,9 @@ export interface ReflectiveCardProps {
   /** Optional team drivers lineup displayed when hovering the card */
   hoverDrivers?: Array<{
     id?: string;
-    name: string;
+    name?: string;
+    initial?: string;
+    surname?: string;
     number: number | string;
     flag: React.ReactNode | string;
     url?: string;

@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { CircuitInfo, getCircuitImageUrl } from '@/lib/data/circuits-data';
+import { ShimmerButton } from '@/components/ui/shimmer-button';
+import { useMagicBentoEffect } from '@/components/ui/MagicBentoCard';
 
 interface CircuitCardProps {
   circuit: CircuitInfo;
@@ -94,6 +96,7 @@ function CleanPdfIcon() {
 }
 
 export function CircuitCard({ circuit, isSelected, onSelect }: CircuitCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
   const [imgError, setImgError] = useState(false);
   const bgImage = imgError ? '/images/circuits/round-01-thailand.jpg' : getCircuitImageUrl(circuit);
   const isLive = circuit.status === 'CURRENT';
@@ -101,16 +104,18 @@ export function CircuitCard({ circuit, isSelected, onSelect }: CircuitCardProps)
   const displayDates = formatDisplayDates(circuit.dates);
   const displayTitle = getDisplayTitle(circuit);
 
-  return (
-    <div
-      id={`circuit-card-${circuit.id}`}
-      onClick={() => onSelect(circuit)}
-      className={`relative w-full h-full p-4 flex flex-col justify-between cursor-pointer select-none group text-white overflow-hidden rounded-2xl transition-all duration-300 font-sans border-none shadow-none bg-[#070913] ${
-        isSelected
-          ? 'ring-1 ring-white/35'
-          : 'ring-1 ring-white/10 hover:ring-white/20'
-      }`}
-    >
+  // Magic Bento hover spotlight, dynamic border glow, and click wave effect
+  useMagicBentoEffect(cardRef, {
+    glowColor: '225, 6, 0',
+    spotlightRadius: 320,
+    enableBorderGlow: true,
+    enableSpotlight: true,
+    enableTilt: false, // kept stable in calendar scroll view
+    clickEffect: true,
+  });
+
+  const cardContent = (
+    <>
       {/* Background authentic circuit photo */}
       {/* When selected: highlighted image (brighter, sharper, more vivid) */}
       <div
@@ -131,23 +136,26 @@ export function CircuitCard({ circuit, isSelected, onSelect }: CircuitCardProps)
         }`}
       />
 
-      {/* TOP ROW: Country Flag (Left) & Angled Status Ribbon (Right) */}
+      {/* Magic Bento Interactive Spotlight */}
+      <span className="magic-bento__light" style={{ zIndex: 4 }} aria-hidden="true" />
+
+      {/* SEAMLESS TOP-RIGHT STATUS BADGE: Integrated flush into the top-right corner curve */}
+      <div
+        className={`absolute top-0 right-0 px-3.5 py-1 text-[10px] sm:text-[10.5px] font-sans font-bold tracking-wider uppercase z-20 flex items-center gap-1.5 rounded-bl-xl rounded-tr-2xl border-b border-l ${
+          isFinished
+            ? 'bg-black/75 text-neutral-400 border-white/[0.08] backdrop-blur-md'
+            : isLive
+            ? 'bg-[#E10600] text-white border-red-500/80 shadow-[0_0_16px_rgba(225,6,0,0.5)]'
+            : 'bg-black/60 text-neutral-400 border-white/[0.06] backdrop-blur-md'
+        }`}
+      >
+        {isLive && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+        <span>{isFinished ? 'Finished' : isLive ? 'Up next' : 'Upcoming'}</span>
+      </div>
+
+      {/* TOP ROW: Country Flag (Left) */}
       <div className="relative z-10 flex items-start justify-between">
         <CountryFlag iso={circuit.country_code} country={circuit.country} className="w-8 h-5" />
-
-        {/* Angled Status Ribbon in Natural Case (Finished, Up next, Upcoming) */}
-        <div
-          className={`px-3 py-0.5 text-[10px] sm:text-[11px] font-sans font-bold tracking-wider flex items-center justify-center shrink-0 ${
-            isFinished
-              ? 'bg-black/95 text-neutral-300'
-              : isLive
-              ? 'bg-[#E10600] text-white'
-              : 'bg-black/80 text-neutral-400'
-          }`}
-          style={{ clipPath: 'polygon(10px 0%, 100% 0%, 100% 100%, 0% 100%)' }}
-        >
-          {isFinished ? 'Finished' : isLive ? 'Up next' : 'Upcoming'}
-        </div>
       </div>
 
       {/* MAIN BODY: Left side (Dates, Sora Number + Country, Subtitle) pushed down & Right side (Authentic Track Silhouette) */}
@@ -190,19 +198,60 @@ export function CircuitCard({ circuit, isSelected, onSelect }: CircuitCardProps)
         </div>
       </div>
 
-      {/* PDF Icon at Bottom Right: Clean, unclipped, NO bg, NO border, NO hover color change */}
-      {circuit.pdf_url && (
+      {/* PDF Icon at Bottom Right: Shown ONLY when this circuit is selected */}
+      {isSelected && circuit.pdf_url && (
         <a
           href={circuit.pdf_url}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="absolute bottom-2.5 right-3 z-30 p-1 bg-transparent border-none ring-0 outline-none text-white/80 hover:text-white/80 transition-none flex items-center justify-center cursor-pointer select-none"
+          className="absolute bottom-2.5 right-3 z-30 p-1 bg-transparent border-none ring-0 outline-none text-white/80 hover:text-white transition-none flex items-center justify-center cursor-pointer select-none"
           title="Official Circuit Information Sheet"
         >
           <CleanPdfIcon />
         </a>
       )}
+
+      {/* Magic Bento Interactive Rim & Dynamic Glowing Border */}
+      <span className="magic-bento__rim" style={{ zIndex: 25 }} aria-hidden="true" />
+      <span className="magic-bento__border" style={{ zIndex: 26 }} aria-hidden="true" />
+    </>
+  );
+
+  // When selected, render as a ShimmerButton with active glint ring
+  if (isSelected) {
+    return (
+      <ShimmerButton
+        ref={cardRef}
+        nativeButton={false}
+        onClick={() => onSelect(circuit)}
+        duration={3000}
+        ringWidth={3}
+        ringColor={isLive ? 'rgba(225, 6, 0, 0.85)' : 'rgba(255, 255, 255, 0.55)'}
+        shimmerColor="#ffffff"
+        className="relative z-20 hover:z-30 w-full h-full p-4 flex flex-col justify-between cursor-pointer select-none group text-white overflow-hidden rounded-2xl transition-all duration-300 font-sans border-none shadow-none bg-[#070913] text-left"
+      >
+        {cardContent}
+      </ShimmerButton>
+    );
+  }
+
+  // At rest (unselected), render as circuit card with Magic Bento hover spotlight and glowing border
+  return (
+    <div
+      ref={cardRef}
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(circuit)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(circuit);
+        }
+      }}
+      className="relative z-10 hover:z-30 w-full h-full p-4 flex flex-col justify-between cursor-pointer select-none group text-white overflow-hidden rounded-2xl transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.03] focus-visible:scale-[1.03] active:scale-[0.98] motion-reduce:hover:scale-100 motion-reduce:active:scale-100 font-sans border-none shadow-none bg-[#070913] text-left"
+    >
+      {cardContent}
     </div>
   );
 }

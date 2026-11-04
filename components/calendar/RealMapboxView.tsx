@@ -22,6 +22,7 @@ interface RealMapboxViewProps {
   selectedCircuit: CircuitInfo;
   onSelectCircuit: (circuit: CircuitInfo) => void;
   onOpenModal?: (circuit: CircuitInfo) => void;
+  circuits?: CircuitInfo[];
 }
 
 // Rock-solid high-resolution satellite imagery + boundary labels style
@@ -64,45 +65,44 @@ const SATELLITE_HYBRID_STYLE: mapboxgl.StyleSpecification = {
 };
 
 // Generate HTML for an authentic 3D Map Pin with needle tip pointing to track
-function createPinElement(circuit: CircuitInfo, isSelected: boolean, isCurrent: boolean): string {
-  const isHighlighted = isSelected || isCurrent;
-  const pinBg = isSelected
-    ? 'bg-[#E10600]'
-    : isCurrent
-    ? 'bg-[#FF3B30]'
-    : 'bg-[#00F5D4]';
-  const textColor = isSelected || isCurrent ? 'text-white' : 'text-black';
-  const ringColor = isSelected ? 'ring-4 ring-white shadow-[0_0_24px_rgba(225,6,0,0.9)]' : 'ring-2 ring-black/80';
+function createPinElement(circuit: CircuitInfo, isSelected: boolean): string {
+  // ONLY the selected circuit is red with pulse; all others are clean cyan/teal
+  const pinBg = isSelected ? 'bg-[#E10600]' : 'bg-[#00F5D4]';
+  const textColor = isSelected ? 'text-white' : 'text-black';
+  const ringColor = isSelected ? 'ring-3 ring-white shadow-[0_0_20px_rgba(225,6,0,0.85)]' : 'ring-2 ring-black/80';
 
   return `
     <div class="relative flex flex-col items-center cursor-pointer group select-none pointer-events-auto transition-transform duration-300 ${
-      isSelected ? 'scale-125 z-40' : 'hover:scale-115 z-20'
-    }">
-      <!-- Pulsing Ground Radar Rings for Active Circuit -->
-      ${
-        isHighlighted
-          ? `<div class="absolute -bottom-1 w-8 h-8 rounded-full bg-[#E10600]/40 animate-ping pointer-events-none -translate-x-1/2 left-1/2"></div>
-             <div class="absolute -bottom-1 w-5 h-5 rounded-full bg-[#E10600]/60 pointer-events-none -translate-x-1/2 left-1/2"></div>`
-          : `<div class="absolute -bottom-0.5 w-3 h-3 rounded-full bg-cyan-400/30 pointer-events-none -translate-x-1/2 left-1/2"></div>`
-      }
+      isSelected ? 'scale-125 z-40' : 'hover:scale-110 z-20'
+    }" style="font-family: var(--font-sans), 'Sora', sans-serif;">
 
-      <!-- Tooltip Label above the Pin -->
-      <div class="absolute bottom-full mb-1.5 px-2 py-0.5 rounded-md bg-black/90 backdrop-blur-md border border-white/20 text-[10px] font-sans font-bold text-white whitespace-nowrap shadow-2xl transition-opacity pointer-events-none ${
+      <!-- Tooltip Label above the Pin (using Sora font) -->
+      <div class="absolute bottom-full mb-1.5 px-2.5 py-0.5 rounded-md bg-black/90 backdrop-blur-md border border-white/20 text-[10px] font-bold text-white whitespace-nowrap shadow-2xl transition-opacity pointer-events-none ${
         isSelected ? 'opacity-100 ring-1 ring-[#E10600]' : 'opacity-0 group-hover:opacity-100'
-      }">
+      }" style="font-family: var(--font-sans), 'Sora', sans-serif;">
         R${circuit.round_number} · ${circuit.name}
       </div>
 
-      <!-- Pin Teardrop Head -->
-      <div class="w-7 h-7 rounded-full ${pinBg} ${ringColor} flex items-center justify-center shadow-2xl transition-all">
-        <span class="text-[10px] font-sans font-black ${textColor} leading-none tracking-tight">
+      <!-- Pin Teardrop Head (using Sora font for numbers) -->
+      <div class="w-7 h-7 rounded-full ${pinBg} ${ringColor} flex items-center justify-center shadow-lg transition-all">
+        <span class="text-[11px] font-extrabold ${textColor} leading-none tracking-tight" style="font-family: var(--font-sans), 'Sora', sans-serif;">
           ${circuit.round_number}
         </span>
       </div>
 
-      <!-- Needle Tip pointing to exact track coordinates -->
-      <div class="w-0.5 h-2.5 ${isSelected ? 'bg-white shadow-[0_0_8px_#fff]' : 'bg-white/80'}"></div>
-      <div class="w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-[#E10600] ring-1 ring-white' : 'bg-black ring-1 ring-cyan-400'}"></div>
+      <!-- Needle stem pointing to exact track coordinates -->
+      <div class="w-0.5 h-3 ${isSelected ? 'bg-white shadow-[0_0_6px_#fff]' : 'bg-white/80'}"></div>
+
+      <!-- Base Ground Dot + Centered Pulse Anchor (exact [lng, lat] ground contact) -->
+      <div class="relative w-2 h-2 flex items-center justify-center">
+        <div class="w-2 h-2 rounded-full ${isSelected ? 'bg-[#E10600] ring-1 ring-white' : 'bg-black ring-1 ring-cyan-400'} z-10"></div>
+        ${
+          isSelected
+            ? `<div class="absolute w-8 h-8 rounded-full bg-[#E10600]/40 animate-ping pointer-events-none"></div>
+               <div class="absolute w-5 h-5 rounded-full bg-[#E10600]/50 pointer-events-none"></div>`
+            : ''
+        }
+      </div>
     </div>
   `;
 }
@@ -110,11 +110,13 @@ function createPinElement(circuit: CircuitInfo, isSelected: boolean, isCurrent: 
 export function RealMapboxView({
   selectedCircuit,
   onSelectCircuit,
+  circuits,
 }: RealMapboxViewProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<{ [key: string]: { marker: mapboxgl.Marker; el: HTMLElement } }>({});
   const isFlyingRef = useRef<boolean>(false);
+  const isInitialMountRef = useRef<boolean>(true);
   const selectedCircuitRef = useRef<CircuitInfo>(selectedCircuit);
   selectedCircuitRef.current = selectedCircuit;
 
@@ -138,20 +140,6 @@ export function RealMapboxView({
         item.el.style.display = 'flex';
       }
     });
-
-    try {
-      if (map.getLayer('circuit-radar-glow')) {
-        if (isZoomedIn && currentSelectedId) {
-          map.setFilter('circuit-radar-glow', ['==', ['get', 'id'], currentSelectedId]);
-          map.setFilter('circuit-center-dot', ['==', ['get', 'id'], currentSelectedId]);
-        } else {
-          map.setFilter('circuit-radar-glow', null);
-          map.setFilter('circuit-center-dot', null);
-        }
-      }
-    } catch {
-      // Safe no-op
-    }
   };
 
   const rawToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.trim() || '';
@@ -173,13 +161,14 @@ export function RealMapboxView({
       ? 'mapbox://styles/mapbox/standard'
       : SATELLITE_HYBRID_STYLE;
 
+    // Start with map max zoom out (globe view)
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: initialStyle,
       center: [selectedCircuit.lng, selectedCircuit.lat],
-      zoom: 14.5,
-      pitch: 50, // 3D angled perspective
-      bearing: -15,
+      zoom: 1.6, // Start max zoomed out to full globe
+      pitch: 0, // Flat globe view on entry
+      bearing: 0,
       projection: 'globe', // Native 3D rotating globe
       minZoom: 1.5,
       maxZoom: 19,
@@ -213,69 +202,6 @@ export function RealMapboxView({
           // Non-standard style safe no-op
         }
       }
-
-      // Add native WebGL GeoJSON layers so pins are ALWAYS visible on the 3D globe at any zoom
-      try {
-        const geojsonFeatures = CHAMPIONSHIP_ROUNDS_2026.map((c) => ({
-          type: 'Feature' as const,
-          geometry: {
-            type: 'Point' as const,
-            coordinates: [c.lng, c.lat],
-          },
-          properties: {
-            id: c.id,
-            round: c.round_number,
-            name: c.name,
-            isSelected: c.id === selectedCircuit.id,
-            isCurrent: c.status === 'CURRENT',
-          },
-        }));
-
-        if (!map.getSource('circuits-geojson')) {
-          map.addSource('circuits-geojson', {
-            type: 'geojson',
-            data: {
-              type: 'FeatureCollection',
-              features: geojsonFeatures,
-            },
-          });
-
-          // Glowing radar halo circle layer
-          map.addLayer({
-            id: 'circuit-radar-glow',
-            type: 'circle',
-            source: 'circuits-geojson',
-            paint: {
-              'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 6, 8, 12, 16, 20],
-              'circle-color': [
-                'case',
-                ['==', ['get', 'id'], selectedCircuit.id],
-                '#E10600',
-                ['==', ['get', 'isCurrent'], true],
-                '#FF3B30',
-                '#00F5D4',
-              ],
-              'circle-opacity': 0.75,
-              'circle-blur': 0.4,
-            },
-          });
-
-          // Core sharp center point
-          map.addLayer({
-            id: 'circuit-center-dot',
-            type: 'circle',
-            source: 'circuits-geojson',
-            paint: {
-              'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 3, 8, 5, 16, 7],
-              'circle-color': '#FFFFFF',
-              'circle-stroke-width': 1.5,
-              'circle-stroke-color': '#000000',
-            },
-          });
-        }
-      } catch {
-        // Safe layer initialization
-      }
     });
 
     map.on('load', () => {
@@ -295,14 +221,14 @@ export function RealMapboxView({
       }
 
       // Create interactive circuit Pin Markers
-      CHAMPIONSHIP_ROUNDS_2026.forEach((circuit) => {
+      const activeRounds = circuits || CHAMPIONSHIP_ROUNDS_2026;
+      activeRounds.forEach((circuit) => {
         const isSelected = selectedCircuit.id === circuit.id;
-        const isCurrent = circuit.status === 'CURRENT';
 
         const el = document.createElement('div');
         el.className = 'circuit-pin-container pointer-events-auto';
         el.setAttribute('data-circuit-id', circuit.id);
-        el.innerHTML = createPinElement(circuit, isSelected, isCurrent);
+        el.innerHTML = createPinElement(circuit, isSelected);
 
         el.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -327,8 +253,29 @@ export function RealMapboxView({
         markersRef.current[circuit.id] = { marker, el };
       });
 
-      // Synchronize pin and radar layer visibility based on initial zoom
+      // Synchronize pin visibility based on initial zoom
       syncPinVisibility();
+
+      // PROGRESSIVE ZOOM ON ENTRY: Start max zoom out, then smoothly fly and zoom into the selected event
+      setTimeout(() => {
+        if (!mapRef.current) return;
+        isFlyingRef.current = true;
+        mapRef.current.flyTo({
+          center: [selectedCircuit.lng, selectedCircuit.lat],
+          zoom: 14.5,
+          pitch: 50,
+          bearing: -15,
+          essential: true,
+          duration: 4200, // Calm, cinematic descent giving renderer time to stream tiles
+          curve: 1.42,
+          speed: 0.8,
+        });
+
+        mapRef.current.once('moveend', () => {
+          isFlyingRef.current = false;
+          syncPinVisibility();
+        });
+      }, 450);
     });
 
     // Auto-flatten pitch smoothly ONLY during manual user scroll/wheel zoom (NOT during flyTo)
@@ -364,6 +311,47 @@ export function RealMapboxView({
     };
   }, []);
 
+  // Refresh markers whenever the season rounds change
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const activeRounds = circuits || CHAMPIONSHIP_ROUNDS_2026;
+
+    // Remove existing markers
+    Object.values(markersRef.current).forEach(({ marker }) => marker.remove());
+    markersRef.current = {};
+
+    activeRounds.forEach((circuit) => {
+      const isSelected = selectedCircuitRef.current?.id === circuit.id;
+      const el = document.createElement('div');
+      el.className = 'circuit-pin-container pointer-events-auto';
+      el.setAttribute('data-circuit-id', circuit.id);
+      el.innerHTML = createPinElement(circuit, isSelected);
+
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        onSelectCircuit(circuit);
+        const cardElem = document.getElementById(`circuit-card-${circuit.id}`);
+        if (cardElem) {
+          cardElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+
+      const marker = new mapboxgl.Marker({
+        element: el,
+        anchor: 'bottom',
+        pitchAlignment: 'viewport',
+        rotationAlignment: 'viewport',
+      })
+        .setLngLat([circuit.lng, circuit.lat])
+        .addTo(map);
+
+      markersRef.current[circuit.id] = { marker, el };
+    });
+
+    syncPinVisibility();
+  }, [circuits]);
+
   // Update marker styles and smoothly fly camera when selectedCircuit changes
   useEffect(() => {
     const map = mapRef.current;
@@ -375,37 +363,17 @@ export function RealMapboxView({
       if (!item) return;
       const { el } = item;
       const isSelected = selectedCircuit.id === id;
-      const roundCircuit = CHAMPIONSHIP_ROUNDS_2026.find((c) => c.id === id);
+      const activeRounds = circuits || CHAMPIONSHIP_ROUNDS_2026;
+      const roundCircuit = activeRounds.find((c) => c.id === id);
       if (!roundCircuit) return;
-      const isCurrent = roundCircuit.status === 'CURRENT';
 
-      el.innerHTML = createPinElement(roundCircuit, isSelected, isCurrent);
+      el.innerHTML = createPinElement(roundCircuit, isSelected);
     });
 
-    // Update GeoJSON layer highlight
-    try {
-      const source = map.getSource('circuits-geojson') as mapboxgl.GeoJSONSource | undefined;
-      if (source) {
-        source.setData({
-          type: 'FeatureCollection',
-          features: CHAMPIONSHIP_ROUNDS_2026.map((c) => ({
-            type: 'Feature' as const,
-            geometry: {
-              type: 'Point' as const,
-              coordinates: [c.lng, c.lat],
-            },
-            properties: {
-              id: c.id,
-              round: c.round_number,
-              name: c.name,
-              isSelected: c.id === selectedCircuit.id,
-              isCurrent: c.status === 'CURRENT',
-            },
-          })),
-        });
-      }
-    } catch {
-      // GeoJSON update safe no-op
+    // Skip camera fly on initial mount since map.on('load') triggers the progressive zoom from globe view
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
     }
 
     // Immediately sync pin visibility so distant pins disappear when zooming into a circuit
@@ -420,7 +388,9 @@ export function RealMapboxView({
       pitch: 50,
       bearing: -15,
       essential: true,
-      duration: 2200,
+      duration: 3800, // Calmer flight speed allowing map renderer to load textures smoothly
+      curve: 1.42,
+      speed: 0.8,
     });
 
     map.once('moveend', () => {

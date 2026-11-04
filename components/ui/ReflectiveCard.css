@@ -24,22 +24,43 @@
   overflow: hidden;
   border-radius: var(--rc-radius);
   background: var(--rc-base);
-  box-shadow: var(--rc-shadow);
-  transform: translate3d(0, var(--rc-lift, 0px), 0) rotateX(var(--rc-rotate-x, 0deg)) rotateY(var(--rc-rotate-y, 0deg));
+  box-shadow:
+    var(--rc-shadow),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.32),
+    inset 0 0 20px 0 rgba(255, 255, 255, 0.03),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.4);
+  transform: perspective(900px) translate3d(0, var(--rc-lift, 0px), 0) rotateX(var(--mb-rx, var(--rc-rotate-x, 0deg))) rotateY(var(--mb-ry, var(--rc-rotate-y, 0deg))) scale(var(--mb-press, 1));
   opacity: 1 !important; /* Always 1 - never invisible */
   isolation: isolate;
   will-change: transform;
 }
 
-.reflective-card__canvas {
+/* Magic Bento Spotlight & Border Glow Layers */
+.reflective-card .magic-bento__light {
   position: absolute;
   inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  opacity: 0.85;
-  mix-blend-mode: screen;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.reflective-card .magic-bento__rim {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px var(--rc-rim, var(--mb-edge, rgba(255, 255, 255, 0.08))),
+    inset 0 1px 0 var(--rc-rim-highlight, var(--mb-highlight, rgba(255, 255, 255, 0.1)));
+  pointer-events: none;
+}
+
+.reflective-card .magic-bento__border {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  border-radius: inherit;
+  pointer-events: none;
 }
 
 /* Big Racing Number / Watermark in Background - Zooms on Card Hover */
@@ -57,7 +78,7 @@
   opacity: var(--rc-bg-num-opacity, 0.2);
   pointer-events: none;
   user-select: none;
-  z-index: 1;
+  z-index: 2;
   text-shadow: 0 0 50px var(--rc-team-glow, rgba(255, 255, 255, 0.25)), 0 0 12px rgba(255, 255, 255, 0.15);
   -webkit-text-stroke: 1px rgba(255, 255, 255, 0.12);
   filter: contrast(1.25);
@@ -77,7 +98,7 @@
   overflow: hidden;
   border-radius: var(--rc-radius);
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
 }
 
 .reflective-card__driver-bottom-img {
@@ -136,7 +157,7 @@
 
 .reflective-card__content {
   position: relative;
-  z-index: 3;
+  z-index: 4;
   box-sizing: border-box;
   display: flex;
   height: 100%;
@@ -228,14 +249,15 @@
   pointer-events: none;
   transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.35s ease;
   overflow: hidden;
-  z-index: 10;
+  z-index: 25;
 }
 
 .reflective-card:hover .reflective-card__hover-drivers {
   opacity: 1;
-  max-height: 90px;
+  max-height: 120px;
   transform: translateY(0);
   pointer-events: auto;
+  overflow: visible;
 }
 
 .reflective-card__hover-drivers-label {
@@ -250,30 +272,38 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  padding: 2px 2px 6px 2px;
 }
 
 .reflective-card__hover-driver-pill {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3.5px 9px;
+  padding: 4px 10px;
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   font-size: 11px;
-  font-weight: 600;
+  line-height: 1.25;
+  font-weight: 500;
   color: #ffffff;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .reflective-card__hover-driver-pill:hover {
   background: rgba(255, 255, 255, 0.25);
   border-color: rgba(255, 255, 255, 0.5);
   transform: translateY(-1px) scale(1.04);
+}
+
+.reflective-card__hover-driver-name {
+  display: inline-flex;
+  align-items: baseline;
+  letter-spacing: 0.02em;
 }
 
 .reflective-card__hover-driver-flag {
@@ -298,7 +328,7 @@
   position: absolute;
   right: var(--rc-pad);
   bottom: var(--rc-pad);
-  z-index: 10;
+  z-index: 25;
 }
 
 .reflective-card__id {
@@ -343,9 +373,22 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--rc-tile-radius);
-  background: var(--rc-tile);
-  box-shadow: var(--rc-tile-shadow);
-  color: var(--rc-muted);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(0, 0, 0, 0.35) 100%
+  );
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow:
+    0 8px 20px -4px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.6),
+    inset 0 0 10px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 1.5px 0 rgba(0, 0, 0, 0.35);
+  color: #ffffff;
+  overflow: hidden;
 }
 
 .reflective-card__tile::after {
@@ -353,9 +396,12 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow:
-    inset 0 0 0 1px var(--rc-tile-edge),
-    inset 0 1px 0 var(--rc-tile-highlight);
+  background: linear-gradient(
+    130deg,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0.04) 35%,
+    transparent 65%
+  );
   pointer-events: none;
 }
 
@@ -363,14 +409,23 @@
   cursor: pointer;
   text-decoration: none;
   pointer-events: auto;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .reflective-card__tile--interactive:hover {
   transform: scale(1.12);
   color: #ffffff;
-  background: linear-gradient(180deg, #e10600 0%, #8b0000 100%);
-  box-shadow: 0 4px 16px -2px rgba(225, 6, 0, 0.55);
+  background: linear-gradient(
+    135deg,
+    rgba(225, 6, 0, 0.8) 0%,
+    rgba(180, 0, 0, 0.6) 50%,
+    rgba(90, 0, 0, 0.85) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 10px 24px -2px rgba(225, 6, 0, 0.65),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.75),
+    inset 0 0 12px 0 rgba(255, 255, 255, 0.2);
 }
 
 .reflective-card__tile--interactive:active {
@@ -380,22 +435,10 @@
 .reflective-card__rim {
   position: absolute;
   inset: 0;
-  z-index: 4;
+  z-index: 15;
   border-radius: inherit;
   box-shadow:
     inset 0 0 0 1px var(--rc-rim),
     inset 0 1px 0 var(--rc-rim-highlight);
   pointer-events: none;
-}
-
-.reflective-card__media {
-  display: none !important;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
 }

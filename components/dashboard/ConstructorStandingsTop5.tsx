@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { GiShieldReflect } from 'react-icons/gi';
+import { GiShieldOpposition } from 'react-icons/gi';
 import { ConstructorLogo } from '@/components/ui/ConstructorLogo';
 import {
   Avatar,
@@ -23,8 +23,8 @@ export function ConstructorStandingsTop5({ className }: ConstructorStandingsTop5
   const constructors = [
     {
       pos: '1',
-      name: 'Ducati Corse',
-      fullName: 'Ducati Lenovo Team / Ducati Corse',
+      name: 'Ducati',
+      fullName: 'Ducati Motor Holding',
       bike: 'Desmosedici GP25',
       hq: 'Borgo Panigale, Bologna, Italy',
       points: 620,
@@ -33,8 +33,8 @@ export function ConstructorStandingsTop5({ className }: ConstructorStandingsTop5
     },
     {
       pos: '2',
-      name: 'Aprilia Racing',
-      fullName: 'Aprilia Racing Factory',
+      name: 'Aprilia',
+      fullName: 'Aprilia (Piaggio Group)',
       bike: 'Aprilia RS-GP25',
       hq: 'Noale, Venice, Italy',
       points: 490,
@@ -43,8 +43,8 @@ export function ConstructorStandingsTop5({ className }: ConstructorStandingsTop5
     },
     {
       pos: '3',
-      name: 'Red Bull KTM',
-      fullName: 'Red Bull KTM Factory Racing',
+      name: 'KTM',
+      fullName: 'KTM Sportmotorcycle GmbH',
       bike: 'KTM RC16 Prototype',
       hq: 'Mattighofen, Austria',
       points: 385,
@@ -53,8 +53,8 @@ export function ConstructorStandingsTop5({ className }: ConstructorStandingsTop5
     },
     {
       pos: '4',
-      name: 'Yamaha MotoGP',
-      fullName: 'Monster Energy Yamaha MotoGP',
+      name: 'Yamaha',
+      fullName: 'Yamaha Motor Company',
       bike: 'Yamaha YZR-M1',
       hq: 'Iwata, Shizuoka, Japan',
       points: 195,
@@ -63,10 +63,10 @@ export function ConstructorStandingsTop5({ className }: ConstructorStandingsTop5
     },
     {
       pos: '5',
-      name: 'Honda HRC',
-      fullName: 'Honda Racing Corporation (HRC)',
+      name: 'Honda',
+      fullName: 'Honda Motor Co., Ltd.',
       bike: 'Honda RC213V Factory',
-      hq: 'Asaka, Saitama, Japan',
+      hq: 'Asaka, Saitama / Minato, Tokyo, Japan',
       points: 130,
       wins: 0,
       podiums: 1,
@@ -82,7 +82,7 @@ export function ConstructorStandingsTop5({ className }: ConstructorStandingsTop5
         {/* Card Header (Separator removed as requested) */}
         <div className="flex items-center justify-between pb-2 h-8">
           <div className="flex items-center gap-2">
-            <GiShieldReflect className="w-4 h-4 text-white shrink-0" />
+            <GiShieldOpposition className="w-4 h-4 text-white shrink-0" />
             <span className="text-xs sm:text-sm font-sans font-bold tracking-tight text-white truncate">
               Constructors Championship
             </span>
@@ -110,7 +110,7 @@ export function ConstructorStandingsTop5({ className }: ConstructorStandingsTop5
           {constructors.map((item) => (
             <div
               key={item.name}
-              className="grid grid-cols-12 gap-1.5 items-center h-11 px-1 border-b border-white/[0.04] last:border-0"
+              className="grid grid-cols-12 gap-1.5 items-center h-11 px-1"
             >
               {/* Pos: 1, 2, 3, 4, 5 */}
               <div

@@ -6,17 +6,42 @@ import {
   aggregateStandingsEvolution,
 } from '@/lib/data/standings-evolution';
 import { abbreviateRiderName } from '@/lib/utils/rider-name';
+import { getTeamLogoInfo } from '@/components/ui/TeamLogo';
 
 export interface Season {
   year: number;
   id: string;
   label: string;
+  subtitle?: string;
+  isCurrent?: boolean;
 }
 
 export const STANDINGS_SEASONS: Season[] = [
-  { year: 2026, id: 'e88b4e43-2209-47aa-8e83-0e0b1cedde6e', label: '2026 World Championship (Official Live)' },
-  { year: 2025, id: 'ae6c6f0d-c652-44f8-94aa-420fc5b3dab4', label: '2025 Championship' },
-  { year: 2024, id: 'dd12382e-1d9f-46ee-a5f7-c5104db28e43', label: '2024 World Championship' },
+  {
+    year: 2026,
+    id: 'e88b4e43-2209-47aa-8e83-0e0b1cedde6e',
+    label: '2026 World Championship',
+    subtitle: 'Official Live Season',
+    isCurrent: true,
+  },
+  {
+    year: 2025,
+    id: 'ae6c6f0d-c652-44f8-94aa-420fc5b3dab4',
+    label: '2025 World Championship',
+    subtitle: 'Marquez vs Bagnaia Title Fight',
+  },
+  {
+    year: 2024,
+    id: 'dd12382e-1d9f-46ee-a5f7-c5104db28e43',
+    label: '2024 World Championship',
+    subtitle: 'Martin Champion • 508 pts',
+  },
+  {
+    year: 2023,
+    id: 'db8dc197-c7b2-4c1b-b3a4-6dc534c023ef',
+    label: '2023 World Championship',
+    subtitle: 'Bagnaia Champion • 467 pts',
+  },
 ];
 
 export const MOTOGP_CAT_ID = 'e8c110ad-64aa-4e8e-8a86-f2f152f6a942';
@@ -97,7 +122,10 @@ export function constructorColorByName(name?: string): string {
 export function resolveTeamLogo(teamName?: string, constructorName?: string, riderNumber?: number): string {
   if (riderNumber) {
     const rider = getRiderByNumber(riderNumber);
-    if (rider?.team_logo_url) return rider.team_logo_url;
+    if (rider) {
+      const info = getTeamLogoInfo(rider.team_id, rider.constructor_name);
+      if (info?.src) return info.src;
+    }
   }
   const tName = (teamName || '').toLowerCase();
   const cName = (constructorName || '').toLowerCase();
@@ -108,7 +136,12 @@ export function resolveTeamLogo(teamName?: string, constructorName?: string, rid
       tName.includes(entry.short_name.toLowerCase()) ||
       (entry.constructor.toLowerCase() === cName && entry.type === 'Factory')
   );
-  return team?.logo_url || '';
+  if (team) {
+    const info = getTeamLogoInfo(team.id, team.constructor);
+    if (info?.src) return info.src;
+  }
+  const constructorInfo = getTeamLogoInfo(undefined, constructorName);
+  return constructorInfo?.src || '';
 }
 
 export function resolveRiderColor(
@@ -229,4 +262,216 @@ export function buildEntityEvolution(
       memberIds: entity.riderIds,
     }))
   );
+}
+
+export const STANDINGS_2024_FALLBACK: StandingItem[] = [
+  {
+    id: 'martin-89',
+    position: 1,
+    rider: { id: 'martin-89', full_name: 'Jorge Martin', number: 89, country: { iso: 'ES', name: 'Spain' } },
+    team: { id: 'pramac', name: 'Prima Pramac Racing' },
+    constructor: { id: 'ducati', name: 'Ducati' },
+    points: 508,
+    race_wins: 3,
+    podiums: 16,
+  },
+  {
+    id: 'bagnaia-63',
+    position: 2,
+    rider: { id: 'bagnaia-63', full_name: 'Francesco Bagnaia', number: 1, country: { iso: 'IT', name: 'Italy' } },
+    team: { id: 'ducati-lenovo', name: 'Ducati Lenovo Team' },
+    constructor: { id: 'ducati', name: 'Ducati' },
+    points: 498,
+    race_wins: 11,
+    podiums: 16,
+  },
+  {
+    id: 'marquez-93',
+    position: 3,
+    rider: { id: 'marquez-93', full_name: 'Marc Marquez', number: 93, country: { iso: 'ES', name: 'Spain' } },
+    team: { id: 'gresini', name: 'Gresini Racing MotoGP' },
+    constructor: { id: 'ducati', name: 'Ducati' },
+    points: 392,
+    race_wins: 3,
+    podiums: 10,
+  },
+  {
+    id: 'bastianini-23',
+    position: 4,
+    rider: { id: 'bastianini-23', full_name: 'Enea Bastianini', number: 23, country: { iso: 'IT', name: 'Italy' } },
+    team: { id: 'ducati-lenovo', name: 'Ducati Lenovo Team' },
+    constructor: { id: 'ducati', name: 'Ducati' },
+    points: 368,
+    race_wins: 2,
+    podiums: 9,
+  },
+  {
+    id: 'binder-33',
+    position: 5,
+    rider: { id: 'binder-33', full_name: 'Brad Binder', number: 33, country: { iso: 'ZA', name: 'South Africa' } },
+    team: { id: 'ktm-factory', name: 'Red Bull KTM Factory Racing' },
+    constructor: { id: 'ktm', name: 'KTM' },
+    points: 217,
+    race_wins: 0,
+    podiums: 1,
+  },
+  {
+    id: 'acosta-37',
+    position: 6,
+    rider: { id: 'acosta-37', full_name: 'Pedro Acosta', number: 37, country: { iso: 'ES', name: 'Spain' } },
+    team: { id: 'gasgas-tech3', name: 'Red Bull GASGAS Tech3' },
+    constructor: { id: 'ktm', name: 'KTM' },
+    points: 215,
+    race_wins: 0,
+    podiums: 5,
+  },
+  {
+    id: 'vinales-12',
+    position: 7,
+    rider: { id: 'vinales-12', full_name: 'Maverick Viñales', number: 12, country: { iso: 'ES', name: 'Spain' } },
+    team: { id: 'aprilia-racing', name: 'Aprilia Racing' },
+    constructor: { id: 'aprilia', name: 'Aprilia' },
+    points: 190,
+    race_wins: 1,
+    podiums: 3,
+  },
+  {
+    id: 'alexmarquez-73',
+    position: 8,
+    rider: { id: 'alexmarquez-73', full_name: 'Alex Marquez', number: 73, country: { iso: 'ES', name: 'Spain' } },
+    team: { id: 'gresini', name: 'Gresini Racing MotoGP' },
+    constructor: { id: 'ducati', name: 'Ducati' },
+    points: 173,
+    race_wins: 0,
+    podiums: 1,
+  },
+  {
+    id: 'morbidelli-21',
+    position: 9,
+    rider: { id: 'morbidelli-21', full_name: 'Franco Morbidelli', number: 21, country: { iso: 'IT', name: 'Italy' } },
+    team: { id: 'pramac', name: 'Prima Pramac Racing' },
+    constructor: { id: 'ducati', name: 'Ducati' },
+    points: 173,
+    race_wins: 0,
+    podiums: 0,
+  },
+  {
+    id: 'digiannantonio-49',
+    position: 10,
+    rider: { id: 'digiannantonio-49', full_name: 'Fabio Di Giannantonio', number: 49, country: { iso: 'IT', name: 'Italy' } },
+    team: { id: 'vr46', name: 'Pertamina Enduro VR46 Racing Team' },
+    constructor: { id: 'ducati', name: 'Ducati' },
+    points: 165,
+    race_wins: 0,
+    podiums: 0,
+  },
+  {
+    id: 'espargaro-41',
+    position: 11,
+    rider: { id: 'espargaro-41', full_name: 'Aleix Espargaro', number: 41, country: { iso: 'ES', name: 'Spain' } },
+    team: { id: 'aprilia-racing', name: 'Aprilia Racing' },
+    constructor: { id: 'aprilia', name: 'Aprilia' },
+    points: 163,
+    race_wins: 1,
+    podiums: 2,
+  },
+  {
+    id: 'bezzecchi-72',
+    position: 12,
+    rider: { id: 'bezzecchi-72', full_name: 'Marco Bezzecchi', number: 72, country: { iso: 'IT', name: 'Italy' } },
+    team: { id: 'vr46', name: 'Pertamina Enduro VR46 Racing Team' },
+    constructor: { id: 'ducati', name: 'Ducati' },
+    points: 153,
+    race_wins: 0,
+    podiums: 1,
+  },
+];
+
+export const STANDINGS_2025_FALLBACK: StandingItem[] = [
+  {
+    id: 'marquez-93',
+    position: 1,
+    rider: { id: 'marquez-93', full_name: 'Marc Marquez', number: 93, country: { iso: 'ES', name: 'Spain' } },
+    team: { id: 'ducati-lenovo', name: 'Ducati Lenovo Team' },
+    constructor: { id: 'ducati', name: 'Ducati' },
+    points: 545,
+    race_wins: 11,
+    podiums: 15,
+  },
+  {
+    id: 'alexmarquez-73',
+    position: 2,
+    rider: { id: 'alexmarquez-73', full_name: 'Alex Marquez', number: 73, country: { iso: 'ES', name: 'Spain' } },
+    team: { id: 'gresini', name: 'BK8 Gresini Racing MotoGP' },
+    constructor: { id: 'ducati', name: 'Ducati' },
+    points: 467,
+    race_wins: 3,
+    podiums: 12,
+  },
+  {
+    id: 'bezzecchi-72',
+    position: 3,
+    rider: { id: 'bezzecchi-72', full_name: 'Marco Bezzecchi', number: 72, country: { iso: 'IT', name: 'Italy' } },
+    team: { id: 'aprilia-racing', name: 'Aprilia Racing' },
+    constructor: { id: 'aprilia', name: 'Aprilia' },
+    points: 353,
+    race_wins: 3,
+    podiums: 9,
+  },
+  {
+    id: 'bagnaia-63',
+    position: 4,
+    rider: { id: 'bagnaia-63', full_name: 'Francesco Bagnaia', number: 63, country: { iso: 'IT', name: 'Italy' } },
+    team: { id: 'ducati-lenovo', name: 'Ducati Lenovo Team' },
+    constructor: { id: 'ducati', name: 'Ducati' },
+    points: 340,
+    race_wins: 4,
+    podiums: 10,
+  },
+  {
+    id: 'acosta-37',
+    position: 5,
+    rider: { id: 'acosta-37', full_name: 'Pedro Acosta', number: 37, country: { iso: 'ES', name: 'Spain' } },
+    team: { id: 'ktm-factory', name: 'Red Bull KTM Factory Racing' },
+    constructor: { id: 'ktm', name: 'KTM' },
+    points: 285,
+    race_wins: 1,
+    podiums: 8,
+  },
+  {
+    id: 'martin-89',
+    position: 6,
+    rider: { id: 'martin-89', full_name: 'Jorge Martin', number: 89, country: { iso: 'ES', name: 'Spain' } },
+    team: { id: 'aprilia-racing', name: 'Aprilia Racing' },
+    constructor: { id: 'aprilia', name: 'Aprilia' },
+    points: 270,
+    race_wins: 2,
+    podiums: 8,
+  },
+  {
+    id: 'digiannantonio-49',
+    position: 7,
+    rider: { id: 'digiannantonio-49', full_name: 'Fabio Di Giannantonio', number: 49, country: { iso: 'IT', name: 'Italy' } },
+    team: { id: 'vr46', name: 'Pertamina Enduro VR46 Racing Team' },
+    constructor: { id: 'ducati', name: 'Ducati' },
+    points: 240,
+    race_wins: 1,
+    podiums: 6,
+  },
+  {
+    id: 'aldeguer-54',
+    position: 8,
+    rider: { id: 'aldeguer-54', full_name: 'Fermin Aldeguer', number: 54, country: { iso: 'ES', name: 'Spain' } },
+    team: { id: 'gresini', name: 'BK8 Gresini Racing MotoGP' },
+    constructor: { id: 'ducati', name: 'Ducati' },
+    points: 210,
+    race_wins: 0,
+    podiums: 4,
+  },
+];
+
+export function getFallbackStandings(year: number): StandingItem[] {
+  if (year === 2024) return STANDINGS_2024_FALLBACK;
+  if (year === 2025) return STANDINGS_2025_FALLBACK;
+  return INITIAL_STANDINGS;
 }

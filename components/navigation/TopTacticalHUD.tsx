@@ -17,12 +17,22 @@ import {
   Calendar,
   ShieldCheck,
   Users,
-  Search,
   Menu,
   X,
   ChevronRight,
   Sparkles,
+  Globe,
+  Check,
 } from 'lucide-react';
+import { toast } from 'sonner';
+
+const LANGUAGES = [
+  { code: 'en', label: 'English', iso: 'gb' },
+  { code: 'es', label: 'Español', iso: 'es' },
+  { code: 'it', label: 'Italiano', iso: 'it' },
+  { code: 'fr', label: 'Français', iso: 'fr' },
+  { code: 'de', label: 'Deutsch', iso: 'de' },
+];
 
 // Full catalogue retained for CommandPalette and full index searches
 export const NAV_ITEMS = [
@@ -52,6 +62,29 @@ export function TopTacticalHUD() {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const statsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const gridTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const [selectedLang, setSelectedLang] = useState('en');
+  const languageContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem('gp.lang');
+      if (saved) setSelectedLang(saved);
+    } catch {
+      // Storage unavailable
+    }
+  }, []);
+
+  const handleSelectLanguage = (code: string, label: string) => {
+    setSelectedLang(code);
+    setLanguageOpen(false);
+    try {
+      window.localStorage.setItem('gp.lang', code);
+    } catch {
+      // ignore
+    }
+    toast.success(`Language set to ${label}`);
+  };
 
   // Dynamic scroll listener for blur background animation as content slides below
   useEffect(() => {
@@ -70,6 +103,9 @@ export function TopTacticalHUD() {
         setStatsOpen(false);
         setGridOpen(false);
       }
+      if (languageContainerRef.current && !languageContainerRef.current.contains(event.target as Node)) {
+        setLanguageOpen(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -81,6 +117,7 @@ export function TopTacticalHUD() {
     setStatsOpen(false);
     setGridOpen(false);
     setMobileMenuOpen(false);
+    setLanguageOpen(false);
   }, [pathname]);
 
   const handleMouseEnter = () => {
@@ -122,10 +159,6 @@ export function TopTacticalHUD() {
     }, 180);
   };
 
-  const triggerCommandPalette = () => {
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
-  };
-
   const isTelemetryActive = [
     '/lean-telemetry',
     '/tyres-asymmetry',
@@ -142,14 +175,18 @@ export function TopTacticalHUD() {
     (path) => pathname === path || pathname.startsWith(path + '/')
   );
 
+  const navSurfaceClass = isScrolled
+    ? 'bg-[#0B0B0C]/90 backdrop-blur-2xl'
+    : 'bg-[#0B0B0C]/85 backdrop-blur-xl';
+
   return (
     <div className="sticky top-0 z-[100] w-full select-none" ref={menuContainerRef}>
-      {/* Top Bar - Apple minimalist style with continuous border-b preventing any line flash on exit */}
+      {/* Top Bar - Apple minimalist style: seamless borderless transition into open mega-menu */}
       <header
-        className={`w-full h-12 transition-colors duration-200 border-b border-white/[0.08] ${
-          isScrolled
-            ? 'bg-[#0B0B0C]/90 backdrop-blur-2xl shadow-2xl'
-            : 'bg-[#0B0B0C]/85 backdrop-blur-xl'
+        className={`relative z-[101] w-full h-12 transition-colors duration-200 ${
+          telemetryOpen || statsOpen || gridOpen ? 'border-b border-transparent' : 'border-b border-white/[0.08]'
+        } ${navSurfaceClass} ${
+          isScrolled ? 'shadow-2xl' : ''
         }`}
       >
         <div className="w-full h-full flex items-center justify-between sm:justify-center px-4 sm:px-6">
@@ -248,15 +285,66 @@ export function TopTacticalHUD() {
               </Link>
             </nav>
 
-            {/* Right: Search Icon */}
-            <button
-              onClick={triggerCommandPalette}
-              aria-label="Search telemetry & grid"
-              className="p-1.5 text-neutral-400 hover:text-white transition-colors duration-200 shrink-0"
-              title="Search (⌘K)"
-            >
-              <Search className="w-3.5 h-3.5 text-white" />
-            </button>
+            {/* Right: Language Icon & Dropdown */}
+            <div className="relative shrink-0" ref={languageContainerRef}>
+              <button
+                type="button"
+                onClick={() => setLanguageOpen(!languageOpen)}
+                aria-label="Select language"
+                aria-expanded={languageOpen}
+                className={`w-7 h-7 rounded-full transition-all duration-200 shrink-0 flex items-center justify-center liquid-glass-circle cursor-pointer ${
+                  languageOpen
+                    ? 'text-white ring-1 ring-white/30 shadow-lg'
+                    : 'text-neutral-300 hover:text-white'
+                }`}
+                title="Select Language"
+              >
+                <Globe className="w-3.5 h-3.5" />
+              </button>
+
+              <AnimatePresence>
+                {languageOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.95 }}
+                    transition={{ duration: 0.16, ease: 'easeOut' }}
+                    className="absolute right-0 top-full mt-2 w-40 rounded-2xl liquid-glass-dropdown p-1.5 shadow-2xl z-[120] font-sans"
+                  >
+                    <div className="relative z-[2] space-y-0.5">
+                      {LANGUAGES.map((lang) => {
+                        const isSelected = selectedLang === lang.code;
+                        return (
+                          <button
+                            key={lang.code}
+                            type="button"
+                            onClick={() => handleSelectLanguage(lang.code, lang.label)}
+                            className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-colors ${
+                              isSelected
+                                ? 'bg-white/[0.12] text-white font-semibold shadow-sm'
+                                : 'text-neutral-300 hover:bg-white/[0.06] hover:text-white'
+                            }`}
+                          >
+                            <span className="flex items-center gap-2.5">
+                              <img
+                                src={`https://flagcdn.com/w40/${lang.iso}.png`}
+                                alt=""
+                                className="w-4 h-3 object-cover rounded-[2px] shadow-xs shrink-0"
+                                loading="lazy"
+                              />
+                              <span className="font-sans font-medium">{lang.label}</span>
+                            </span>
+                            {isSelected && (
+                              <Check className="w-3.5 h-3.5 text-[#E10600] shrink-0" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -281,7 +369,7 @@ export function TopTacticalHUD() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18 }}
-              className="fixed inset-0 top-12 z-[90] bg-black/60 backdrop-blur-md pointer-events-auto"
+              className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-md pointer-events-auto"
               onClick={() => setTelemetryOpen(false)}
             />
 
@@ -290,7 +378,7 @@ export function TopTacticalHUD() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="absolute top-12 left-0 w-full z-[100] bg-[#0B0B0C] border-b border-white/[0.08] shadow-2xl py-9 px-6 sm:px-12 -mt-[1px]"
+              className={`absolute top-12 left-0 w-full z-[100] ${navSurfaceClass} border-b border-white/[0.08] shadow-2xl py-9 px-6 sm:px-12 -mt-[1px]`}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
@@ -428,7 +516,7 @@ export function TopTacticalHUD() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18 }}
-              className="fixed inset-0 top-12 z-[90] bg-black/60 backdrop-blur-md pointer-events-auto"
+              className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-md pointer-events-auto"
               onClick={() => setStatsOpen(false)}
             />
 
@@ -437,7 +525,7 @@ export function TopTacticalHUD() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="absolute top-12 left-0 w-full z-[100] bg-[#0B0B0C] border-b border-white/[0.08] shadow-2xl py-9 px-6 sm:px-12 -mt-[1px]"
+              className={`absolute top-12 left-0 w-full z-[100] ${navSurfaceClass} border-b border-white/[0.08] shadow-2xl py-9 px-6 sm:px-12 -mt-[1px]`}
               onMouseEnter={handleStatsEnter}
               onMouseLeave={handleStatsLeave}
             >
@@ -603,7 +691,7 @@ export function TopTacticalHUD() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18 }}
-              className="fixed inset-0 top-12 z-[90] bg-black/60 backdrop-blur-md pointer-events-auto"
+              className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-md pointer-events-auto"
               onClick={() => setGridOpen(false)}
             />
 
@@ -612,7 +700,7 @@ export function TopTacticalHUD() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="absolute top-12 left-0 w-full z-[100] bg-[#0B0B0C] border-b border-white/[0.08] shadow-2xl py-9 px-6 sm:px-12 -mt-[1px]"
+              className={`absolute top-12 left-0 w-full z-[100] ${navSurfaceClass} border-b border-white/[0.08] shadow-2xl py-9 px-6 sm:px-12 -mt-[1px]`}
               onMouseEnter={handleGridEnter}
               onMouseLeave={handleGridLeave}
             >
@@ -785,7 +873,7 @@ export function TopTacticalHUD() {
           MOBILE DRAWER
          ========================================================================= */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-white/[0.08] bg-[#0B0B0C]/95 backdrop-blur-2xl px-6 py-6 space-y-4 animate-in slide-in-from-top-2 duration-200">
+        <div className={`md:hidden border-t border-white/[0.08] ${navSurfaceClass} px-6 py-6 space-y-4 animate-in slide-in-from-top-2 duration-200`}>
           <div className="space-y-3 text-sm">
             <Link
               href="/"

@@ -1355,13 +1355,133 @@ export const DRIVER_SEASON_STATS: RiderSeasonStats[] = [
   },
 ];
 
-export function getRiderStats(idOrNumber: string | number): RiderSeasonStats | undefined {
+export function getRiderStats(idOrNumber: string | number, year?: number): RiderSeasonStats | undefined {
+  let base: RiderSeasonStats | undefined;
   if (typeof idOrNumber === 'number') {
-    return DRIVER_SEASON_STATS.find((r) => r.number === idOrNumber);
+    base = DRIVER_SEASON_STATS.find((r) => r.number === idOrNumber);
+  } else {
+    base = DRIVER_SEASON_STATS.find(
+      (r) => r.id === idOrNumber || r.shortName.toLowerCase() === idOrNumber.toLowerCase() || String(r.number) === idOrNumber
+    );
   }
-  return DRIVER_SEASON_STATS.find(
-    (r) => r.id === idOrNumber || r.shortName.toLowerCase() === idOrNumber.toLowerCase() || String(r.number) === idOrNumber
-  );
+  if (!base) return undefined;
+  if (!year || year === 2026) return base;
+
+  // Season-specific overrides
+  if (year === 2024) {
+    if (base.id === 'martin-89') {
+      return {
+        ...base,
+        rank: 1,
+        totalPoints: 508,
+        gapToLeader: 0,
+        pointsPerWeekend: 25.4,
+        sundayWins: 3,
+        sprintWins: 7,
+        sundayPodiums: 16,
+        sprintPodiums: 16,
+        teamName: 'Prima Pramac Racing',
+        constructorName: 'Ducati',
+        bikeName: 'Ducati Desmosedici GP24',
+      };
+    }
+    if (base.id === 'bagnaia-63') {
+      return {
+        ...base,
+        rank: 2,
+        totalPoints: 498,
+        gapToLeader: 10,
+        pointsPerWeekend: 24.9,
+        sundayWins: 11,
+        sprintWins: 6,
+        sundayPodiums: 16,
+        sprintPodiums: 16,
+        teamName: 'Ducati Lenovo Team',
+        constructorName: 'Ducati',
+        bikeName: 'Ducati Desmosedici GP24',
+      };
+    }
+    if (base.id === 'marquez-93') {
+      return {
+        ...base,
+        rank: 3,
+        totalPoints: 392,
+        gapToLeader: 116,
+        pointsPerWeekend: 19.6,
+        sundayWins: 3,
+        sprintWins: 1,
+        sundayPodiums: 10,
+        sprintPodiums: 10,
+        teamName: 'Gresini Racing MotoGP',
+        constructorName: 'Ducati',
+        bikeName: 'Ducati Desmosedici GP23',
+      };
+    }
+    if (base.id === 'acosta-37') {
+      return {
+        ...base,
+        rank: 5,
+        totalPoints: 215,
+        gapToLeader: 293,
+        pointsPerWeekend: 10.8,
+        sundayWins: 0,
+        sprintWins: 0,
+        sundayPodiums: 5,
+        sprintPodiums: 5,
+        teamName: 'Red Bull GASGAS Tech3',
+        constructorName: 'KTM',
+      };
+    }
+  }
+
+  if (year === 2025) {
+    if (base.id === 'marquez-93') {
+      return {
+        ...base,
+        rank: 1,
+        totalPoints: 545,
+        gapToLeader: 0,
+        pointsPerWeekend: 24.8,
+        sundayWins: 11,
+        sprintWins: 14,
+        sundayPodiums: 15,
+        sprintPodiums: 16,
+        teamName: 'Ducati Lenovo Team',
+        constructorName: 'Ducati',
+        bikeName: 'Ducati Desmosedici GP25',
+      };
+    }
+    if (base.id === 'bezzecchi-72') {
+      return {
+        ...base,
+        rank: 3,
+        totalPoints: 353,
+        gapToLeader: 192,
+        pointsPerWeekend: 16.0,
+        sundayWins: 3,
+        sprintWins: 3,
+        sundayPodiums: 9,
+        sprintPodiums: 6,
+        teamName: 'Aprilia Racing',
+        constructorName: 'Aprilia',
+      };
+    }
+    if (base.id === 'bagnaia-63') {
+      return {
+        ...base,
+        rank: 4,
+        totalPoints: 340,
+        gapToLeader: 205,
+        pointsPerWeekend: 15.5,
+        sundayWins: 4,
+        sprintWins: 2,
+        sundayPodiums: 10,
+        sprintPodiums: 8,
+      };
+    }
+  }
+
+  return base;
 }
 
 export function getGridAverageRadar(): RiderSeasonStats['radar'] {

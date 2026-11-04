@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   INITIAL_STANDINGS,
+  getFallbackStandings,
   MOTOGP_CAT_ID,
   Season,
   StandingItem,
@@ -20,7 +21,12 @@ interface UseStandingsResult {
  * bundled mock standings until the Pulselive feed responds.
  */
 export function useStandings(season: Season): UseStandingsResult {
-  const [standings, setStandings] = useState<StandingItem[]>(INITIAL_STANDINGS);
+  const [standings, setStandings] = useState<StandingItem[]>(() => getFallbackStandings(season.year));
+
+  // Instantly switch to season fallback while fetching live
+  useEffect(() => {
+    setStandings(getFallbackStandings(season.year));
+  }, [season.year]);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState('Live Synced');
 

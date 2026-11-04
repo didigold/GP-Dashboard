@@ -53,7 +53,7 @@ export function StandingsKpis({ dataset, label }: StandingsKpisProps) {
       {cards.map((card) => (
         <div
           key={card.label}
-          className="rounded-2xl border border-white/[0.08] bg-[#0A0A0C] p-4 shadow-xl hover:border-white/[0.16] transition-all relative overflow-hidden"
+          className="rounded-2xl liquid-glass-card p-4 shadow-xl transition-all relative overflow-hidden"
         >
           <div className="flex items-center gap-2 text-xs font-medium text-neutral-400">
             <span

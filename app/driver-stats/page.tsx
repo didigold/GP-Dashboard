@@ -18,12 +18,13 @@ import {
   LapsLedChart,
 } from '@/components/charts/DriverStatsCharts';
 import { Season, STANDINGS_SEASONS } from '@/lib/data/standings';
+import { useSeason } from '@/lib/context/SeasonContext';
 
 function DriverStatsContent() {
   const searchParams = useSearchParams();
   const riderParam = searchParams.get('rider');
 
-  const [selectedSeason, setSelectedSeason] = useState<Season>(STANDINGS_SEASONS[0]);
+  const { season: selectedSeason, setSeason: setSelectedSeason } = useSeason();
   const [selectedRiderId, setSelectedRiderId] = useState<string>(riderParam || 'marquez-93');
 
   useEffect(() => {
@@ -36,7 +37,7 @@ function DriverStatsContent() {
   }, [riderParam]);
 
   const selectedRider = useMemo(() => {
-    return getRiderStats(selectedRiderId) || DRIVER_SEASON_STATS[0];
+    return getRiderStats(selectedRiderId, selectedSeason.year) || DRIVER_SEASON_STATS[0];
   }, [selectedRiderId]);
 
   return (

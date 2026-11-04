@@ -9,6 +9,7 @@ const nextConfig = (phase) => {
     // can never corrupt or wipe out the active dev server's CSS/JS chunks.
     distDir: isDev ? '.next-dev' : '.next',
     reactStrictMode: true,
+    devIndicators: false,
     eslint: {
       ignoreDuringBuilds: true,
     },

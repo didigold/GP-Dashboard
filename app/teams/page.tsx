@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { MOTOGP_TEAMS, MOTOGP_RIDERS, GridRider } from '@/lib/data/motogp-grid';
 import ReflectiveCard from '@/components/ui/ReflectiveCard';
 import { CountryFlag } from '@/components/ui/CountryFlag';
-import { GiSpeedometer, GiPowerLightning } from 'react-icons/gi';
+import { getRiderPillParts } from '@/lib/utils/rider-name';
+import { GiSpeedometer, GiPowerLightning, GiFullMotorcycleHelmet, GiVibratingShield } from 'react-icons/gi';
 import { motion, type Variants } from 'framer-motion';
 
 const CONSTRUCTOR_COUNTRY_ISOS: Record<string, string> = {
@@ -49,17 +50,19 @@ export default function TeamsPage() {
     <div className="w-full min-h-screen bg-[#07080B] text-white px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-5 space-y-6 select-none font-sans">
       {/* Centered Button Pilled Group: Drivers vs Teams */}
       <div className="w-full relative z-10 flex items-center justify-center pt-1 pb-1">
-        <div className="inline-flex items-center p-1 rounded-full bg-white/[0.04] border border-white/[0.08] backdrop-blur-md shadow-lg">
+        <div className="h-9 p-0.5 inline-flex items-center rounded-full liquid-glass-pill shadow-lg">
           <Link
             href="/riders"
-            className="px-7 py-2 rounded-full text-xs sm:text-sm font-semibold text-neutral-400 hover:text-white transition-all"
+            className="h-full px-3.5 sm:px-4 rounded-full text-xs font-semibold flex items-center gap-1.5 text-neutral-400 hover:text-white transition-all"
           >
-            Drivers ({MOTOGP_RIDERS.length})
+            <GiFullMotorcycleHelmet className="w-4 h-4 shrink-0" />
+            <span>Riders</span>
           </Link>
           <button
-            className="px-7 py-2 rounded-full text-xs sm:text-sm font-semibold bg-white text-black shadow-md scale-[1.02] transition-all"
+            className="h-full px-3.5 sm:px-4 rounded-full text-xs font-semibold flex items-center gap-1.5 bg-white text-black shadow-md transition-all cursor-default"
           >
-            Teams ({MOTOGP_TEAMS.length})
+            <GiVibratingShield className="w-4 h-4 shrink-0" />
+            <span>Teams</span>
           </button>
         </div>
       </div>
@@ -100,13 +103,18 @@ export default function TeamsPage() {
           const teamRiders: GridRider[] = MOTOGP_RIDERS.filter(
             (r) => r.team_id === team.id || team.rider_ids?.includes(r.id)
           );
-          const hoverDrivers = teamRiders.map((r) => ({
-            id: r.id,
-            name: `${r.name[0]}. ${r.surname}`,
-            number: r.number,
-            flag: <CountryFlag iso={r.country.iso} width={15} height={10} />,
-            url: `/driver-stats?rider=${r.id}`,
-          }));
+          const hoverDrivers = teamRiders.map((r) => {
+            const { initial, surname } = getRiderPillParts(r.name, r.surname);
+            return {
+              id: r.id,
+              name: `${initial}${surname}`,
+              initial,
+              surname,
+              number: r.number,
+              flag: <CountryFlag iso={r.country.iso} width={15} height={10} />,
+              url: `/driver-stats?rider=${r.id}`,
+            };
+          });
 
           const isApriliaTeam = team.id === 'aprilia-racing';
           const teamBgNumColor = isApriliaTeam ? '#C92A2A' : undefined;
@@ -173,6 +181,10 @@ export default function TeamsPage() {
                 hoverDrivers={hoverDrivers}
                 theme="dark"
                 tint={team.color}
+                glowColor="225, 6, 0"
+                enableBorderGlow={true}
+                enableSpotlight={true}
+                spotlightRadius={340}
                 metalness={0.92}
                 roughness={0.28}
                 blurStrength={6}

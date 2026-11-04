@@ -5,35 +5,68 @@ import React from 'react';
 interface ConstructorLogoProps {
   constructor: string;
   className?: string;
+  imgClassName?: string;
 }
 
-export function ConstructorLogo({ constructor, className = 'w-7 h-7' }: ConstructorLogoProps) {
-  const norm = constructor.toLowerCase();
+export const CONSTRUCTOR_FACTORY_LOGOS: Record<
+  string,
+  { src: string; alt: string; isYamaha?: boolean; isBoxed?: boolean }
+> = {
+  Ducati: {
+    src: '/images/constructors/factory/ducati.webp',
+    alt: 'Ducati',
+  },
+  Aprilia: {
+    src: '/images/constructors/factory/aprilia.webp',
+    alt: 'Aprilia',
+    isBoxed: true,
+  },
+  KTM: {
+    src: '/images/constructors/factory/ktm.webp',
+    alt: 'KTM',
+    isBoxed: true,
+  },
+  Yamaha: {
+    src: '/images/constructors/factory/yamaha.webp',
+    alt: 'Yamaha',
+    isYamaha: true,
+  },
+  Honda: {
+    src: '/images/constructors/factory/honda.webp',
+    alt: 'Honda',
+  },
+};
+
+export function ConstructorLogo({
+  constructor,
+  className = 'w-7 h-7',
+  imgClassName,
+}: ConstructorLogoProps) {
+  const norm = (constructor || '').toLowerCase();
 
   let src = '';
   let alt = constructor;
-  let containerStyle = 'bg-white/[0.06] border border-white/10';
+  let isYamaha = false;
+  let isBoxed = false;
 
   if (norm.includes('ducati')) {
-    src = '/images/constructors/ducati.png';
-    alt = 'Ducati Corse';
-    containerStyle = 'bg-white/[0.04] border border-white/10 p-0.5';
+    src = '/images/constructors/factory/ducati.webp';
+    alt = 'Ducati';
   } else if (norm.includes('aprilia')) {
-    src = '/images/constructors/aprilia.webp';
-    alt = 'Aprilia Racing';
-    containerStyle = 'bg-white border border-white/20 p-0.5';
+    src = '/images/constructors/factory/aprilia.webp';
+    alt = 'Aprilia';
+    isBoxed = true;
   } else if (norm.includes('ktm')) {
-    src = '/images/constructors/ktm.jpg';
-    alt = 'Red Bull KTM Factory Racing';
-    containerStyle = 'bg-[#001026] border border-orange-500/30 overflow-hidden';
+    src = '/images/constructors/factory/ktm.webp';
+    alt = 'KTM';
+    isBoxed = true;
   } else if (norm.includes('yamaha')) {
-    src = '/images/constructors/yamaha.png';
-    alt = 'Monster Energy Yamaha MotoGP';
-    containerStyle = 'bg-black border border-blue-500/30 overflow-hidden';
+    src = '/images/constructors/factory/yamaha.webp';
+    alt = 'Yamaha';
+    isYamaha = true;
   } else if (norm.includes('honda')) {
-    src = '/images/constructors/honda.webp';
-    alt = 'Honda HRC Racing';
-    containerStyle = 'bg-white border border-white/20 p-0.5';
+    src = '/images/constructors/factory/honda.webp';
+    alt = 'Honda';
   }
 
   if (!src) {
@@ -48,13 +81,16 @@ export function ConstructorLogo({ constructor, className = 'w-7 h-7' }: Construc
 
   return (
     <div
-      className={`${className} flex items-center justify-center shrink-0 rounded shadow-sm overflow-hidden ${containerStyle}`}
+      className={`${className} flex items-center justify-center shrink-0 select-none`}
       title={alt}
     >
       <img
         src={src}
         alt={alt}
-        className="w-full h-full object-contain"
+        className={`w-full h-full object-contain ${
+          isBoxed ? 'rounded-[3px] shadow-sm' : ''
+        } ${isYamaha ? 'filter brightness-0 invert' : ''} ${imgClassName || ''}`}
+        style={isYamaha ? { filter: 'brightness(0) invert(1)' } : undefined}
         loading="lazy"
       />
     </div>
