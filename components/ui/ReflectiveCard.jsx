@@ -207,7 +207,7 @@ const ReflectiveCard = ({
     <div
       ref={rootRef}
       onClick={handleCardClick}
-      className={`reflective-card ${cardHref ? 'reflective-card--clickable liquid-glass-card' : ''} ${hasTile ? 'reflective-card--has-tile' : ''} ${className}`.trim()}
+      className={`reflective-card ${cardHref ? 'reflective-card--clickable' : ''} ${hasTile ? 'reflective-card--has-tile' : ''} ${className}`.trim()}
       style={{ ...cardStyle, ...style }}
     >
       <div ref={bodyRef} className="reflective-card__body">
@@ -268,7 +268,7 @@ const ReflectiveCard = ({
                       {hoverDrivers.map((d) => (
                         <span
                           key={d.id || d.number}
-                          className="reflective-card__hover-driver-pill"
+                          className="reflective-card__hover-driver-pill liquid-glass-pill"
                           onClick={(e) => {
                             if (d.url) {
                               e.stopPropagation();

@@ -138,6 +138,11 @@ export interface LiveTimingRider {
   t3?: string;
   t4?: string;
   speed?: number;
+  average_speed?: number;
+  total_time?: string;
+  best_lap?: { time: string; number: number };
+  points?: number;
+  status?: string;
   tyre_front?: string;
   tyre_rear?: string;
 }

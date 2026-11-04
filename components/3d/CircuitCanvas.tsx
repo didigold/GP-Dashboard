@@ -10,12 +10,14 @@ interface CircuitCanvasProps {
   circuitName?: string;
   selectedRiderNumber?: string;
   onSelectRider?: (num: string) => void;
+  hideHeader?: boolean;
 }
 
 export function CircuitCanvas({
   circuitName = 'Petronas Sepang International Circuit',
   selectedRiderNumber = '93',
   onSelectRider,
+  hideHeader = false,
 }: CircuitCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [cameraMode, setCameraMode] = usePersistentState<'orbit' | 'top' | 'helicopter' | 'chase'>(
@@ -323,35 +325,37 @@ export function CircuitCanvas({
   return (
     <div className="relative w-full h-[620px] min-h-[500px] bg-[#06080C] overflow-hidden select-none font-mono">
       {/* Top Overlay Bar */}
-      <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
-        <div className="bg-black/90 border border-neutral-800 px-3.5 py-2 pointer-events-auto flex items-center gap-3">
-          <div className="w-2.5 h-2.5 rounded-full bg-[#E10600] animate-pulse" />
-          <div>
-            <div className="text-white font-bold text-xs">{circuitName}</div>
-            <div className="text-[11px] text-neutral-400">15 Turns · 5,543m · High-Speed Telemetry Mesh</div>
+      {!hideHeader && (
+        <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
+          <div className="bg-black/90 border border-neutral-800 px-3.5 py-2 pointer-events-auto flex items-center gap-3">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#E10600] animate-pulse" />
+            <div>
+              <div className="text-white font-bold text-xs">{circuitName}</div>
+              <div className="text-[11px] text-neutral-400">15 Turns · 5,543m · High-Speed Telemetry Mesh</div>
+            </div>
+          </div>
+
+          {/* Mode Switcher: 3D vs 2D Vector */}
+          <div className="bg-black/90 border border-neutral-800 p-1 pointer-events-auto flex items-center gap-1 text-xs">
+            <button
+              onClick={() => setViewMode('3d')}
+              className={`px-3 py-1 font-semibold transition-colors ${
+                viewMode === '3d' ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              3D WebGL Paddock
+            </button>
+            <button
+              onClick={() => setViewMode('2d')}
+              className={`px-3 py-1 font-semibold transition-colors ${
+                viewMode === '2d' ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              2D Tactical Vector
+            </button>
           </div>
         </div>
-
-        {/* Mode Switcher: 3D vs 2D Vector */}
-        <div className="bg-black/90 border border-neutral-800 p-1 pointer-events-auto flex items-center gap-1 text-xs">
-          <button
-            onClick={() => setViewMode('3d')}
-            className={`px-3 py-1 font-semibold transition-colors ${
-              viewMode === '3d' ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
-            }`}
-          >
-            3D WebGL Paddock
-          </button>
-          <button
-            onClick={() => setViewMode('2d')}
-            className={`px-3 py-1 font-semibold transition-colors ${
-              viewMode === '2d' ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
-            }`}
-          >
-            2D Tactical Vector
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* 3D WebGL Viewport */}
       {viewMode === '3d' ? (

@@ -1,715 +1,461 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { LeanMeter } from '@/components/ui/LeanMeter';
-import { TyreAsymmetryPill } from '@/components/ui/TyreAsymmetryPill';
-import { DriverNumber } from '@/components/ui/driver-number';
-import {
-  SectorTrackingTable,
-  SectorCell,
-  computeSectorBests,
-} from '@/components/timing/SectorTrackingTable';
-import { RelativeTime } from '@/components/ux/RelativeTime';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { useDelayedLiveTiming } from '@/lib/hooks/useDelayedLiveTiming';
 import { LiveTimingRider } from '@/lib/types/motogp';
-import { MOTOGP_RIDERS, MOTOGP_TEAMS, getRiderByNumber, getTeamBySlug } from '@/lib/data/motogp-grid';
-import { abbreviateRiderName } from '@/lib/utils/rider-name';
 import {
-  Radio,
-  Tv,
-  Rewind,
-  FastForward,
-  RotateCcw,
-  AlertCircle,
-  CheckCircle2,
-  RefreshCw,
-  Compass,
-  X,
-  ChevronDown,
-  ArrowRight,
-  ExternalLink,
-  Zap,
-  Activity,
-  ShieldCheck,
-  Disc,
-} from 'lucide-react';
+  LiveTimingHeader,
+  TrackStatus,
+  LayoutMode,
+} from '@/components/timing/LiveTimingHeader';
+import { LiveLeaderboardWidget } from '@/components/timing/LiveLeaderboardWidget';
+import { LiveTelemetryCockpit } from '@/components/timing/LiveTelemetryCockpit';
+import { LiveChampionshipWidget } from '@/components/timing/LiveChampionshipWidget';
+import { ReplayScrubberBar } from '@/components/timing/ReplayScrubberBar';
+import { SectorTrackingTable } from '@/components/timing/SectorTrackingTable';
+import { toast } from 'sonner';
+import {
+  GiFullMotorcycleHelmet,
+  GiRoad,
+  GiTrophyCup,
+  GiSpeedometer,
+  GiStopwatch,
+  GiCardPick,
+} from 'react-icons/gi';
+
+// Dynamically import 3D Mapbox Track Map to prevent SSR canvas issues
+const LiveMapboxTrackMap = dynamic(
+  () => import('@/components/timing/LiveMapboxTrackMap').then((mod) => mod.LiveMapboxTrackMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[610px] bg-[#0B0D14] rounded-2xl border border-neutral-800/90 flex flex-col items-center justify-center text-neutral-400 font-sans text-xs gap-3 shadow-xl">
+        <div className="w-8 h-8 border-2 border-[#E10600] border-t-transparent rounded-full animate-spin" />
+        <span className="font-sans font-bold text-white text-xs tracking-tight">
+          Initializing 3D Circuit Canvas &amp; High-Contrast Spline...
+        </span>
+      </div>
+    ),
+  }
+);
+
+const SEPANG_CIRCUIT_COORDS: [number, number] = [101.7381, 2.7608];
 
 export default function LiveTimingPage() {
   const [delay, setDelay] = useState<number>(0);
-  const [isSimulation, setIsSimulation] = useState<boolean>(false);
-  const [selectedRiderNum, setSelectedRiderNum] = useState<string>('37');
-  const [isInspectorOpen, setIsInspectorOpen] = useState<boolean>(true);
-  const [isComboboxOpen, setIsComboboxOpen] = useState<boolean>(false);
-  const [comboboxSearch, setComboboxSearch] = useState<string>('');
+  const [isSimulation] = useState<boolean>(false);
+  // Multi-select up to 2 riders for head-to-head telemetry
+  const [selectedRiderNums, setSelectedRiderNums] = useState<string[]>(['93']);
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('cockpit');
+  const [trackStatus, setTrackStatus] = useState<TrackStatus>('CLEAR');
+
+  // Playback & Replay state (matching 02:11:57 total session duration in reference image)
+  const [isPlaying, setIsPlaying] = useState<boolean>(true);
+  const [currentTimeSec, setCurrentTimeSec] = useState<number>(2294); // ~38m 14s
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
+  const totalDurationSec = 7917; // 02:11:57
+
+  // Draggable Bento state
+  const [panelOrder, setPanelOrder] = useState<string[]>([
+    'leaderboard',
+    'track-map',
+    'championship',
+    'telemetry',
+    'sectors',
+  ]);
+  const [hiddenPanels, setHiddenPanels] = useState<string[]>([]);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+
+  // Gateway Connection state
   const [liveGatewayData, setLiveGatewayData] = useState<any>(null);
   const [isGatewayActive, setIsGatewayActive] = useState<boolean>(false);
-  const [isCheckingGateway, setIsCheckingGateway] = useState<boolean>(false);
-  const [gatewaySource, setGatewaySource] = useState<string>('Dorna Pulselive Official');
-  const [sessionName, setSessionName] = useState<string>('Malaysian GP · Sprint Race');
-  const [lastCheckTime, setLastCheckTime] = useState<string>('');
-  const [lastSyncAt, setLastSyncAt] = useState<number | null>(null);
+  const [sessionName, setSessionName] = useState<string>('Grand Prix of Malaysia · Race (20 Laps)');
+  const [circuitName, setCircuitName] = useState<string>('Petronas Sepang International Circuit');
+  const [availableSessions, setAvailableSessions] = useState<any[]>([]);
+  const [selectedSessionType, setSelectedSessionType] = useState<string>('RAC');
+  const [standings, setStandings] = useState<any[]>([]);
 
-  const comboboxRef = useRef<HTMLDivElement>(null);
-
-  // Close combobox when clicking outside
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (comboboxRef.current && !comboboxRef.current.contains(e.target as Node)) {
-        setIsComboboxOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Poll Dorna live endpoint
-  async function checkLiveGateway(isManual = false) {
-    setIsCheckingGateway(true);
+  // Fetch Dorna live endpoint
+  const checkLiveGateway = useCallback(async (sessionType?: string) => {
     try {
-      const res = await fetch('/api/live', { cache: 'no-store' });
+      const type = sessionType || selectedSessionType;
+      const url = `/api/live${type ? `?sessionType=${type}` : ''}`;
+      const res = await fetch(url, { cache: 'no-store' });
       const data = await res.json();
-      setLastCheckTime(new Date().toLocaleTimeString());
-      setLastSyncAt(Date.now());
       if (data && data.active && data.data) {
         setIsGatewayActive(true);
         setLiveGatewayData(data.data);
         if (data.sessionName) setSessionName(data.sessionName);
-        if (data.source === 'gateway-live') {
-          setGatewaySource('Dorna Live Track Stream');
-        } else {
-          setGatewaySource('Dorna Sports Official Pulselive API');
-        }
-      } else {
-        setIsGatewayActive(false);
-        setLiveGatewayData(null);
+        if (data.event?.circuit?.name) setCircuitName(data.event.circuit.name);
+        if (data.availableSessions) setAvailableSessions(data.availableSessions);
+        if (data.standings) setStandings(data.standings);
       }
     } catch (err) {
       console.warn('Live gateway connection check failed:', err);
-      setIsGatewayActive(false);
-    } finally {
-      setIsCheckingGateway(false);
     }
-  }
+  }, [selectedSessionType]);
 
   useEffect(() => {
     checkLiveGateway();
-    const interval = setInterval(checkLiveGateway, 10000);
+    const interval = setInterval(() => checkLiveGateway(), 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [checkLiveGateway]);
+
+  // Handle session change from header dropdown
+  const handleSelectSessionType = (type: string) => {
+    setSelectedSessionType(type);
+    checkLiveGateway(type);
+  };
+
+  // Timer increment loop for replay playback
+  useEffect(() => {
+    if (!isPlaying) return;
+    const timerInterval = setInterval(() => {
+      setCurrentTimeSec((prev) => {
+        if (prev >= totalDurationSec) return 0;
+        return prev + 1 * playbackSpeed;
+      });
+    }, 1000 / playbackSpeed);
+
+    return () => clearInterval(timerInterval);
+  }, [isPlaying, playbackSpeed, totalDurationSec]);
 
   const currentTimingState = useDelayedLiveTiming(liveGatewayData, delay, isSimulation);
 
-  const ridersList: LiveTimingRider[] = (
-    Object.values(currentTimingState.rider || {}) as LiveTimingRider[]
-  ).sort((a, b) => a.pos - b.pos);
-
-  const sectorBests = computeSectorBests(ridersList);
-
-  const selectedRider: LiveTimingRider | undefined =
-    ridersList.find((r) => r.rider_number === selectedRiderNum) || ridersList[0];
-
-  const selectedGridRider = selectedRider
-    ? getRiderByNumber(selectedRider.rider_number)
-    : undefined;
-
-  const selectedTeam = selectedGridRider
-    ? getTeamBySlug(selectedGridRider.team_id)
-    : undefined;
-
-  // Filter riders for combobox
-  const filteredRiders = ridersList.filter((r) => {
-    const term = comboboxSearch.toLowerCase();
+  const ridersList: LiveTimingRider[] = useMemo(() => {
     return (
-      r.rider_name.toLowerCase().includes(term) ||
-      r.rider_surname.toLowerCase().includes(term) ||
-      r.rider_number.includes(term) ||
-      r.team_name.toLowerCase().includes(term)
-    );
-  });
+      Object.values(currentTimingState.rider || {}) as LiveTimingRider[]
+    ).sort((a, b) => a.pos - b.pos);
+  }, [currentTimingState.rider]);
+
+  // Handle rider toggle selection (up to 2 drivers max)
+  const handleToggleSelectRider = (riderNum: string) => {
+    setSelectedRiderNums((prev) => {
+      if (prev.includes(riderNum)) {
+        return prev.filter((n) => n !== riderNum);
+      }
+      if (prev.length >= 2) {
+        return [prev[0], riderNum];
+      }
+      return [...prev, riderNum];
+    });
+  };
+
+  const handleDeselectRider = (riderNum: string) => {
+    setSelectedRiderNums((prev) => prev.filter((n) => n !== riderNum));
+  };
+
+  // Find objects for selected riders
+  const selectedRiderObjects = useMemo(() => {
+    return selectedRiderNums
+      .map((num) => ridersList.find((r) => r.rider_number === num))
+      .filter(Boolean) as LiveTimingRider[];
+  }, [selectedRiderNums, ridersList]);
+
+  // Derive lap from current elapsed time
+  const currentLap = Math.min(20, Math.max(1, Math.floor((currentTimeSec / totalDurationSec) * 20) + 1));
+
+  // Drag and Drop Handlers for Magic Bento Reordering
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggingId(id);
+    e.dataTransfer.setData('text/plain', id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggingId && draggingId !== targetId && dropTargetId !== targetId) {
+      setDropTargetId(targetId);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent, targetId: string) => {
+    if (dropTargetId === targetId) {
+      setDropTargetId(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggingId || draggingId === targetId) {
+      setDraggingId(null);
+      setDropTargetId(null);
+      return;
+    }
+
+    setPanelOrder((prev) => {
+      const next = [...prev];
+      const fromIdx = next.indexOf(draggingId);
+      const toIdx = next.indexOf(targetId);
+      if (fromIdx !== -1 && toIdx !== -1) {
+        const item = next.splice(fromIdx, 1)[0];
+        next.splice(toIdx, 0, item);
+      }
+      return next;
+    });
+
+    toast.success(`Customized layout: Moved ${draggingId} next to ${targetId}`);
+    setDraggingId(null);
+    setDropTargetId(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingId(null);
+    setDropTargetId(null);
+  };
+
+  const handleResetLayout = () => {
+    setPanelOrder(['leaderboard', 'track-map', 'championship', 'telemetry', 'sectors']);
+    setHiddenPanels([]);
+    setLayoutMode('cockpit');
+    toast.info('Workspace layout reset to default cockpit');
+  };
+
+  const handleHidePanel = (id: string) => {
+    setHiddenPanels((prev) => [...prev, id]);
+    toast.info(`Hidden panel. Click Reset in top bar to restore.`);
+  };
+
+  // Render dictionary of individual panels directly as first-class Magic Bento cards
+  const renderPanel = (panelId: string, customClass = '') => {
+    if (hiddenPanels.includes(panelId)) return null;
+
+    const isDragging = draggingId === panelId;
+    const isDropTarget = dropTargetId === panelId;
+
+    switch (panelId) {
+      case 'leaderboard':
+        return (
+          <LiveLeaderboardWidget
+            key="leaderboard"
+            riders={ridersList}
+            selectedRiderNums={selectedRiderNums}
+            onToggleSelectRider={handleToggleSelectRider}
+            isDragging={isDragging}
+            isDropTarget={isDropTarget}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onDragEnd={handleDragEnd}
+            className={customClass}
+          />
+        );
+
+      case 'track-map':
+        return (
+          <LiveMapboxTrackMap
+            key="track-map"
+            riders={ridersList}
+            selectedRiderNum={selectedRiderNums[0] || '93'}
+            selectedRiderNums={selectedRiderNums}
+            onSelectRider={handleToggleSelectRider}
+            circuitName={circuitName}
+            circuitCoords={SEPANG_CIRCUIT_COORDS}
+            isPlaying={isPlaying}
+            playbackSpeed={playbackSpeed}
+            isDragging={isDragging}
+            isDropTarget={isDropTarget}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onDragEnd={handleDragEnd}
+            className={`h-[610px] ${customClass}`}
+          />
+        );
+
+      case 'championship':
+        return (
+          <LiveChampionshipWidget
+            key="championship"
+            standings={standings}
+            riders={ridersList}
+            sessionType={selectedSessionType}
+            selectedRiderNum={selectedRiderNums[0]}
+            onSelectRider={handleToggleSelectRider}
+            isDragging={isDragging}
+            isDropTarget={isDropTarget}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onDragEnd={handleDragEnd}
+            className={customClass}
+          />
+        );
+
+      case 'telemetry':
+        return (
+          <LiveTelemetryCockpit
+            key="telemetry"
+            selectedRiders={selectedRiderObjects}
+            allRiders={ridersList}
+            onDeselectRider={handleDeselectRider}
+            isDragging={isDragging}
+            isDropTarget={isDropTarget}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onDragEnd={handleDragEnd}
+            className={customClass}
+          />
+        );
+
+      case 'sectors':
+        return (
+          <SectorTrackingTable
+            key="sectors"
+            riders={ridersList}
+            isDragging={isDragging}
+            isDropTarget={isDropTarget}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onDragEnd={handleDragEnd}
+            className={customClass}
+          />
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="w-full min-h-screen bg-black text-white p-4 lg:p-6 space-y-4 max-w-[1920px] mx-auto select-none">
-      {/* Live Data Connection & Source Transparency Banner */}
-      <div className="p-3 bg-[#111111] border border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs font-mono">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                isGatewayActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
-              }`}
-            />
-            <span className="font-semibold text-white">Data Source:</span>
-            <span className="text-neutral-400">{gatewaySource}</span>
+    <div className="w-full min-h-screen bg-[#07080B] text-white p-3 sm:p-4 lg:p-5 space-y-3.5 max-w-[1920px] mx-auto select-none font-sans">
+      {/* 1. TOP COMMAND & WEATHER HUD BAR (Sora Typography & Game Icons) */}
+      <LiveTimingHeader
+        sessionName={sessionName}
+        circuitName={circuitName}
+        elapsedSeconds={currentTimeSec}
+        totalLaps={20}
+        currentLap={currentLap}
+        isGatewayActive={isGatewayActive}
+        trackStatus={trackStatus}
+        onChangeTrackStatus={setTrackStatus}
+        availableSessions={availableSessions}
+        selectedSessionType={selectedSessionType}
+        onSelectSessionType={handleSelectSessionType}
+        layoutMode={layoutMode}
+        onChangeLayoutMode={setLayoutMode}
+        onResetLayout={handleResetLayout}
+        airTemp={33.8}
+        trackTemp={48.2}
+        humidity={61.5}
+      />
+
+      {/* 2. DYNAMIC WORKSPACE GRID WITH DRAGGABLE MAGIC BENTO CARDS */}
+      {layoutMode === 'cockpit' && (
+        /* PRO COCKPIT 3-COLUMN LAYOUT */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
+          {/* Left Column: Leaderboard (~25% / col-span-3) */}
+          <div className="lg:col-span-3 xl:col-span-3">
+            {renderPanel('leaderboard')}
           </div>
 
-          <span className="text-neutral-600 hidden sm:inline">|</span>
+          {/* Center Column: 3D Mapbox Track Map (~50% / col-span-6) */}
+          <div className="lg:col-span-6 xl:col-span-6 flex flex-col gap-3.5">
+            {renderPanel('track-map')}
+          </div>
 
-          <div className="flex items-center gap-1.5 text-xs">
-            {isGatewayActive ? (
-              <span className="text-emerald-400 font-medium flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {sessionName}
+          {/* Right Column: Live Championship + Telemetry (~25% / col-span-3) */}
+          <div className="lg:col-span-3 xl:col-span-3 space-y-3.5">
+            {renderPanel('championship')}
+            {renderPanel('telemetry')}
+          </div>
+        </div>
+      )}
+
+      {layoutMode === 'map-focus' && (
+        /* CINEMA / MAP FOCUS LAYOUT (Matching Reference media_1793830147734_258a3860.jpg) */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
+          {/* Main 8-Column Column: Large 3D Map on Top + Wide Leaderboard below */}
+          <div className="lg:col-span-8 flex flex-col gap-3.5">
+            {renderPanel('track-map')}
+            {renderPanel('leaderboard')}
+            {renderPanel('sectors')}
+          </div>
+
+          {/* Right 4-Column Column: Championship & Telemetry Stacked */}
+          <div className="lg:col-span-4 space-y-3.5">
+            {renderPanel('championship')}
+            {renderPanel('telemetry')}
+          </div>
+        </div>
+      )}
+
+      {layoutMode === 'table-focus' && (
+        /* TIMING FOCUS LAYOUT (Matching Reference media_1793830139520_bc9a8d16.jpg) */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
+          {/* Left 8-Column Column: Wide Leaderboard with Mini-Sectors & Sector Matrix */}
+          <div className="lg:col-span-8 space-y-3.5">
+            {renderPanel('leaderboard')}
+            {renderPanel('sectors')}
+          </div>
+
+          {/* Right 4-Column Column: 3D Map Top Right, Championship & Telemetry below */}
+          <div className="lg:col-span-4 space-y-3.5">
+            {renderPanel('track-map')}
+            {renderPanel('championship')}
+            {renderPanel('telemetry')}
+          </div>
+        </div>
+      )}
+
+      {layoutMode === 'custom-bento' && (
+        /* CUSTOM MAGIC BENTO REORDERABLE GRID */
+        <div className="space-y-3.5">
+          <div className="flex items-center justify-between bg-neutral-900/60 px-4 py-2 rounded-xl border border-neutral-800 text-xs">
+            <div className="flex items-center gap-2 text-neutral-300">
+              <GiCardPick className="w-4 h-4 text-[#00F5D4]" />
+              <span className="font-bold text-white">Custom Magic Bento:</span>
+              <span className="text-neutral-400">
+                Drag any card by its header grip handle to reorder your workspace in real-time.
               </span>
-            ) : (
-              <span className="text-amber-400 font-normal flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
-                Official Sepang Sprint Results Loaded
-              </span>
-            )}
-          </div>
-
-          <span className="text-neutral-600 hidden sm:inline">|</span>
-          <RelativeTime since={lastSyncAt} className="hidden text-xs text-neutral-400 sm:inline" />
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Mode Switcher */}
-          <div className="flex items-center bg-[#0A0A0A] p-0.5 border border-neutral-800 text-xs">
-            <button
-              onClick={() => {
-                setIsSimulation(false);
-                checkLiveGateway();
-              }}
-              className={`px-3 py-1 font-semibold transition-colors ${
-                !isSimulation ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              Live Gateway
-            </button>
-            <button
-              onClick={() => setIsSimulation(true)}
-              className={`px-3 py-1 font-semibold transition-colors ${
-                isSimulation ? 'bg-[#E10600] text-white' : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              Replay Buffer
-            </button>
-          </div>
-
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => checkLiveGateway(true)}
-            disabled={isCheckingGateway}
-            className="h-8 px-2.5 text-xs flex items-center gap-1.5 font-mono"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isCheckingGateway ? 'animate-spin' : ''}`} />
-            <span>Ping Dorna</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Session Quick Status & Broadcast Sync Command Strip */}
-      <div className="p-3.5 bg-[#111111] border border-neutral-800 flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
-        <div className="flex items-center gap-3">
-          <Badge variant="motogp" dot>
-            {currentTimingState.head.session_name}
-          </Badge>
-          <span className="text-white font-semibold">{currentTimingState.head.circuit_name}</span>
-          <span className="text-neutral-600 hidden md:inline">|</span>
-          <span className="text-neutral-400 hidden md:inline">
-            Status: <strong className="text-white">{currentTimingState.head.remaining}</strong>
-          </span>
-          <span className="text-neutral-600 hidden md:inline">|</span>
-          <span className="text-neutral-400 hidden lg:inline">
-            Air: <strong className="text-white">32°C</strong>
-          </span>
-          <span className="text-neutral-400 hidden lg:inline">
-            Track: <strong className="text-amber-400">51°C</strong>
-          </span>
-          <Badge variant="green" size="sm" className="hidden lg:inline-flex">
-            Dry Track
-          </Badge>
-        </div>
-
-        {/* TV Sync Compact Controller */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-neutral-400">
-            <Tv className="w-3.5 h-3.5 text-[#E10600]" />
-            <span>TV Sync:</span>
-            <span className="font-bold text-white tabular-nums">
-              {delay === 0 ? 'Real-time' : `-${delay.toFixed(1)}s`}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setDelay(Math.max(0, parseFloat((delay - 1).toFixed(1))))}
-              className="p-1.5 bg-[#0A0A0A] border border-neutral-800 text-neutral-400 hover:text-white"
-              title="-1s"
-            >
-              <Rewind className="w-3 h-3" />
-            </button>
-            <label htmlFor="tv-delay-slider" className="sr-only">
-              TV broadcast sync delay in seconds
-            </label>
-            <input
-              id="tv-delay-slider"
-              type="range"
-              min="0"
-              max="120"
-              step="0.5"
-              value={delay}
-              onChange={(e) => setDelay(parseFloat(e.target.value))}
-              className="w-24 sm:w-36 h-1.5 bg-neutral-800 accent-[#E10600] cursor-pointer"
-            />
-            <button
-              onClick={() => setDelay(Math.min(120, parseFloat((delay + 1).toFixed(1))))}
-              className="p-1.5 bg-[#0A0A0A] border border-neutral-800 text-neutral-400 hover:text-white"
-              title="+1s"
-            >
-              <FastForward className="w-3 h-3" />
-            </button>
-            {delay > 0 && (
-              <button
-                onClick={() => setDelay(0)}
-                className="p-1.5 text-neutral-400 hover:text-white text-xs"
-                title="Reset to 0s live"
-              >
-                <RotateCcw className="w-3 h-3" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* MASTER-DETAIL RESPONSIVE GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-        {/* Left Column: Compressible Live Timing Table */}
-        <div
-          className={`space-y-4 transition-all duration-300 ${
-            isInspectorOpen ? 'lg:col-span-8 xl:col-span-8' : 'lg:col-span-12'
-          }`}
-        >
-          <div className="border border-neutral-800 overflow-hidden bg-[#0A0A0A]">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] text-left text-xs border-collapse font-mono">
-                <caption className="sr-only">
-                  Live timing classification: position, rider, team, gaps, lap times, sector splits, speed trap, lean angle, tyres, and last lap.
-                </caption>
-                <thead>
-                  <tr className="border-b border-neutral-800 bg-neutral-950 text-neutral-300 text-xs font-sans font-semibold">
-                    <th scope="col" className="py-3 px-3 w-12 text-center">Pos</th>
-                    <th scope="col" className="py-3 px-2 w-12 text-center">Num</th>
-                    <th scope="col" className="py-3 px-4 min-w-[190px]">Rider &amp; Team</th>
-                    <th scope="col" className="py-3 px-3 text-center w-20">Gap</th>
-                    <th scope="col" className="py-3 px-3 text-center w-24">Lap Time</th>
-                    <th scope="col" className="py-3 px-2 text-center w-14">S1</th>
-                    <th scope="col" className="py-3 px-2 text-center w-14">S2</th>
-                    <th scope="col" className="py-3 px-2 text-center w-14">S3</th>
-                    <th scope="col" className="py-3 px-2 text-center w-14">S4</th>
-                    <th scope="col" className="py-3 px-3 text-right w-24">Speed</th>
-                    <th scope="col" className="py-3 px-3 text-center w-16">Tyres</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-800/60">
-                  {ridersList.map((rider) => {
-                    const isSelected = isInspectorOpen && rider.rider_number === selectedRiderNum;
-                    const isP1 = rider.pos === 1;
-                    const gridRider = getRiderByNumber(rider.rider_number);
-                    const teamSlug = gridRider?.team_id || 'ducati-lenovo-team';
-
-                    return (
-                      <tr
-                        key={rider.rider_number}
-                        onClick={() => {
-                          setSelectedRiderNum(rider.rider_number);
-                          setIsInspectorOpen(true);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            setSelectedRiderNum(rider.rider_number);
-                            setIsInspectorOpen(true);
-                          }
-                        }}
-                        tabIndex={0}
-                        aria-label={`${rider.rider_name} ${rider.rider_surname}, position ${rider.pos}${
-                          isSelected ? ', selected' : ''
-                        }. Press Enter to inspect rider details.`}
-                        className={`cursor-pointer transition-colors focus-visible:bg-neutral-900 ${
-                          isSelected
-                            ? 'bg-[#181818] border-l-2 border-l-[#E10600]'
-                            : 'hover:bg-neutral-900/60'
-                        }`}
-                      >
-                        {/* Position */}
-                        <td className="py-3 px-3 text-center font-bold text-sm">
-                          {isP1 ? (
-                            <span className="text-[#E10600]">1</span>
-                          ) : (
-                            <span className="text-neutral-300">{rider.pos}</span>
-                          )}
-                        </td>
-
-                        {/* Rider Number */}
-                        <td className="py-3 px-2 text-center">
-                          <DriverNumber
-                            number={rider.rider_number}
-                            color={rider.color}
-                            size="md"
-                            title={`${rider.rider_name} ${rider.rider_surname}`}
-                          />
-                        </td>
-
-                        {/* Rider Name & Clickable Team */}
-                        <td className="py-3 px-4 font-sans">
-                          <div className="flex items-center gap-2.5">
-                            {/* Rider Photo thumbnail if available */}
-                            {gridRider && (
-                              <div className="w-8 h-8 rounded-none bg-[#141414] border border-neutral-800 shrink-0 overflow-hidden hidden sm:block">
-                                <img
-                                  src={gridRider.photo_url}
-                                  alt={gridRider.full_name}
-                                  className="w-full h-full object-cover object-top"
-                                  loading="lazy"
-                                />
-                              </div>
-                            )}
-
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <span
-                                  className="font-sans text-sm font-semibold uppercase tracking-tight text-white"
-                                  title={`${rider.rider_name} ${rider.rider_surname}`}
-                                >
-                                  {abbreviateRiderName(rider.rider_name, rider.rider_surname)}
-                                </span>
-                                {rider.on_pit && (
-                                  <span className="rounded-[2px] bg-amber-500/15 px-1 font-mono text-[9px] font-bold text-amber-400">
-                                    P
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* Clickable Team Link */}
-                              <Link
-                                href={`/teams/${teamSlug}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="text-xs text-neutral-400 hover:text-white hover:underline font-mono truncate max-w-[190px] block transition-colors"
-                                title={`View ${rider.team_name} profile`}
-                              >
-                                {rider.team_name}
-                              </Link>
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Gap */}
-                        <td className="py-3 px-3 text-center font-semibold tabular-nums text-xs">
-                          {isP1 ? (
-                            <span className="text-emerald-400">Leader</span>
-                          ) : (
-                            <span className="text-neutral-300">{rider.gap_first}</span>
-                          )}
-                        </td>
-
-                        {/* Best Lap */}
-                        <td className="py-3 px-3 text-center font-bold text-white tabular-nums text-xs">
-                          {rider.lap_time || rider.last_lap_time}
-                        </td>
-
-                        {/* Sectors S1 to S4 */}
-                        <td className="py-3 px-2 text-center">
-                          <SectorCell value={rider.t1} best={sectorBests.t1} />
-                        </td>
-                        <td className="py-3 px-2 text-center">
-                          <SectorCell value={rider.t2} best={sectorBests.t2} />
-                        </td>
-                        <td className="py-3 px-2 text-center">
-                          <SectorCell value={rider.t3} best={sectorBests.t3} />
-                        </td>
-                        <td className="py-3 px-2 text-center">
-                          <SectorCell value={rider.t4} best={sectorBests.t4} />
-                        </td>
-
-                        {/* Speed Trap */}
-                        <td className="py-3 px-3 text-right font-bold text-white tabular-nums text-xs">
-                          {rider.speed ? `${rider.speed} km/h` : '362.8 km/h'}
-                        </td>
-
-                        {/* Tyres */}
-                        <td className="py-3 px-3 text-center">
-                          <span className="text-xs font-semibold text-white px-2 py-0.5 bg-neutral-900 border border-neutral-800">
-                            {rider.tyre_front?.[0] || 'H'}/{rider.tyre_rear?.[0] || 'M'}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
             </div>
+            <button
+              onClick={handleResetLayout}
+              className="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-semibold transition-colors"
+            >
+              Reset to Default
+            </button>
           </div>
 
-          {/* Sector Tracking */}
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="font-sans text-sm font-bold tracking-tight text-white">
-                Sector Tracking
-              </h2>
-              <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-wider text-neutral-400">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-[2px] bg-[#E10600]" aria-hidden="true" />
-                  Session best
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-[2px] bg-[#F97316]" aria-hidden="true" />
-                  2nd best
-                </span>
-              </div>
-            </div>
-            <SectorTrackingTable riders={ridersList} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3.5 items-start">
+            {panelOrder.map((id) => {
+              // Custom responsive widths for each panel in Custom Bento mode
+              let spanClass = 'lg:col-span-6';
+              if (id === 'track-map') spanClass = 'lg:col-span-7';
+              if (id === 'leaderboard') spanClass = 'lg:col-span-5';
+              if (id === 'sectors') spanClass = 'lg:col-span-12';
+              return (
+                <div key={id} className={spanClass}>
+                  {renderPanel(id)}
+                </div>
+              );
+            })}
           </div>
         </div>
+      )}
 
-        {/* Right Column: Dynamic Rider Telemetry Inspector Card */}
-        {isInspectorOpen && selectedRider && (
-          <div className="lg:col-span-4 xl:col-span-4 sticky top-20 animate-in fade-in slide-in-from-right-4 duration-200">
-            <Card className="border-neutral-800 bg-[#0E0E0E] p-5 space-y-5 relative overflow-hidden">
-              {/* Brand Accent Bar */}
-              <div
-                className="h-1.5 w-full absolute top-0 left-0"
-                style={{ backgroundColor: selectedRider.color || '#E10600' }}
-              />
-
-              {/* Inspector Header: Combobox + Close Button */}
-              <div className="flex items-center justify-between gap-3 pt-1">
-                {/* Searchable Rider Combobox */}
-                <div className="relative flex-1" ref={comboboxRef}>
-                  <button
-                    onClick={() => setIsComboboxOpen(!isComboboxOpen)}
-                    className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-[#141414] border border-neutral-800 text-xs font-mono font-bold text-white hover:border-neutral-700 transition-colors"
-                  >
-                    <span className="truncate">
-                      #{selectedRider.rider_number} {selectedRider.rider_name} {selectedRider.rider_surname}
-                    </span>
-                    <ChevronDown className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  {isComboboxOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-[#141414] border border-neutral-700 shadow-2xl z-50 max-h-60 overflow-y-auto font-mono text-xs">
-                      <div className="p-2 border-b border-neutral-800 sticky top-0 bg-[#141414]">
-                        <input
-                          type="text"
-                          placeholder="Search rider..."
-                          value={comboboxSearch}
-                          onChange={(e) => setComboboxSearch(e.target.value)}
-                          className="w-full px-2 py-1 bg-black border border-neutral-800 text-white placeholder-neutral-500 text-xs focus:outline-none focus:border-[#E10600]"
-                          autoFocus
-                        />
-                      </div>
-
-                      <div className="divide-y divide-neutral-800/60">
-                        {filteredRiders.map((r) => (
-                          <button
-                            key={r.rider_number}
-                            onClick={() => {
-                              setSelectedRiderNum(r.rider_number);
-                              setIsComboboxOpen(false);
-                              setComboboxSearch('');
-                            }}
-                            className={`w-full text-left px-3 py-2 hover:bg-neutral-800 transition-colors flex items-center justify-between ${
-                              r.rider_number === selectedRiderNum ? 'bg-neutral-800/80 text-[#E10600]' : 'text-neutral-300'
-                            }`}
-                          >
-                            <span>#{r.rider_number} {r.rider_name} {r.rider_surname}</span>
-                            <span className="text-[11px] text-neutral-500">P{r.pos}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Close Button ('X') */}
-                <button
-                  onClick={() => setIsInspectorOpen(false)}
-                  className="p-2 bg-[#141414] border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
-                  title="Close inspector and maximize table"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Rider Identity with Official Photo & Team Logo */}
-              <div className="flex items-center gap-4 pt-1">
-                <div className="w-20 h-20 bg-[#141414] border border-neutral-800 shrink-0 overflow-hidden relative">
-                  {selectedGridRider ? (
-                    <img
-                      src={selectedGridRider.photo_url}
-                      alt={selectedGridRider.full_name}
-                      className="w-full h-full object-cover object-top filter contrast-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center font-mono font-bold text-2xl text-neutral-600">
-                      #{selectedRider.rider_number}
-                    </div>
-                  )}
-                </div>
-
-                <div className="overflow-hidden flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-2xl text-white">
-                      #{selectedRider.rider_number}
-                    </span>
-                    <Badge variant="outline" size="sm" className="text-xs font-mono">
-                      P{selectedRider.pos} {selectedRider.pos === 1 ? 'LEADER' : selectedRider.gap_first}
-                    </Badge>
-                  </div>
-
-                  <h3 className="text-lg font-bold text-white font-sans truncate mt-0.5">
-                    {selectedRider.rider_name} {selectedRider.rider_surname}
-                  </h3>
-
-                  {selectedTeam ? (
-                    <Link
-                      href={`/teams/${selectedTeam.slug}`}
-                      className="text-xs text-neutral-400 hover:text-white hover:underline font-mono truncate block mt-1 transition-colors"
-                    >
-                      {selectedTeam.name}
-                    </Link>
-                  ) : (
-                    <p className="text-xs text-neutral-400 font-mono truncate mt-1">
-                      {selectedRider.team_name}
-                    </p>
-                  )}
-                </div>
-
-                {selectedTeam && (
-                  <div className="w-12 h-12 bg-[#141414] p-1.5 border border-neutral-800 shrink-0 flex items-center justify-center">
-                    <img
-                      src={selectedTeam.logo_url}
-                      alt={selectedTeam.short_name}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Session Lap Telemetry Box */}
-              <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-[#141414] p-3 border border-neutral-800">
-                <div>
-                  <div className="text-neutral-400 text-[11px]">Best Session Lap</div>
-                  <div className="text-white font-bold text-base mt-0.5 tabular-nums">
-                    {selectedRider.lap_time || selectedRider.last_lap_time}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-neutral-400 text-[11px]">Speed Trap Peak</div>
-                  <div className="text-[#E10600] font-bold text-base mt-0.5 tabular-nums">
-                    {selectedRider.speed ? `${selectedRider.speed} km/h` : '362.8 km/h'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Sector Splits */}
-              <div>
-                <div className="text-xs font-mono text-neutral-400 uppercase tracking-wider mb-2">
-                  Sector Splits
-                </div>
-                <div className="grid grid-cols-4 gap-2 text-center font-mono text-xs">
-                  <div className="p-2 bg-[#141414] border border-emerald-900/50">
-                    <div className="text-[10px] text-neutral-500">S1</div>
-                    <div className="text-emerald-400 font-bold mt-0.5">{selectedRider.t1 || '28.3'}</div>
-                  </div>
-                  <div className="p-2 bg-[#141414] border border-amber-900/50">
-                    <div className="text-[10px] text-neutral-500">S2</div>
-                    <div className="text-amber-400 font-bold mt-0.5">{selectedRider.t2 || '29.1'}</div>
-                  </div>
-                  <div className="p-2 bg-[#141414] border border-purple-900/50">
-                    <div className="text-[10px] text-neutral-500">S3</div>
-                    <div className="text-purple-400 font-bold mt-0.5">{selectedRider.t3 || '23.8'}</div>
-                  </div>
-                  <div className="p-2 bg-[#141414] border border-emerald-900/50">
-                    <div className="text-[10px] text-neutral-500">S4</div>
-                    <div className="text-emerald-400 font-bold mt-0.5">{selectedRider.t4 || '23.3'}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Gyroscopic Lean Dynamics Gauge */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-neutral-400 uppercase tracking-wider">Gyroscopic Lean Angle</span>
-                  <span className="text-white font-bold">
-                    {selectedGridRider ? `${selectedGridRider.telemetry_profile.peak_lean_angle}°` : '67.8°'}
-                  </span>
-                </div>
-                <div className="flex justify-center p-3 bg-[#141414] border border-neutral-800">
-                  <LeanMeter
-                    angle={selectedGridRider ? selectedGridRider.telemetry_profile.peak_lean_angle : 67.8}
-                    direction="right"
-                  />
-                </div>
-              </div>
-
-              {/* Michelin Tyres Thermal Condition */}
-              <div className="space-y-2">
-                <div className="text-xs font-mono text-neutral-400 uppercase tracking-wider">
-                  Michelin Asymmetric Shoulder Heat
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <TyreAsymmetryPill
-                    position="FRONT"
-                    compound={(selectedRider.tyre_front as any) || 'Hard'}
-                    leftTemp={118}
-                    rightTemp={136}
-                  />
-                  <TyreAsymmetryPill
-                    position="REAR"
-                    compound={(selectedRider.tyre_rear as any) || 'Medium'}
-                    leftTemp={124}
-                    rightTemp={148}
-                  />
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-2 border-t border-neutral-800 space-y-2">
-                <Link
-                  href={`/lean-telemetry?rider=${selectedRider.rider_number}`}
-                  className="w-full block"
-                >
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full flex items-center justify-between text-xs font-mono"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Compass className="w-3.5 h-3.5 text-[#E10600]" />
-                      <span>Full Gyro Telemetry Trace</span>
-                    </span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Button>
-                </Link>
-
-                {selectedTeam && (
-                  <Link href={`/teams/${selectedTeam.slug}`} className="w-full block">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full flex items-center justify-between text-xs font-mono"
-                    >
-                      <span className="flex items-center gap-2">
-                        <ShieldCheck className="w-3.5 h-3.5 text-neutral-400" />
-                        <span>{selectedTeam.short_name} Paddock</span>
-                      </span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            </Card>
-          </div>
-        )}
-      </div>
+      {/* 3. BOTTOM SESSION REPLAY SCRUBBER (Matching Reference media_1793816610776_f44ea7b8.jpg) */}
+      <ReplayScrubberBar
+        isPlaying={isPlaying}
+        onTogglePlay={() => setIsPlaying(!isPlaying)}
+        currentTimeSec={currentTimeSec}
+        totalDurationSec={totalDurationSec}
+        onSeek={setCurrentTimeSec}
+        playbackSpeed={playbackSpeed}
+        onChangeSpeed={setPlaybackSpeed}
+        tvDelay={delay}
+        onChangeTvDelay={setDelay}
+      />
     </div>
   );
 }

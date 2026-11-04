@@ -292,10 +292,10 @@ export function TopTacticalHUD() {
                 onClick={() => setLanguageOpen(!languageOpen)}
                 aria-label="Select language"
                 aria-expanded={languageOpen}
-                className={`w-7 h-7 rounded-full transition-all duration-200 shrink-0 flex items-center justify-center liquid-glass-circle cursor-pointer ${
+                className={`w-7 h-7 rounded-full transition-colors duration-200 shrink-0 flex items-center justify-center cursor-pointer ${
                   languageOpen
-                    ? 'text-white ring-1 ring-white/30 shadow-lg'
-                    : 'text-neutral-300 hover:text-white'
+                    ? 'text-white bg-white/[0.12]'
+                    : 'text-neutral-400 hover:text-white hover:bg-white/[0.06]'
                 }`}
                 title="Select Language"
               >

@@ -6,6 +6,8 @@ interface ConstructorLogoProps {
   constructor: string;
   className?: string;
   imgClassName?: string;
+  invertYamaha?: boolean;
+  opticalBalance?: boolean;
 }
 
 export const CONSTRUCTOR_FACTORY_LOGOS: Record<
@@ -41,6 +43,8 @@ export function ConstructorLogo({
   constructor,
   className = 'w-7 h-7',
   imgClassName,
+  invertYamaha = true,
+  opticalBalance = false,
 }: ConstructorLogoProps) {
   const norm = (constructor || '').toLowerCase();
 
@@ -79,18 +83,33 @@ export function ConstructorLogo({
     );
   }
 
+  let opticalImgClass = 'w-full h-full object-contain';
+  if (opticalBalance) {
+    if (norm.includes('aprilia')) {
+      opticalImgClass = 'h-[14px] w-auto max-w-[32px] object-contain';
+    } else if (norm.includes('ktm')) {
+      opticalImgClass = 'h-[13px] w-auto max-w-[34px] object-contain';
+    } else if (norm.includes('yamaha')) {
+      opticalImgClass = 'h-[17px] w-[17px] object-contain';
+    } else if (norm.includes('honda')) {
+      opticalImgClass = 'h-[16px] w-auto max-w-[24px] object-contain';
+    } else if (norm.includes('ducati')) {
+      opticalImgClass = 'h-[17px] w-auto max-w-[19px] object-contain';
+    }
+  }
+
   return (
     <div
-      className={`${className} flex items-center justify-center shrink-0 select-none`}
+      className={`${opticalBalance ? 'w-full h-full' : className} flex items-center justify-center shrink-0 select-none`}
       title={alt}
     >
       <img
         src={src}
         alt={alt}
-        className={`w-full h-full object-contain ${
-          isBoxed ? 'rounded-[3px] shadow-sm' : ''
-        } ${isYamaha ? 'filter brightness-0 invert' : ''} ${imgClassName || ''}`}
-        style={isYamaha ? { filter: 'brightness(0) invert(1)' } : undefined}
+        className={`${opticalImgClass} ${
+          isBoxed ? 'rounded-[2px] shadow-xs' : ''
+        } ${imgClassName || ''}`}
+        style={isYamaha ? { filter: invertYamaha ? 'brightness(0) invert(1)' : 'brightness(0)' } : undefined}
         loading="lazy"
       />
     </div>

@@ -14,6 +14,7 @@ import {
 import { abbreviateRiderName, getRiderPillParts } from '@/lib/utils/rider-name';
 import { CountryFlag } from '@/components/ui/CountryFlag';
 import { TeamLogo } from '@/components/ui/TeamLogo';
+import { ConstructorLogo } from '@/components/ui/ConstructorLogo';
 import { Swords, Users, Search, X, SlidersHorizontal, Check, ArrowUpDown } from 'lucide-react';
 import { GiLaurelCrown, GiTrophyCup, GiSpeedometer, GiPowerLightning, GiFullMotorcycleHelmet, GiVibratingShield } from 'react-icons/gi';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
@@ -296,101 +297,115 @@ export default function GridPage() {
               <PopoverContent
                 align="end"
                 sideOffset={8}
-                className="w-[320px] sm:w-[360px] p-4 rounded-2xl liquid-glass-dropdown shadow-[0_25px_65px_rgba(0,0,0,0.95)] z-30 space-y-4 font-sans text-white"
+                className="w-[330px] sm:w-[360px] p-4 rounded-2xl liquid-glass-dropdown shadow-[0_25px_65px_rgba(0,0,0,0.95)] z-30 space-y-3.5 font-sans text-white"
               >
-                {/* Search Input */}
-                <div className="relative w-full">
-                  <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                {/* Search Input - Unified h-9 height */}
+                <div className="relative w-full h-9">
+                  <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search rider, #number, team..."
-                    className="w-full pl-9 pr-8 py-1.5 rounded-full bg-[#1c1d25] border border-white/15 text-xs text-white placeholder-neutral-400 focus:outline-none focus:border-white/40 transition-colors"
+                    className="w-full h-9 pl-9 pr-8 rounded-full bg-[#1c1d25] border border-white/15 text-xs text-white placeholder-neutral-400 focus:outline-none focus:border-white/40 transition-colors"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="p-1 rounded-full text-neutral-400 hover:text-white absolute right-2.5 top-1/2 -translate-y-1/2"
+                      className="p-1 rounded-full text-neutral-400 hover:text-white absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                     </button>
                   )}
                 </div>
 
-                {/* Filter by Achievements */}
+                {/* Filter by Achievements - Unified h-9 Grouped Pill */}
                 <div className="space-y-1.5">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                  <div className="text-xs font-semibold text-neutral-300">
                     Achievements
                   </div>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <div className="w-full h-9 p-0.5 flex items-center rounded-full liquid-glass-pill bg-white/[0.04]">
                     <button
+                      type="button"
                       onClick={() => setAchievementFilter('all')}
-                      className={`px-2 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      className={`flex-1 h-full flex items-center justify-center rounded-full text-xs font-semibold transition-all duration-150 cursor-pointer ${
                         achievementFilter === 'all'
                           ? 'bg-white text-black shadow-sm font-bold'
-                          : 'bg-[#1c1d25] text-neutral-300 hover:text-white hover:bg-white/10'
+                          : 'text-neutral-400 hover:text-white'
                       }`}
                     >
                       All
                     </button>
                     <button
+                      type="button"
                       onClick={() => setAchievementFilter('champions')}
-                      className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      className={`flex-1 h-full flex items-center justify-center gap-1.5 rounded-full text-xs font-semibold transition-all duration-150 cursor-pointer ${
                         achievementFilter === 'champions'
                           ? 'bg-white text-black shadow-sm font-bold'
-                          : 'bg-[#1c1d25] text-neutral-300 hover:text-white hover:bg-white/10'
+                          : 'text-neutral-400 hover:text-white'
                       }`}
                     >
-                      <GiLaurelCrown className="w-3.5 h-3.5" />
+                      <GiLaurelCrown className="w-3.5 h-3.5 shrink-0" />
                       <span>Titles</span>
                     </button>
                     <button
+                      type="button"
                       onClick={() => setAchievementFilter('winners')}
-                      className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      className={`flex-1 h-full flex items-center justify-center gap-1.5 rounded-full text-xs font-semibold transition-all duration-150 cursor-pointer ${
                         achievementFilter === 'winners'
                           ? 'bg-white text-black shadow-sm font-bold'
-                          : 'bg-[#1c1d25] text-neutral-300 hover:text-white hover:bg-white/10'
+                          : 'text-neutral-400 hover:text-white'
                       }`}
                     >
-                      <GiTrophyCup className="w-3.5 h-3.5" />
+                      <GiTrophyCup className="w-3.5 h-3.5 shrink-0" />
                       <span>Wins</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Filter by Team / Manufacturer */}
+                {/* Filter by Constructors - Unified h-9 Single Line Pill with Optically Balanced Logos */}
                 <div className="space-y-1.5">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
-                    Team
+                  <div className="text-xs font-semibold text-neutral-300">
+                    Constructors
                   </div>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <div className="w-full h-9 p-0.5 flex items-center rounded-full liquid-glass-pill bg-white/[0.04]">
                     {availableConstructors.map((c) => {
                       const isActive = teamFilter === c;
                       return (
                         <button
                           key={c}
+                          type="button"
                           onClick={() => setTeamFilter(c)}
-                          className={`px-2 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                          title={c === 'all' ? 'All Constructors' : c}
+                          aria-label={c === 'all' ? 'All Constructors' : c}
+                          className={`flex-1 h-full flex items-center justify-center rounded-full transition-all duration-150 cursor-pointer ${
                             isActive
                               ? 'bg-white text-black shadow-sm font-bold'
-                              : 'bg-[#1c1d25] text-neutral-300 hover:text-white hover:bg-white/10'
+                              : 'text-neutral-400 hover:text-white'
                           }`}
                         >
-                          {c === 'all' ? 'All Teams' : c}
+                          {c === 'all' ? (
+                            <span className="text-xs font-semibold px-1">All</span>
+                          ) : (
+                            <ConstructorLogo
+                              constructor={c}
+                              opticalBalance={true}
+                              invertYamaha={!isActive}
+                            />
+                          )}
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Sort Option (Combobox / Select shadcn/ui) */}
+                {/* Sort Option (Combobox) - Unified h-9 height */}
                 <div className="space-y-1.5">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                  <div className="text-xs font-semibold text-neutral-300">
                     Sort By
                   </div>
                   <Select value={sortBy} onValueChange={(val) => setSortBy(val as SortOption)}>
-                    <SelectTrigger className="w-full bg-[#1c1d25] border-white/15 text-xs text-white">
+                    <SelectTrigger className="w-full h-9 bg-[#1c1d25] border-white/15 text-xs text-white rounded-full px-3.5">
                       <SelectValue placeholder="Sort order..." />
                     </SelectTrigger>
                     <SelectContent>

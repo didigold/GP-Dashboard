@@ -24,11 +24,7 @@
   overflow: hidden;
   border-radius: var(--rc-radius);
   background: var(--rc-base);
-  box-shadow:
-    var(--rc-shadow),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.32),
-    inset 0 0 20px 0 rgba(255, 255, 255, 0.03),
-    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.4);
+  box-shadow: var(--rc-shadow);
   transform: perspective(900px) translate3d(0, var(--rc-lift, 0px), 0) rotateX(var(--mb-rx, var(--rc-rotate-x, 0deg))) rotateY(var(--mb-ry, var(--rc-rotate-y, 0deg))) scale(var(--mb-press, 1));
   opacity: 1 !important; /* Always 1 - never invisible */
   isolation: isolate;
@@ -276,28 +272,70 @@
 }
 
 .reflective-card__hover-driver-pill {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
+  gap: 5.5px;
+  padding: 5px 11px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(0, 0, 0, 0.25) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  backdrop-filter: blur(18px) saturate(190%);
+  -webkit-backdrop-filter: blur(18px) saturate(190%);
   font-size: 11px;
   line-height: 1.25;
   font-weight: 500;
   color: #ffffff;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow:
+    0 6px 16px -2px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 0 10px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -1px 1.5px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  overflow: hidden;
+  z-index: 2;
+}
+
+.reflective-card__hover-driver-pill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    130deg,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0.04) 35%,
+    transparent 65%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.reflective-card__hover-driver-pill > * {
+  position: relative;
+  z-index: 2;
 }
 
 .reflective-card__hover-driver-pill:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateY(-1px) scale(1.04);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.26) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 8px 20px -2px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.7),
+    inset 0 0 14px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.35);
+  transform: translateY(-1.5px) scale(1.05);
 }
 
 .reflective-card__hover-driver-name {
