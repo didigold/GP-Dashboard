@@ -8,53 +8,49 @@ import {
   LiveTimingHeader,
   TrackStatus,
   LayoutMode,
+  WeatherSimPreset,
 } from '@/components/timing/LiveTimingHeader';
 import { LiveLeaderboardWidget } from '@/components/timing/LiveLeaderboardWidget';
 import { LiveTelemetryCockpit } from '@/components/timing/LiveTelemetryCockpit';
-import { LiveChampionshipWidget } from '@/components/timing/LiveChampionshipWidget';
-import { ReplayScrubberBar } from '@/components/timing/ReplayScrubberBar';
+import { LiveDynamicCarouselWidget } from '@/components/timing/LiveDynamicCarouselWidget';
+import { ReplayScrubberBar, TimelineIncidentMarker } from '@/components/timing/ReplayScrubberBar';
 import { SectorTrackingTable } from '@/components/timing/SectorTrackingTable';
+import { RaceControlAlert } from '@/components/timing/RaceControlEventBanner';
 import { toast } from 'sonner';
-import {
-  GiFullMotorcycleHelmet,
-  GiRoad,
-  GiTrophyCup,
-  GiSpeedometer,
-  GiStopwatch,
-  GiCardPick,
-} from 'react-icons/gi';
+import { GiCardPick } from 'react-icons/gi';
 
-// Dynamically import 3D Mapbox Track Map to prevent SSR canvas issues
 const LiveMapboxTrackMap = dynamic(
   () => import('@/components/timing/LiveMapboxTrackMap').then((mod) => mod.LiveMapboxTrackMap),
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-[610px] bg-[#0B0D14] rounded-2xl border border-neutral-800/90 flex flex-col items-center justify-center text-neutral-400 font-sans text-xs gap-3 shadow-xl">
-        <div className="w-8 h-8 border-2 border-[#E10600] border-t-transparent rounded-full animate-spin" />
+      <div className="w-full h-full min-h-[480px] bg-[#0D0D0E]/90 rounded-2xl border border-white/[0.08] flex flex-col items-center justify-center text-neutral-400 font-sans text-xs gap-3 shadow-2xl">
+        <div className="w-7 h-7 border-2 border-[#E10600] border-t-transparent rounded-full animate-spin" />
         <span className="font-sans font-bold text-white text-xs tracking-tight">
-          Initializing 3D Circuit Canvas &amp; High-Contrast Spline...
+          Loading 3D Circuit Asphalt &amp; FIA/FIM Kerb Spline...
         </span>
       </div>
     ),
   }
 );
 
-const SEPANG_CIRCUIT_COORDS: [number, number] = [101.7381, 2.7608];
+const SEPANG_CIRCUIT_COORDS: [number, number] = [101.7375, 2.7608];
 
 export default function LiveTimingPage() {
   const [delay, setDelay] = useState<number>(0);
   const [isSimulation] = useState<boolean>(false);
-  // Multi-select up to 2 riders for head-to-head telemetry
-  const [selectedRiderNums, setSelectedRiderNums] = useState<string[]>(['93']);
+  // Default to 2 contenders (#93 Marquez vs #37 Acosta) to showcase real-time battle comparison
+  const [selectedRiderNums, setSelectedRiderNums] = useState<string[]>(['93', '37']);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('cockpit');
   const [trackStatus, setTrackStatus] = useState<TrackStatus>('CLEAR');
+  const [weatherPreset, setWeatherPreset] = useState<WeatherSimPreset>('dry');
+  const [activeAlert, setActiveAlert] = useState<RaceControlAlert | null>(null);
 
-  // Playback & Replay state (matching 02:11:57 total session duration in reference image)
+  // Playback & Replay state
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
-  const [currentTimeSec, setCurrentTimeSec] = useState<number>(2294); // ~38m 14s
+  const [currentTimeSec, setCurrentTimeSec] = useState<number>(2294);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
-  const totalDurationSec = 7917; // 02:11:57
+  const totalDurationSec = 7917;
 
   // Draggable Bento state
   const [panelOrder, setPanelOrder] = useState<string[]>([
@@ -64,38 +60,39 @@ export default function LiveTimingPage() {
     'telemetry',
     'sectors',
   ]);
-  const [hiddenPanels, setHiddenPanels] = useState<string[]>([]);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
 
   // Gateway Connection state
   const [liveGatewayData, setLiveGatewayData] = useState<any>(null);
   const [isGatewayActive, setIsGatewayActive] = useState<boolean>(false);
-  const [sessionName, setSessionName] = useState<string>('Grand Prix of Malaysia · Race (20 Laps)');
+  const [sessionName, setSessionName] = useState<string>('Petronas Grand Prix of Malaysia');
   const [circuitName, setCircuitName] = useState<string>('Petronas Sepang International Circuit');
   const [availableSessions, setAvailableSessions] = useState<any[]>([]);
   const [selectedSessionType, setSelectedSessionType] = useState<string>('RAC');
   const [standings, setStandings] = useState<any[]>([]);
 
-  // Fetch Dorna live endpoint
-  const checkLiveGateway = useCallback(async (sessionType?: string) => {
-    try {
-      const type = sessionType || selectedSessionType;
-      const url = `/api/live${type ? `?sessionType=${type}` : ''}`;
-      const res = await fetch(url, { cache: 'no-store' });
-      const data = await res.json();
-      if (data && data.active && data.data) {
-        setIsGatewayActive(true);
-        setLiveGatewayData(data.data);
-        if (data.sessionName) setSessionName(data.sessionName);
-        if (data.event?.circuit?.name) setCircuitName(data.event.circuit.name);
-        if (data.availableSessions) setAvailableSessions(data.availableSessions);
-        if (data.standings) setStandings(data.standings);
+  const checkLiveGateway = useCallback(
+    async (sessionType?: string) => {
+      try {
+        const type = sessionType || selectedSessionType;
+        const url = `/api/live${type ? `?sessionType=${type}` : ''}`;
+        const res = await fetch(url, { cache: 'no-store' });
+        const data = await res.json();
+        if (data && data.active && data.data) {
+          setIsGatewayActive(true);
+          setLiveGatewayData(data.data);
+          if (data.sessionName) setSessionName(data.sessionName);
+          if (data.event?.circuit?.name) setCircuitName(data.event.circuit.name);
+          if (data.availableSessions) setAvailableSessions(data.availableSessions);
+          if (data.standings) setStandings(data.standings);
+        }
+      } catch (err) {
+        console.warn('Live gateway connection check failed:', err);
       }
-    } catch (err) {
-      console.warn('Live gateway connection check failed:', err);
-    }
-  }, [selectedSessionType]);
+    },
+    [selectedSessionType]
+  );
 
   useEffect(() => {
     checkLiveGateway();
@@ -103,7 +100,6 @@ export default function LiveTimingPage() {
     return () => clearInterval(interval);
   }, [checkLiveGateway]);
 
-  // Handle session change from header dropdown
   const handleSelectSessionType = (type: string) => {
     setSelectedSessionType(type);
     checkLiveGateway(type);
@@ -117,7 +113,7 @@ export default function LiveTimingPage() {
         if (prev >= totalDurationSec) return 0;
         return prev + 1 * playbackSpeed;
       });
-    }, 1000 / playbackSpeed);
+    }, 1000 / Math.min(10, playbackSpeed));
 
     return () => clearInterval(timerInterval);
   }, [isPlaying, playbackSpeed, totalDurationSec]);
@@ -125,9 +121,9 @@ export default function LiveTimingPage() {
   const currentTimingState = useDelayedLiveTiming(liveGatewayData, delay, isSimulation);
 
   const ridersList: LiveTimingRider[] = useMemo(() => {
-    return (
-      Object.values(currentTimingState.rider || {}) as LiveTimingRider[]
-    ).sort((a, b) => a.pos - b.pos);
+    return (Object.values(currentTimingState.rider || {}) as LiveTimingRider[]).sort(
+      (a, b) => a.pos - b.pos
+    );
   }, [currentTimingState.rider]);
 
   // Handle rider toggle selection (up to 2 drivers max)
@@ -147,15 +143,125 @@ export default function LiveTimingPage() {
     setSelectedRiderNums((prev) => prev.filter((n) => n !== riderNum));
   };
 
-  // Find objects for selected riders
+  // Toggle 2-Driver Battle Mode between P1 & P2
+  const handleQuickCompareTop2 = () => {
+    if (selectedRiderNums.length >= 2) {
+      setSelectedRiderNums([ridersList[0]?.rider_number || '93']);
+    } else {
+      const r1 = ridersList[0]?.rider_number || '93';
+      const r2 = ridersList[1]?.rider_number || '37';
+      setSelectedRiderNums([r1, r2]);
+    }
+  };
+
+  // Handle Weather Simulation Preset Change & Broadcast Notification Banner
+  const handleChangeWeatherPreset = (preset: WeatherSimPreset) => {
+    setWeatherPreset(preset);
+    if (preset === 'heavy-wet') {
+      setActiveAlert({
+        id: `wet-${Date.now()}`,
+        type: 'wet',
+        title: 'White Cross Flag · Wet Race Declared',
+        subtitle: '3.4 mm Rain Detected — Riders Permitted to Enter Pit for Wet-Tyre Bike Swap',
+        timestampStr: 'LIVE SENSOR',
+      });
+    } else if (preset === 'light-rain') {
+      setActiveAlert({
+        id: `light-rain-${Date.now()}`,
+        type: 'wet',
+        title: 'Rain Drops Reported in Sector 2 & 3',
+        subtitle: '0.8 mm Precipitation — Surface Grip Reduced at Turn 5–8',
+        timestampStr: 'LIVE SENSOR',
+      });
+    } else {
+      setActiveAlert({
+        id: `dry-${Date.now()}`,
+        type: 'clear',
+        title: 'Track Surface Dry · Slick Allocation Optimal',
+        subtitle: 'Asphalt Temp 48.2°C — High Grip Conditions Restored',
+        timestampStr: 'LIVE SENSOR',
+      });
+    }
+  };
+
+  // Handle Track Flag Status Change & Broadcast Notification Banner
+  const handleChangeTrackStatus = (status: TrackStatus) => {
+    setTrackStatus(status);
+    if (status === 'YELLOW') {
+      setActiveAlert({
+        id: `yellow-${Date.now()}`,
+        type: 'yellow',
+        title: 'Yellow Flag · Sector 1 (Turn 4)',
+        subtitle: 'Marshal Recovery in Progress — No Overtaking in Sector 1',
+        timestampStr: 'STEWARD DESK',
+      });
+    } else if (status === 'RED') {
+      setActiveAlert({
+        id: `red-${Date.now()}`,
+        type: 'red',
+        title: 'Session Red Flagged · All Riders Return to Pit Lane',
+        subtitle: 'Track Surface Inspection by FIM Safety Officer',
+        timestampStr: 'RACE DIRECTION',
+      });
+    } else {
+      setActiveAlert(null);
+    }
+  };
+
+  // Handle Seeking & Timeline Incident Pin Clicks
+  const handleSeek = (seconds: number, marker?: TimelineIncidentMarker) => {
+    setCurrentTimeSec(seconds);
+    if (marker) {
+      if (marker.type === 'wet') {
+        handleChangeWeatherPreset('heavy-wet');
+      } else if (marker.type === 'yellow') {
+        handleChangeTrackStatus('YELLOW');
+      } else if (marker.type === 'purple') {
+        setActiveAlert({
+          id: `inc-${Date.now()}`,
+          type: 'fastest',
+          title: marker.label,
+          subtitle: marker.subtitle,
+          timestampStr: 'TIMELINE REPLAY',
+        });
+      } else {
+        setTrackStatus('CLEAR');
+        setWeatherPreset('dry');
+        setActiveAlert({
+          id: `clear-${Date.now()}`,
+          type: 'clear',
+          title: marker.label,
+          subtitle: marker.subtitle,
+          timestampStr: 'TIMELINE REPLAY',
+        });
+      }
+    }
+  };
+
   const selectedRiderObjects = useMemo(() => {
     return selectedRiderNums
       .map((num) => ridersList.find((r) => r.rider_number === num))
       .filter(Boolean) as LiveTimingRider[];
   }, [selectedRiderNums, ridersList]);
 
-  // Derive lap from current elapsed time
-  const currentLap = Math.min(20, Math.max(1, Math.floor((currentTimeSec / totalDurationSec) * 20) + 1));
+  const currentLap = Math.min(
+    20,
+    Math.max(1, Math.floor((currentTimeSec / totalDurationSec) * 20) + 1)
+  );
+
+  // Derived environmental telemetry based on weather preset
+  const isWet = weatherPreset !== 'dry';
+  const rainIntensity: 'none' | 'light' | 'heavy' =
+    weatherPreset === 'heavy-wet'
+      ? 'heavy'
+      : weatherPreset === 'light-rain'
+      ? 'light'
+      : 'none';
+  const rainMm = weatherPreset === 'heavy-wet' ? 3.4 : weatherPreset === 'light-rain' ? 0.8 : 0.0;
+  const airTemp = weatherPreset === 'heavy-wet' ? 27.4 : weatherPreset === 'light-rain' ? 30.2 : 33.8;
+  const trackTemp = weatherPreset === 'heavy-wet' ? 32.6 : weatherPreset === 'light-rain' ? 38.5 : 48.2;
+  const humidity = weatherPreset === 'heavy-wet' ? 91 : weatherPreset === 'light-rain' ? 79 : 61.5;
+  const windSpeedMs = weatherPreset === 'heavy-wet' ? 5.8 : weatherPreset === 'light-rain' ? 3.6 : 2.1;
 
   // Drag and Drop Handlers for Magic Bento Reordering
   const handleDragStart = (e: React.DragEvent, id: string) => {
@@ -197,7 +303,7 @@ export default function LiveTimingPage() {
       return next;
     });
 
-    toast.success(`Customized layout: Moved ${draggingId} next to ${targetId}`);
+    toast.success(`Moved ${draggingId} next to ${targetId}`);
     setDraggingId(null);
     setDropTargetId(null);
   };
@@ -209,20 +315,14 @@ export default function LiveTimingPage() {
 
   const handleResetLayout = () => {
     setPanelOrder(['leaderboard', 'track-map', 'championship', 'telemetry', 'sectors']);
-    setHiddenPanels([]);
     setLayoutMode('cockpit');
-    toast.info('Workspace layout reset to default cockpit');
+    setWeatherPreset('dry');
+    setTrackStatus('CLEAR');
+    setActiveAlert(null);
+    toast.info('Workspace reset to default cockpit');
   };
 
-  const handleHidePanel = (id: string) => {
-    setHiddenPanels((prev) => [...prev, id]);
-    toast.info(`Hidden panel. Click Reset in top bar to restore.`);
-  };
-
-  // Render dictionary of individual panels directly as first-class Magic Bento cards
   const renderPanel = (panelId: string, customClass = '') => {
-    if (hiddenPanels.includes(panelId)) return null;
-
     const isDragging = draggingId === panelId;
     const isDropTarget = dropTargetId === panelId;
 
@@ -234,6 +334,7 @@ export default function LiveTimingPage() {
             riders={ridersList}
             selectedRiderNums={selectedRiderNums}
             onToggleSelectRider={handleToggleSelectRider}
+            isWet={isWet}
             isDragging={isDragging}
             isDropTarget={isDropTarget}
             onDragStart={handleDragStart}
@@ -253,10 +354,20 @@ export default function LiveTimingPage() {
             selectedRiderNum={selectedRiderNums[0] || '93'}
             selectedRiderNums={selectedRiderNums}
             onSelectRider={handleToggleSelectRider}
+            onClearComparison={() =>
+              setSelectedRiderNums(selectedRiderNums[0] ? [selectedRiderNums[0]] : [])
+            }
             circuitName={circuitName}
             circuitCoords={SEPANG_CIRCUIT_COORDS}
             isPlaying={isPlaying}
             playbackSpeed={playbackSpeed}
+            elapsedSeconds={currentTimeSec}
+            currentLap={currentLap}
+            weatherCondition={isWet ? 'Wet' : 'Dry'}
+            rainIntensity={rainIntensity}
+            windSpeedMs={windSpeedMs}
+            activeAlert={activeAlert}
+            onDismissAlert={() => setActiveAlert(null)}
             isDragging={isDragging}
             isDropTarget={isDropTarget}
             onDragStart={handleDragStart}
@@ -264,19 +375,22 @@ export default function LiveTimingPage() {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onDragEnd={handleDragEnd}
-            className={`h-[610px] ${customClass}`}
+            className={customClass}
           />
         );
 
       case 'championship':
         return (
-          <LiveChampionshipWidget
+          <LiveDynamicCarouselWidget
             key="championship"
             standings={standings}
             riders={ridersList}
-            sessionType={selectedSessionType}
-            selectedRiderNum={selectedRiderNums[0]}
+            selectedRiderNums={selectedRiderNums}
             onSelectRider={handleToggleSelectRider}
+            isWet={isWet}
+            trackStatus={trackStatus}
+            currentLap={currentLap}
+            totalLaps={20}
             isDragging={isDragging}
             isDropTarget={isDropTarget}
             onDragStart={handleDragStart}
@@ -295,6 +409,9 @@ export default function LiveTimingPage() {
             selectedRiders={selectedRiderObjects}
             allRiders={ridersList}
             onDeselectRider={handleDeselectRider}
+            onQuickCompareTop2={handleQuickCompareTop2}
+            elapsedSeconds={currentTimeSec}
+            isWet={isWet}
             isDragging={isDragging}
             isDropTarget={isDropTarget}
             onDragStart={handleDragStart}
@@ -328,8 +445,14 @@ export default function LiveTimingPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#07080B] text-white p-3 sm:p-4 lg:p-5 space-y-3.5 max-w-[1920px] mx-auto select-none font-sans">
-      {/* 1. TOP COMMAND & WEATHER HUD BAR (Sora Typography & Game Icons) */}
+    <div
+      className={`w-full bg-[#07080B] text-white px-3 sm:px-4 py-2.5 max-w-[1920px] mx-auto select-none font-sans flex flex-col justify-between gap-2.5 ${
+        layoutMode === 'cockpit'
+          ? 'min-h-screen lg:h-[calc(100dvh-48px)] lg:overflow-hidden'
+          : 'min-h-screen'
+      }`}
+    >
+      {/* 1. TOP LIQUID GLASS COMMAND & WEATHER BAR */}
       <LiveTimingHeader
         sessionName={sessionName}
         circuitName={circuitName}
@@ -338,80 +461,79 @@ export default function LiveTimingPage() {
         currentLap={currentLap}
         isGatewayActive={isGatewayActive}
         trackStatus={trackStatus}
-        onChangeTrackStatus={setTrackStatus}
+        onChangeTrackStatus={handleChangeTrackStatus}
+        weatherPreset={weatherPreset}
+        onChangeWeatherPreset={handleChangeWeatherPreset}
+        onQuickCompareTop2={handleQuickCompareTop2}
+        isComparingTwo={selectedRiderNums.length >= 2}
         availableSessions={availableSessions}
         selectedSessionType={selectedSessionType}
         onSelectSessionType={handleSelectSessionType}
         layoutMode={layoutMode}
         onChangeLayoutMode={setLayoutMode}
         onResetLayout={handleResetLayout}
-        airTemp={33.8}
-        trackTemp={48.2}
-        humidity={61.5}
+        airTemp={airTemp}
+        trackTemp={trackTemp}
+        humidity={humidity}
+        rainMm={rainMm}
+        windSpeedMs={windSpeedMs}
       />
 
-      {/* 2. DYNAMIC WORKSPACE GRID WITH DRAGGABLE MAGIC BENTO CARDS */}
+      {/* 2. ZERO-SCROLL COCKPIT WORKSPACE (3-COLUMN MAGIC BENTO GRID) */}
       {layoutMode === 'cockpit' && (
-        /* PRO COCKPIT 3-COLUMN LAYOUT */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
-          {/* Left Column: Leaderboard (~25% / col-span-3) */}
-          <div className="lg:col-span-3 xl:col-span-3">
-            {renderPanel('leaderboard')}
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch">
+          {/* Left Column: Leaderboard (col-span-3, 100% height) */}
+          <div className="lg:col-span-3 h-[540px] lg:h-full min-h-0 flex flex-col">
+            {renderPanel('leaderboard', 'h-full')}
           </div>
 
-          {/* Center Column: 3D Mapbox Track Map (~50% / col-span-6) */}
-          <div className="lg:col-span-6 xl:col-span-6 flex flex-col gap-3.5">
-            {renderPanel('track-map')}
+          {/* Center Column: Realistic 3D Track Map + Floating 2-Driver Battle HUD (col-span-6, 100% height) */}
+          <div className="lg:col-span-6 h-[560px] lg:h-full min-h-0 flex flex-col">
+            {renderPanel('track-map', 'h-full')}
           </div>
 
-          {/* Right Column: Live Championship + Telemetry (~25% / col-span-3) */}
-          <div className="lg:col-span-3 xl:col-span-3 space-y-3.5">
-            {renderPanel('championship')}
-            {renderPanel('telemetry')}
+          {/* Right Column: Auto-Cycling Dynamic Carousel + Dual/Single Telemetry Cockpit (col-span-3, 100% height) */}
+          <div className="lg:col-span-3 h-full min-h-0 flex flex-col gap-3">
+            <div className="flex-1 min-h-[260px] lg:min-h-0 flex flex-col">
+              {renderPanel('championship', 'h-full')}
+            </div>
+            <div className="flex-1 min-h-[260px] lg:min-h-0 flex flex-col">
+              {renderPanel('telemetry', 'h-full')}
+            </div>
           </div>
         </div>
       )}
 
       {layoutMode === 'map-focus' && (
-        /* CINEMA / MAP FOCUS LAYOUT (Matching Reference media_1793830147734_258a3860.jpg) */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
-          {/* Main 8-Column Column: Large 3D Map on Top + Wide Leaderboard below */}
-          <div className="lg:col-span-8 flex flex-col gap-3.5">
-            {renderPanel('track-map')}
-            {renderPanel('leaderboard')}
-            {renderPanel('sectors')}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
+          <div className="lg:col-span-8 flex flex-col gap-3">
+            {renderPanel('track-map', 'h-[620px]')}
+            {renderPanel('leaderboard', 'h-[480px]')}
           </div>
-
-          {/* Right 4-Column Column: Championship & Telemetry Stacked */}
-          <div className="lg:col-span-4 space-y-3.5">
-            {renderPanel('championship')}
-            {renderPanel('telemetry')}
+          <div className="lg:col-span-4 space-y-3">
+            {renderPanel('championship', 'h-[340px]')}
+            {renderPanel('telemetry', 'h-[340px]')}
           </div>
         </div>
       )}
 
       {layoutMode === 'table-focus' && (
-        /* TIMING FOCUS LAYOUT (Matching Reference media_1793830139520_bc9a8d16.jpg) */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
-          {/* Left 8-Column Column: Wide Leaderboard with Mini-Sectors & Sector Matrix */}
-          <div className="lg:col-span-8 space-y-3.5">
-            {renderPanel('leaderboard')}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
+          <div className="lg:col-span-8 space-y-3">
+            {renderPanel('leaderboard', 'h-[580px]')}
             {renderPanel('sectors')}
           </div>
-
-          {/* Right 4-Column Column: 3D Map Top Right, Championship & Telemetry below */}
-          <div className="lg:col-span-4 space-y-3.5">
-            {renderPanel('track-map')}
-            {renderPanel('championship')}
-            {renderPanel('telemetry')}
+          <div className="lg:col-span-4 space-y-3">
+            {renderPanel('track-map', 'h-[420px]')}
+            {renderPanel('championship', 'h-[320px]')}
+            {renderPanel('telemetry', 'h-[320px]')}
           </div>
         </div>
       )}
 
       {layoutMode === 'custom-bento' && (
-        /* CUSTOM MAGIC BENTO REORDERABLE GRID */
-        <div className="space-y-3.5">
-          <div className="flex items-center justify-between bg-neutral-900/60 px-4 py-2 rounded-xl border border-neutral-800 text-xs">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between bg-[#0D0D0E]/90 px-4 py-2 rounded-2xl border border-white/[0.08] text-xs">
             <div className="flex items-center gap-2 text-neutral-300">
               <GiCardPick className="w-4 h-4 text-[#00F5D4]" />
               <span className="font-bold text-white">Custom Magic Bento:</span>
@@ -420,23 +542,23 @@ export default function LiveTimingPage() {
               </span>
             </div>
             <button
+              type="button"
               onClick={handleResetLayout}
-              className="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-semibold transition-colors"
+              className="h-7 px-3 rounded-full liquid-glass-pill text-white font-semibold cursor-pointer"
             >
               Reset to Default
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3.5 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 items-start">
             {panelOrder.map((id) => {
-              // Custom responsive widths for each panel in Custom Bento mode
               let spanClass = 'lg:col-span-6';
               if (id === 'track-map') spanClass = 'lg:col-span-7';
               if (id === 'leaderboard') spanClass = 'lg:col-span-5';
               if (id === 'sectors') spanClass = 'lg:col-span-12';
               return (
                 <div key={id} className={spanClass}>
-                  {renderPanel(id)}
+                  {renderPanel(id, id === 'track-map' ? 'h-[560px]' : '')}
                 </div>
               );
             })}
@@ -444,13 +566,13 @@ export default function LiveTimingPage() {
         </div>
       )}
 
-      {/* 3. BOTTOM SESSION REPLAY SCRUBBER (Matching Reference media_1793816610776_f44ea7b8.jpg) */}
+      {/* 3. BOTTOM SESSION REPLAY SCRUBBER WITH WEATHER & INCIDENT TIMELINE PINS */}
       <ReplayScrubberBar
         isPlaying={isPlaying}
         onTogglePlay={() => setIsPlaying(!isPlaying)}
         currentTimeSec={currentTimeSec}
         totalDurationSec={totalDurationSec}
-        onSeek={setCurrentTimeSec}
+        onSeek={handleSeek}
         playbackSpeed={playbackSpeed}
         onChangeSpeed={setPlaybackSpeed}
         tvDelay={delay}

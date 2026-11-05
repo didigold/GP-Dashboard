@@ -1,24 +1,27 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { LiveTimingRider } from '@/lib/types/motogp';
 import { getRiderByNumber } from '@/lib/data/motogp-grid';
-import { X, ChevronDown, ChevronUp, Sparkles, GripVertical } from 'lucide-react';
+import { computeRiderLiveKinematics, RiderKinematicTelemetry } from '@/lib/utils/rider-kinematics';
+import { X, GripVertical, Play, Pause } from 'lucide-react';
 import { ConstructorLogo } from '@/components/ui/ConstructorLogo';
-import { useMagicBentoEffect } from '@/components/ui/MagicBentoCard';
+import { useMagicBentoEffect, MagicBentoGlow } from '@/components/ui/MagicBentoCard';
 import {
   GiSpeedometer,
   GiStopwatch,
   GiCarWheel,
-  GiFullMotorcycleHelmet,
-  GiCheckeredFlag,
-  GiCardPick,
+  GiCrossedSwords,
 } from 'react-icons/gi';
 
 interface LiveTelemetryCockpitProps {
   selectedRiders: LiveTimingRider[];
   allRiders?: LiveTimingRider[];
   onDeselectRider: (riderNum: string) => void;
+  onQuickCompareTop2?: () => void;
+  elapsedSeconds?: number;
+  isWet?: boolean;
   className?: string;
   isDraggable?: boolean;
   isDragging?: boolean;
@@ -30,9 +33,132 @@ interface LiveTelemetryCockpitProps {
   onDragEnd?: (e: React.DragEvent) => void;
 }
 
+/**
+ * Circular MotoGP Broadcast Telemetry Gauge (Inspired by Image 3 & Image 5)
+ * Displays Instantaneous Speed (km/h), RPM, Gear (1-6), Lean Angle (°), and Throttle/Brake arcs.
+ */
+function CircularTelemetryGauge({
+  rider,
+  kinematics,
+  accentColor,
+  compact = false,
+}: {
+  rider: LiveTimingRider;
+  kinematics: RiderKinematicTelemetry;
+  accentColor: string;
+  compact?: boolean;
+}) {
+  const shortCode = rider.rider_shortname || rider.rider_surname.slice(0, 3).toUpperCase();
+  const size = compact ? 118 : 126;
+  const stroke = compact ? 7 : 8;
+  const radius = (size - stroke * 2) / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  // Throttle arc (left/top) & speed fill (up to 355 km/h)
+  const speedPct = Math.min(1, Math.max(0.12, kinematics.speedKmh / 355));
+  const arcLength = circumference * 0.75; // 270 degree gauge
+  const speedDash = arcLength * speedPct;
+
+  return (
+    <div className="flex flex-col items-center">
+      {compact && (
+        <span
+          className="font-black text-xs tracking-wider uppercase mb-1"
+          style={{ color: accentColor }}
+        >
+          {shortCode}
+        </span>
+      )}
+
+      <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="rotate-[135deg]">
+          {/* Background 270-deg track */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="rgba(255,255,255,0.08)"
+            strokeWidth={stroke}
+            strokeDasharray={`${arcLength} ${circumference}`}
+            strokeLinecap="round"
+          />
+          {/* Active Speed / Throttle / Braking Arc */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={kinematics.isBraking ? '#EF4444' : accentColor}
+            strokeWidth={stroke}
+            strokeDasharray={`${speedDash} ${circumference}`}
+            strokeLinecap="round"
+            className="transition-all duration-150"
+          />
+        </svg>
+
+        {/* Center Readouts: Speed, RPM, Lean Angle, Gear */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+          <span className="text-xl sm:text-2xl font-black text-white tabular-nums leading-none tracking-tight">
+            {kinematics.speedKmh}
+          </span>
+          <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider mt-0.5">
+            KM/H
+          </span>
+
+          <div className="mt-1 flex items-center gap-1 text-[10px] font-extrabold tabular-nums">
+            <span className="text-neutral-300">{kinematics.rpm}</span>
+            <span className="text-[8px] text-neutral-500">RPM</span>
+          </div>
+
+          <div className="mt-1 flex items-center gap-1.5 text-[10px] font-bold">
+            <span className="px-1.5 py-0.2 rounded bg-white/10 text-white">
+              G{kinematics.gear}
+            </span>
+            <span className="text-amber-400 tabular-nums">
+              {kinematics.leanAngleDeg}°{kinematics.leanDirection !== 'C' ? kinematics.leanDirection : ''}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Micro Throttle vs Brake Bar underneath */}
+      <div className="w-full max-w-[116px] grid grid-cols-2 gap-1.5 mt-1 text-[9px] font-bold uppercase text-neutral-400">
+        <div>
+          <div className="flex justify-between mb-0.5">
+            <span>THR</span>
+            <span className="text-emerald-400 tabular-nums">{kinematics.throttlePct}%</span>
+          </div>
+          <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-emerald-400 transition-all duration-150"
+              style={{ width: `${kinematics.throttlePct}%` }}
+            />
+          </div>
+        </div>
+        <div>
+          <div className="flex justify-between mb-0.5">
+            <span>BRK</span>
+            <span className="text-rose-400 tabular-nums">{kinematics.brakePct}%</span>
+          </div>
+          <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-rose-500 transition-all duration-150"
+              style={{ width: `${kinematics.brakePct}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function LiveTelemetryCockpit({
   selectedRiders,
   onDeselectRider,
+  onQuickCompareTop2,
+  elapsedSeconds = 2294,
+  isWet = false,
   className = '',
   isDraggable = true,
   isDragging = false,
@@ -44,90 +170,83 @@ export function LiveTelemetryCockpit({
   onDragEnd,
 }: LiveTelemetryCockpitProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [benchmarksOpen, setBenchmarksOpen] = useState<boolean>(false);
-  const [activeRiderIndex, setActiveRiderIndex] = useState<number>(0);
+  const [singleSlideIdx, setSingleSlideIdx] = useState<number>(0);
+  const [autoCycle, setAutoCycle] = useState<boolean>(true);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
 
-  // Magic Bento interactive illumination & dynamic neon border
   useMagicBentoEffect(cardRef, {
-    glowColor: '6, 182, 212',
-    spotlightRadius: 360,
+    glowColor: '0, 245, 212',
+    spotlightRadius: 340,
     enableBorderGlow: true,
     enableSpotlight: true,
     enableTilt: false,
     clickEffect: true,
-    spotAlpha: 0.08,
-    glowAlpha: 0.9,
+    spotAlpha: 0.07,
+    glowAlpha: 0.85,
   });
 
-  // If NO driver is selected: Clean Empty State
+  // Auto-cycle single rider slides every 7 seconds
+  useEffect(() => {
+    if (!autoCycle || isHovered || selectedRiders.length !== 1) return;
+    const timer = setInterval(() => {
+      setSingleSlideIdx((prev) => (prev + 1) % 2);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, [autoCycle, isHovered, selectedRiders.length]);
+
+  // 0 RIDERS SELECTED: Clean Empty State with Quick Compare CTA
   if (!selectedRiders || selectedRiders.length === 0) {
     return (
       <div
-        className={`border border-neutral-800/90 bg-[#0B0D14] rounded-2xl overflow-hidden shadow-2xl select-none font-sans ${className}`}
+        ref={cardRef}
+        className={`rounded-2xl border border-white/[0.08] bg-[#0D0D0E]/90 overflow-hidden shadow-2xl select-none font-sans flex flex-col justify-between relative ${className}`}
       >
-        <div className="px-4 py-3 bg-[#080A0F] border-b border-neutral-800/80 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <GiSpeedometer className="w-5 h-5 text-neutral-400" />
-            <h2 className="font-sans font-bold text-white text-sm tracking-tight">
-              Official Session Data
+        <MagicBentoGlow />
+        <div className="px-3.5 py-2.5 border-b border-white/[0.08] flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-2">
+            <GiSpeedometer className="w-4 h-4 text-[#00F5D4]" />
+            <h2 className="font-sans font-bold text-white text-xs sm:text-sm tracking-tight">
+              Telemetry &amp; Comparison
             </h2>
           </div>
         </div>
 
-        <div className="py-12 px-6 flex flex-col items-center justify-center text-center space-y-3">
-          <div className="w-14 h-14 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-400 shadow-inner">
-            <GiSpeedometer className="w-7 h-7 text-neutral-400" />
+        <div className="p-5 flex-1 flex flex-col items-center justify-center text-center space-y-3 relative z-10">
+          <div className="w-11 h-11 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-neutral-400">
+            <GiSpeedometer className="w-5 h-5 text-neutral-300" />
           </div>
-
           <div className="space-y-1">
-            <h3 className="font-sans font-bold text-white text-base">
-              No Riders Selected
-            </h3>
-            <p className="font-sans text-xs text-neutral-400 max-w-[220px] leading-relaxed">
-              Select up to 2 riders from the leaderboard to view official timing, radar speed traps, and sector benchmarks
+            <h3 className="font-sans font-bold text-white text-sm">No Riders Selected</h3>
+            <p className="font-sans text-xs text-neutral-400 max-w-[230px] leading-relaxed">
+              Select 1 rider for live telemetry or 2 riders from the leaderboard for head-to-head battle mode.
             </p>
           </div>
-        </div>
-
-        {/* Official Sepang Circuit Benchmarks */}
-        <div className="border-t border-neutral-800/80">
-          <button
-            onClick={() => setBenchmarksOpen(!benchmarksOpen)}
-            className="w-full px-4 py-3 flex items-center justify-between text-xs font-sans font-bold text-neutral-300 hover:text-white transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#E10600]" />
-              <span>Circuit Official Records</span>
-            </div>
-            {benchmarksOpen ? (
-              <ChevronUp className="w-4 h-4 text-neutral-400" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-neutral-400" />
-            )}
-          </button>
-          {benchmarksOpen && (
-            <div className="px-4 pb-3.5 text-xs space-y-2 text-neutral-400 bg-neutral-950/40">
-              <div className="flex justify-between pt-1">
-                <span>All-Time Pole Record:</span>
-                <span className="text-white font-bold">1&apos;56.337 (Bagnaia)</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Top Speed Record:</span>
-                <span className="text-rose-400 font-bold">362.8 km/h (Acosta)</span>
-              </div>
-            </div>
+          {onQuickCompareTop2 && (
+            <button
+              type="button"
+              onClick={onQuickCompareTop2}
+              className="h-8 px-4 rounded-full liquid-glass-btn text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer"
+            >
+              <GiCrossedSwords className="w-3.5 h-3.5 text-[#E10600]" />
+              <span>Compare Top 2 Battle</span>
+            </button>
           )}
         </div>
       </div>
     );
   }
 
-  // Selected rider official telemetry
-  const safeIndex = activeRiderIndex >= selectedRiders.length ? 0 : activeRiderIndex;
-  const primaryRider = selectedRiders[safeIndex];
-  const secondaryRider = selectedRiders.length > 1 ? selectedRiders[safeIndex === 0 ? 1 : 0] : null;
-  const gridRider = getRiderByNumber(primaryRider.rider_number);
-  const constructorName = gridRider?.constructor_name || 'Ducati';
+  const isDualMode = selectedRiders.length >= 2;
+  const primaryRider = selectedRiders[0];
+  const secondaryRider = isDualMode ? selectedRiders[1] : null;
+
+  const kinA = computeRiderLiveKinematics(primaryRider, elapsedSeconds, isWet);
+  const kinB = secondaryRider
+    ? computeRiderLiveKinematics(secondaryRider, elapsedSeconds, isWet)
+    : null;
+
+  const gridPrimary = getRiderByNumber(primaryRider.rider_number);
+  const primaryConstructor = gridPrimary?.constructor_name || 'Ducati';
 
   return (
     <div
@@ -138,238 +257,291 @@ export function LiveTelemetryCockpit({
       onDragLeave={(e) => onDragLeave?.(e, 'telemetry')}
       onDrop={(e) => onDrop?.(e, 'telemetry')}
       onDragEnd={onDragEnd}
-      className={`rounded-2xl border transition-all duration-300 flex flex-col shadow-2xl select-none font-sans relative group overflow-hidden ${
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`rounded-2xl border transition-all duration-300 flex flex-col justify-between shadow-2xl select-none font-sans relative overflow-hidden bg-[#0D0D0E]/90 ${
         isDragging
-          ? 'opacity-40 border-dashed border-cyan-400 scale-[0.98]'
+          ? 'opacity-40 border-dashed border-[#00F5D4] scale-[0.98]'
           : isDropTarget
-          ? 'border-[#00F5D4] ring-2 ring-[#00F5D4]/40 bg-neutral-900/90'
-          : 'border-neutral-800/90 bg-[#0B0D14] hover:border-neutral-700/90'
+          ? 'border-[#00F5D4] ring-2 ring-[#00F5D4]/40'
+          : 'border-white/[0.08] hover:border-white/[0.16]'
       } ${className}`}
     >
-      {/* Magic Bento Internal Lighting DOM Layers */}
-      <span className="magic-bento__light" aria-hidden="true" />
-      <span className="magic-bento__rim" aria-hidden="true" />
-      <span className="magic-bento__border" aria-hidden="true" />
+      <MagicBentoGlow />
 
-      {/* Header: Drag Handle + Title + Selected Rider Pills with Game Icon */}
-      <div className="px-4 py-3 bg-[#080A0F] border-b border-neutral-800/80 flex items-center justify-between gap-3 relative z-10">
-        <div className="flex items-center gap-2.5">
+      {/* HEADER: Title + Selected Rider Pills (LEC x vs VER x style from Image 5) */}
+      <div className="px-3.5 py-2.5 border-b border-white/[0.08] flex items-center justify-between gap-2 relative z-10 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
           {isDraggable && (
             <div
-              className="cursor-grab active:cursor-grabbing p-1 rounded-md text-neutral-500 hover:text-white hover:bg-neutral-800/60 transition-colors flex items-center gap-1 group/handle"
-              title="Drag frame to reorder in Bento grid"
+              className="cursor-grab active:cursor-grabbing p-0.5 text-neutral-500 hover:text-white transition-colors"
+              title="Drag frame to reorder"
             >
-              <GripVertical className="w-4 h-4 text-neutral-400 group-hover/handle:text-cyan-400 transition-colors" />
-              <GiCardPick className="w-3.5 h-3.5 text-neutral-500 group-hover/handle:text-cyan-400 transition-colors hidden sm:inline" />
+              <GripVertical className="w-3.5 h-3.5" />
             </div>
           )}
-          <GiSpeedometer className="w-5 h-5 text-cyan-400" />
-          <h2 className="font-sans font-bold text-white text-sm sm:text-base tracking-tight">
-            Official Timing &amp; Speed
+          <GiSpeedometer className="w-4 h-4 text-[#00F5D4] shrink-0" />
+          <h2 className="font-sans font-bold text-white text-xs sm:text-sm tracking-tight truncate">
+            {isDualMode ? 'Head-to-Head Telemetry' : 'Live Rider Telemetry'}
           </h2>
         </div>
 
-        <div className="flex items-center gap-1.5">
-          {selectedRiders.map((r) => (
-            <span
-              key={r.rider_number}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-neutral-800 border border-neutral-700 text-xs font-bold text-white shadow-sm"
-            >
-              <span>{r.rider_shortname || r.rider_surname.slice(0, 3).toUpperCase()}</span>
-              <button
-                onClick={() => onDeselectRider(r.rider_number)}
-                className="hover:text-rose-400 transition-colors ml-0.5"
-                title="Deselect rider"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </span>
-          ))}
-        </div>
-      </div>
+        {/* Selected Rider Tag Pills */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {selectedRiders.map((r, idx) => {
+            const code = r.rider_shortname || r.rider_surname.slice(0, 3).toUpperCase();
+            const pillColor =
+              idx === 1 && r.color === primaryRider.color ? '#38BDF8' : r.color || '#E10600';
+            return (
+              <React.Fragment key={r.rider_number}>
+                {idx === 1 && (
+                  <span className="text-[10px] font-bold text-neutral-400">vs</span>
+                )}
+                <span
+                  className="h-7 px-2.5 rounded-full bg-black/70 border text-[11px] font-extrabold text-white inline-flex items-center gap-1"
+                  style={{ borderColor: `${pillColor}80` }}
+                >
+                  <span style={{ color: pillColor }}>{code}</span>
+                  <button
+                    type="button"
+                    onClick={() => onDeselectRider(r.rider_number)}
+                    className="text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    title={`Deselect #${r.rider_number}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              </React.Fragment>
+            );
+          })}
 
-      {/* Multi-Rider Sub-Tabs (When 2 riders selected) */}
-      {selectedRiders.length > 1 && (
-        <div className="px-4 pt-2.5 flex items-center gap-2 border-b border-neutral-800/60 pb-2.5">
-          {selectedRiders.map((r, idx) => (
+          {!isDualMode && onQuickCompareTop2 && (
             <button
-              key={r.rider_number}
-              onClick={() => setActiveRiderIndex(idx)}
-              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
-                safeIndex === idx
-                  ? 'bg-[#E10600] text-white shadow-md'
-                  : 'bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white'
-              }`}
+              type="button"
+              onClick={onQuickCompareTop2}
+              className="h-7 px-2.5 rounded-full liquid-glass-pill text-[10px] font-bold text-neutral-200 hover:text-white flex items-center gap-1 cursor-pointer"
+              title="Select P1 vs P2 for real-time dual battle comparison"
             >
-              #{r.rider_number} {r.rider_shortname || r.rider_surname.slice(0, 3).toUpperCase()}
+              <GiCrossedSwords className="w-3 h-3 text-[#E10600]" />
+              <span>2-Way</span>
             </button>
-          ))}
-        </div>
-      )}
-
-      {/* Rider Identity Strip */}
-      <div className="px-4 pt-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-6 h-6 flex items-center justify-center">
-            <ConstructorLogo constructor={constructorName} className="w-5 h-5 object-contain" />
-          </div>
-          <div className="truncate">
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-white text-sm">
-                #{primaryRider.rider_number} {primaryRider.rider_name} {primaryRider.rider_surname}
-              </span>
-            </div>
-            <span className="text-xs text-neutral-400 font-medium block truncate">
-              {primaryRider.team_name}
-            </span>
-          </div>
-        </div>
-
-        <span className="font-extrabold text-xs text-[#E10600] px-2.5 py-1 rounded-md bg-neutral-900 border border-neutral-800 shadow-sm">
-          P{primaryRider.pos}
-        </span>
-      </div>
-
-      {/* Official Dorna Radar Speed Trap & Best Lap Cards */}
-      <div className="p-4 space-y-3">
-        {/* Speed Trap Showcase */}
-        <div className="p-3.5 bg-neutral-950/80 rounded-xl border border-neutral-800 flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block">
-              Official Radar Speed Trap
-            </span>
-            <span className="text-3xl font-extrabold text-white tracking-tight tabular-nums">
-              {primaryRider.speed ? primaryRider.speed.toFixed(1) : '342.8'}
-              <span className="text-sm text-neutral-400 font-medium ml-1.5">km/h</span>
-            </span>
-          </div>
-          <div className="text-right text-xs">
-            <span className="text-[10px] text-neutral-400 font-medium uppercase block">Circuit Avg</span>
-            <span className="text-neutral-200 font-bold text-sm tabular-nums">
-              {primaryRider.average_speed || 165.3} km/h
-            </span>
-          </div>
-        </div>
-
-        {/* Timing Transponder Metrics */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="p-3 bg-neutral-950/60 rounded-xl border border-neutral-800">
-            <span className="text-[10px] text-neutral-400 font-bold uppercase block">Best Lap</span>
-            <span className="text-emerald-400 font-bold text-base tabular-nums mt-0.5 block">
-              {primaryRider.lap_time || "1'57.100"}
-            </span>
-            <span className="text-[10px] text-neutral-400 font-medium block mt-0.5">Transponder verified</span>
-          </div>
-          <div className="p-3 bg-neutral-950/60 rounded-xl border border-neutral-800">
-            <span className="text-[10px] text-neutral-400 font-bold uppercase block">Gap to Leader</span>
-            <span className="text-white font-bold text-base tabular-nums mt-0.5 block">
-              {primaryRider.pos === 1 ? 'LEADER' : primaryRider.gap_first}
-            </span>
-            <span className="text-[10px] text-neutral-400 font-medium block mt-0.5">Interval: {primaryRider.gap_prev}</span>
-          </div>
-        </div>
-
-        {/* Official Sector Splits Transponder Loops */}
-        <div className="p-3 bg-neutral-950/60 rounded-xl border border-neutral-800 text-xs">
-          <div className="flex items-center justify-between pb-2 border-b border-neutral-900 text-[10px] text-neutral-400 font-bold uppercase tracking-wider">
-            <span>Transponder Sectors</span>
-            <span>Loop Time</span>
-          </div>
-          <div className="grid grid-cols-4 gap-2 pt-2.5 text-center text-xs">
-            <div className="bg-neutral-900/80 p-2 rounded-lg border border-neutral-800">
-              <span className="text-[10px] text-neutral-400 font-bold block">T1</span>
-              <span className="text-white font-extrabold tabular-nums">{primaryRider.t1 || '28.250'}</span>
-            </div>
-            <div className="bg-neutral-900/80 p-2 rounded-lg border border-neutral-800">
-              <span className="text-[10px] text-neutral-400 font-bold block">T2</span>
-              <span className="text-white font-extrabold tabular-nums">{primaryRider.t2 || '29.100'}</span>
-            </div>
-            <div className="bg-neutral-900/80 p-2 rounded-lg border border-neutral-800">
-              <span className="text-[10px] text-neutral-400 font-bold block">T3</span>
-              <span className="text-white font-extrabold tabular-nums">{primaryRider.t3 || '23.800'}</span>
-            </div>
-            <div className="bg-neutral-900/80 p-2 rounded-lg border border-neutral-800">
-              <span className="text-[10px] text-neutral-400 font-bold block">T4</span>
-              <span className="text-white font-extrabold tabular-nums">{primaryRider.t4 || '23.200'}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Michelin Tyre Allocation Status */}
-        <div className="p-3 bg-neutral-950/60 rounded-xl border border-neutral-800 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 text-neutral-300">
-            <GiCarWheel className="w-4 h-4 text-neutral-400" />
-            <span className="font-semibold">Michelin Tyre Allocation:</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 rounded-md bg-neutral-900 border border-neutral-800 text-neutral-300 text-xs">
-              Front: <strong className="text-white font-bold">{primaryRider.tyre_front || 'Hard'}</strong>
-            </span>
-            <span className="px-2.5 py-1 rounded-md bg-neutral-900 border border-neutral-800 text-neutral-300 text-xs">
-              Rear: <strong className="text-white font-bold">{primaryRider.tyre_rear || 'Medium'}</strong>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Head-to-Head Comparison Bar (When 2 Riders are Selected) */}
-      {secondaryRider && (
-        <div className="px-4 py-3 border-t border-neutral-900/80 bg-neutral-950/70 text-xs space-y-2.5">
-          <div className="flex items-center justify-between text-[11px] text-neutral-300 uppercase tracking-wider font-bold">
-            <span className="flex items-center gap-1.5 text-white">
-              <GiStopwatch className="w-4 h-4 text-[#E10600]" />
-              Official Head-to-Head Delta
-            </span>
-            <span className="text-neutral-400">
-              #{primaryRider.rider_number} vs #{secondaryRider.rider_number}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="bg-neutral-900/80 p-2 rounded-lg border border-neutral-800">
-              <span className="text-[10px] text-neutral-400 font-bold block">Track Gap</span>
-              <span className="text-white font-extrabold text-sm tabular-nums">
-                {primaryRider.pos < secondaryRider.pos
-                  ? `-${secondaryRider.gap_first}`
-                  : `+${primaryRider.gap_first}`}
-              </span>
-            </div>
-            <div className="bg-neutral-900/80 p-2 rounded-lg border border-neutral-800">
-              <span className="text-[10px] text-neutral-400 font-bold block">Speed Trap Delta</span>
-              <span className="text-emerald-400 font-extrabold text-sm tabular-nums">
-                {((primaryRider.speed || 342.8) - (secondaryRider.speed || 342.8) > 0 ? '+' : '')}
-                {((primaryRider.speed || 342.8) - (secondaryRider.speed || 342.8)).toFixed(1)} km/h
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Best Lap Benchmarks Accordion */}
-      <div className="border-t border-neutral-800/80">
-        <button
-          onClick={() => setBenchmarksOpen(!benchmarksOpen)}
-          className="w-full px-4 py-3 flex items-center justify-between text-xs font-bold text-neutral-300 hover:text-white transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#E10600]" />
-            <span>Circuit Official Records</span>
-          </div>
-          {benchmarksOpen ? (
-            <ChevronUp className="w-4 h-4 text-neutral-400" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-neutral-400" />
           )}
-        </button>
-        {benchmarksOpen && (
-          <div className="px-4 pb-3.5 text-xs space-y-2 text-neutral-400 bg-neutral-950/40">
-            <div className="flex justify-between pt-1">
-              <span>All-Time Pole Record:</span>
-              <span className="text-white font-bold">1&apos;56.337 (Bagnaia)</span>
+        </div>
+      </div>
+
+      {/* BODY: DUAL COMPARISON MODE (Image 5) OR SINGLE-RIDER CAROUSEL */}
+      <div className="relative z-10 flex-1 min-h-0 px-3.5 py-2.5 flex flex-col justify-between overflow-hidden">
+        {isDualMode && secondaryRider && kinB ? (
+          /* 2-DRIVER SIDE-BY-SIDE DUAL GAUGES + RADAR SPEED & SECTOR DELTAS */
+          <div className="flex flex-col justify-between h-full gap-2">
+            <div className="flex items-center justify-around gap-1 my-auto">
+              <CircularTelemetryGauge
+                rider={primaryRider}
+                kinematics={kinA}
+                accentColor={primaryRider.color || '#EF4444'}
+                compact={true}
+              />
+
+              <div className="w-7 h-7 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center text-[10px] font-black text-neutral-300 shrink-0">
+                VS
+              </div>
+
+              <CircularTelemetryGauge
+                rider={secondaryRider}
+                kinematics={kinB}
+                accentColor={
+                  secondaryRider.color === primaryRider.color
+                    ? '#38BDF8'
+                    : secondaryRider.color || '#38BDF8'
+                }
+                compact={true}
+              />
             </div>
-            <div className="flex justify-between">
-              <span>Top Speed Record:</span>
-              <span className="text-rose-400 font-bold">362.8 km/h (Acosta)</span>
+
+            {/* Bottom Comparison Metrics Strip */}
+            <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-white/[0.08] text-center text-[11px]">
+              <div className="bg-white/[0.03] px-2 py-1.5 rounded-xl border border-white/[0.06]">
+                <span className="text-[9px] font-bold uppercase text-neutral-400 block">
+                  Speed Trap Δ
+                </span>
+                <span className="font-black text-white tabular-nums text-xs">
+                  {((primaryRider.speed || 342.8) - (secondaryRider.speed || 344.2) > 0 ? '+' : '')}
+                  {((primaryRider.speed || 342.8) - (secondaryRider.speed || 344.2)).toFixed(1)}{' '}
+                  <span className="text-[9px] text-neutral-400">km/h</span>
+                </span>
+              </div>
+
+              <div className="bg-white/[0.03] px-2 py-1.5 rounded-xl border border-white/[0.06]">
+                <span className="text-[9px] font-bold uppercase text-neutral-400 block">
+                  Lean Angle
+                </span>
+                <span className="font-black text-amber-400 tabular-nums text-xs">
+                  {kinA.leanAngleDeg}° vs {kinB.leanAngleDeg}°
+                </span>
+              </div>
+
+              <div className="bg-white/[0.03] px-2 py-1.5 rounded-xl border border-white/[0.06]">
+                <span className="text-[9px] font-bold uppercase text-neutral-400 block">
+                  Michelin R
+                </span>
+                <span className="font-black text-emerald-400 text-xs">
+                  {(primaryRider.tyre_rear || 'M').charAt(0)} vs{' '}
+                  {(secondaryRider.tyre_rear || 'M').charAt(0)}
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* SINGLE RIDER TELEMETRY WITH 2-SLIDE DYNAMIC CAROUSEL */
+          <div className="flex flex-col justify-between h-full">
+            {/* Rider Identity Header Strip */}
+            <div className="flex items-center justify-between pb-1.5 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <ConstructorLogo constructor={primaryConstructor} className="w-4 h-4 object-contain shrink-0" />
+                <div className="truncate">
+                  <span className="font-extrabold text-white text-xs sm:text-sm block truncate">
+                    #{primaryRider.rider_number} {primaryRider.rider_name}{' '}
+                    {primaryRider.rider_surname}
+                  </span>
+                  <span className="text-[11px] text-neutral-400 block truncate">
+                    {primaryRider.team_name}
+                  </span>
+                </div>
+              </div>
+              <span className="px-2 py-0.5 rounded-md bg-white/[0.08] border border-white/10 font-black text-xs text-[#E10600] shrink-0">
+                P{primaryRider.pos}
+              </span>
+            </div>
+
+            <AnimatePresence mode="wait" initial={false}>
+              {singleSlideIdx === 0 ? (
+                /* SLIDE 0: LIVE CIRCULAR TELEMETRY DIAL + RADAR SPEED TRAP */
+                <motion.div
+                  key="single-dial"
+                  initial={{ opacity: 0, x: 8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="grid grid-cols-12 gap-3 items-center my-auto py-1"
+                >
+                  <div className="col-span-6 flex justify-center">
+                    <CircularTelemetryGauge
+                      rider={primaryRider}
+                      kinematics={kinA}
+                      accentColor={primaryRider.color || '#E10600'}
+                      compact={false}
+                    />
+                  </div>
+
+                  <div className="col-span-6 space-y-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-400 block">
+                        Radar Speed Trap
+                      </span>
+                      <span className="text-lg font-black text-white tabular-nums">
+                        {(primaryRider.speed || 342.8).toFixed(1)}{' '}
+                        <span className="text-[10px] font-normal text-neutral-400">km/h</span>
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-400 block">
+                        Best Lap
+                      </span>
+                      <span className="text-sm font-black text-emerald-400 tabular-nums">
+                        {primaryRider.lap_time || "1'57.100"}
+                      </span>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-between text-[11px]">
+                      <span className="text-neutral-400 font-semibold">Tyres</span>
+                      <span className="font-bold text-white">
+                        {isWet
+                          ? 'Wet / Wet'
+                          : `${primaryRider.tyre_front || 'Hard'} / ${primaryRider.tyre_rear || 'Med'}`}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                /* SLIDE 1: TRANSPONDER SECTORS T1-T4 + CIRCUIT BENCHMARKS */
+                <motion.div
+                  key="single-sectors"
+                  initial={{ opacity: 0, x: 8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-2.5 my-auto py-1"
+                >
+                  <div className="grid grid-cols-4 gap-1.5 text-center">
+                    {(['t1', 't2', 't3', 't4'] as const).map((secKey, i) => {
+                      const isActiveSec = kinA.sector === i + 1;
+                      return (
+                        <div
+                          key={secKey}
+                          className={`p-2 rounded-xl border ${
+                            isActiveSec
+                              ? 'bg-[#E10600]/20 border-[#E10600] text-white'
+                              : 'bg-white/[0.04] border-white/[0.08] text-neutral-200'
+                          }`}
+                        >
+                          <span className="text-[10px] font-bold text-neutral-400 uppercase block">
+                            T{i + 1}
+                          </span>
+                          <span className="text-xs font-black text-white tabular-nums mt-0.5 block">
+                            {primaryRider[secKey] || (28.25 - i * 1.4).toFixed(3)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] space-y-1.5 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-neutral-400">Gap to Leader</span>
+                      <span className="font-bold text-white tabular-nums">
+                        {primaryRider.pos === 1 ? 'LEADER' : primaryRider.gap_first}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-400">All-Time Lap Record</span>
+                      <span className="font-bold text-neutral-200 tabular-nums">
+                        1&apos;56.337 (Bagnaia)
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-400">Top Speed Record</span>
+                      <span className="font-bold text-[#E10600] tabular-nums">
+                        362.8 km/h (Acosta)
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Footer Dots for Single-Rider Telemetry Carousel */}
+            <div className="pt-1.5 border-t border-white/[0.06] flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                {[0, 1].map((idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setSingleSlideIdx(idx)}
+                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                      singleSlideIdx === idx ? 'w-6 bg-white' : 'w-2 bg-white/20 hover:bg-white/40'
+                    }`}
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setAutoCycle(!autoCycle)}
+                className="text-[10px] font-bold text-neutral-400 hover:text-white flex items-center gap-1 cursor-pointer"
+              >
+                {autoCycle ? <Pause className="w-2.5 h-2.5 text-[#00F5D4]" /> : <Play className="w-2.5 h-2.5" />}
+                <span>{singleSlideIdx === 0 ? 'Live Gauge' : 'Sector Splits'}</span>
+              </button>
             </div>
           </div>
         )}
