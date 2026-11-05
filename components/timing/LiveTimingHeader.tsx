@@ -2,22 +2,18 @@
 
 import React from 'react';
 import {
-  Clock,
   ChevronDown,
   RotateCcw,
+  Flag,
+  Thermometer,
+  CloudSun,
+  Wind,
+  CloudRain,
+  Swords,
+  LayoutGrid,
+  Map,
+  Timer,
 } from 'lucide-react';
-import {
-  GiFullMotorcycleHelmet,
-  GiRoad,
-  GiStopwatch,
-  GiCardPick,
-  GiSun,
-  GiThermometerHot,
-  GiWindSlap,
-  GiHeavyRain,
-  GiCheckeredFlag,
-  GiCrossedSwords,
-} from 'react-icons/gi';
 
 export type TrackStatus = 'CLEAR' | 'YELLOW' | 'SAFETY_CAR' | 'RED';
 export type LayoutMode = 'cockpit' | 'map-focus' | 'table-focus' | 'custom-bento';
@@ -59,9 +55,6 @@ interface LiveTimingHeaderProps {
 export function LiveTimingHeader({
   sessionName = 'Petronas Grand Prix of Malaysia',
   circuitName = 'Petronas Sepang International Circuit',
-  elapsedSeconds = 2294,
-  totalLaps = 20,
-  currentLap = 16,
   isGatewayActive = true,
   trackStatus = 'CLEAR',
   onChangeTrackStatus,
@@ -86,23 +79,13 @@ export function LiveTimingHeader({
   const [layoutMenuOpen, setLayoutMenuOpen] = React.useState(false);
   const [simMenuOpen, setSimMenuOpen] = React.useState(false);
 
-  const formatTime = (secs: number) => {
-    const hours = Math.floor(secs / 3600);
-    const minutes = Math.floor((secs % 3600) / 60);
-    const seconds = Math.floor(secs % 60);
-    return `${hours.toString().padStart(2, '0')}:${minutes
-      .toString()
-      .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  const lapProgressPct = Math.min(100, Math.max(5, (currentLap / Math.max(1, totalLaps)) * 100));
   const isWet = weatherPreset !== 'dry' || rainMm > 0;
 
   return (
     <div
       className={`px-3.5 py-2 bg-[#0D0D0E]/90 border border-white/[0.08] rounded-2xl flex flex-wrap items-center justify-between gap-2.5 shadow-2xl select-none font-sans relative z-30 shrink-0 ${className}`}
     >
-      {/* LEFT CLUSTER: Event Title + Session Timer + Live Pill + Flag/Weather Simulator Pill */}
+      {/* LEFT CLUSTER: Event Title + Live Pill + Flag/Weather Simulator Pill */}
       <div className="flex flex-wrap items-center gap-2">
         {/* Event Title & Session Switcher */}
         <div className="relative">
@@ -116,11 +99,11 @@ export function LiveTimingHeader({
                 {sessionName.split('·')[0].trim()}
               </h1>
               <p className="text-[10px] font-sans font-semibold text-neutral-400 uppercase tracking-wider leading-none mt-0.5">
-                {selectedSessionType === 'SPR' ? 'TISSOT SPRINT' : 'GRAND PRIX RACE'} · {circuitName}
+                {selectedSessionType === 'SPR' ? 'TISSOT SPRINT' : selectedSessionType === 'RAC' ? 'GRAND PRIX RACE' : selectedSessionType === 'Q' ? 'QUALIFYING' : 'FREE PRACTICE'} · {circuitName}
               </p>
             </div>
             {availableSessions.length > 0 && (
-              <ChevronDown className="w-3.5 h-3.5 text-neutral-400 group-hover:text-white transition-transform" />
+              <ChevronDown className="w-3.5 h-3.5 text-white group-hover:text-white transition-transform" />
             )}
           </button>
 
@@ -153,12 +136,6 @@ export function LiveTimingHeader({
 
         <div className="h-4 w-[1px] bg-white/10 hidden sm:block" />
 
-        {/* Session Stopwatch Pill (h-8) */}
-        <div className="h-8 px-3 rounded-full liquid-glass-pill text-xs font-bold text-white flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5 text-[#E10600]" />
-          <span className="tabular-nums">{formatTime(elapsedSeconds)}</span>
-        </div>
-
         {/* Live Status Pill (h-8) */}
         <div className="h-8 px-3 rounded-full bg-[#E10600]/15 border border-[#E10600]/40 text-white text-[11px] font-bold flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-[#E10600] animate-pulse" />
@@ -182,9 +159,9 @@ export function LiveTimingHeader({
             title="Click to simulate Track Flags & Wet Race Conditions"
           >
             {isWet ? (
-              <GiHeavyRain className="w-3.5 h-3.5 text-sky-400" />
+              <CloudRain className="w-5 h-5 text-white" />
             ) : (
-              <GiCheckeredFlag className="w-3.5 h-3.5" />
+              <Flag className="w-5 h-5 text-white" />
             )}
             <span>
               {trackStatus === 'RED'
@@ -267,43 +244,27 @@ export function LiveTimingHeader({
         </div>
       </div>
 
-      {/* RIGHT CLUSTER: Laps Progress Card + Weather Telemetry Pill + 2-Driver Battle Switch + Layout */}
+      {/* RIGHT CLUSTER: Weather Telemetry Bar + 2-Driver Battle Switch + Layout */}
       <div className="flex flex-wrap items-center gap-2 font-sans text-xs">
-        {/* Laps Progress Card (Matching F1 Image 2 & Image 5) */}
-        <div className="h-8 px-3 rounded-full liquid-glass-pill flex flex-col justify-center min-w-[92px]">
-          <div className="flex items-center justify-between gap-2 text-[11px] leading-none">
-            <span className="text-[9px] text-neutral-400 font-bold uppercase">LAPS</span>
-            <span className="font-black text-white tabular-nums">
-              {currentLap} <span className="text-neutral-400 font-semibold text-[10px]">/ {totalLaps}</span>
-            </span>
-          </div>
-          <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden mt-1">
-            <div
-              className="h-full bg-[#3B82F6] rounded-full transition-all duration-300"
-              style={{ width: `${lapProgressPct}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Weather Telemetry Bar with Game Icons (Matching Overview UnifiedHeroScheduleCard taste) */}
-        <div className="hidden xl:flex items-center gap-3 h-8 px-3.5 rounded-full liquid-glass-pill text-[11px] text-neutral-300">
+        {/* Weather Telemetry Bar (informational — no liquid glass) */}
+        <div className="hidden xl:flex items-center gap-3 h-8 px-3.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-[11px] text-neutral-300">
           <div className="flex items-center gap-1.5" title="Air Temperature">
-            <GiSun className="w-3.5 h-3.5 text-sky-400" />
+            <CloudSun className="w-5 h-5 text-white" />
             <span>
               AIR <strong className="text-white tabular-nums">{airTemp.toFixed(1)}°C</strong>
             </span>
           </div>
 
-          <span className="text-white/15">|</span>
+          <span className="text-white/10">|</span>
 
           <div className="flex items-center gap-1.5" title="Track Asphalt Temperature">
-            <GiThermometerHot className="w-3.5 h-3.5 text-amber-400" />
+            <Thermometer className="w-5 h-5 text-white" />
             <span>
-              TRACK <strong className="text-amber-400 font-bold tabular-nums">{trackTemp.toFixed(1)}°C</strong>
+              TRACK <strong className="text-white font-bold tabular-nums">{trackTemp.toFixed(1)}°C</strong>
             </span>
           </div>
 
-          <span className="text-white/15">|</span>
+          <span className="text-white/10">|</span>
 
           <div className="flex items-center gap-1.5" title="Relative Humidity">
             <span>
@@ -311,22 +272,22 @@ export function LiveTimingHeader({
             </span>
           </div>
 
-          <span className="text-white/15">|</span>
+          <span className="text-white/10">|</span>
 
           <div className="flex items-center gap-1.5" title="Wind Speed">
-            <GiWindSlap className="w-3.5 h-3.5 text-neutral-300" />
+            <Wind className="w-5 h-5 text-white" />
             <span>
               WIND <strong className="text-white tabular-nums">{windSpeedMs.toFixed(1)} m/s</strong>
             </span>
           </div>
 
-          <span className="text-white/15">|</span>
+          <span className="text-white/10">|</span>
 
           <div className="flex items-center gap-1.5" title="Precipitation">
-            <GiHeavyRain className={`w-3.5 h-3.5 ${isWet ? 'text-sky-400' : 'text-emerald-400'}`} />
+            <CloudRain className="w-5 h-5 text-white" />
             <span>
               RAIN{' '}
-              <strong className={`tabular-nums ${isWet ? 'text-sky-400' : 'text-emerald-400'}`}>
+              <strong className="tabular-nums text-white">
                 {rainMm.toFixed(1)} mm
               </strong>
             </span>
@@ -345,9 +306,7 @@ export function LiveTimingHeader({
             }`}
             title="Toggle 2-Driver Real-Time Comparison Battle Mode"
           >
-            <GiCrossedSwords
-              className={`w-3.5 h-3.5 ${isComparingTwo ? 'text-[#E10600]' : 'text-[#E10600]'}`}
-            />
+            <Swords className="w-5 h-5 text-white" />
             <span className="hidden sm:inline">2-Driver Battle</span>
           </button>
         )}
@@ -358,10 +317,10 @@ export function LiveTimingHeader({
             <button
               type="button"
               onClick={onResetLayout}
-              className="w-8 h-8 liquid-glass-circle text-neutral-300 hover:text-white cursor-pointer"
+              className="w-8 h-8 liquid-glass-circle text-white hover:text-white cursor-pointer"
               title="Reset workspace layout"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              <RotateCcw className="w-5 h-5" />
             </button>
           )}
 
@@ -371,9 +330,9 @@ export function LiveTimingHeader({
               onClick={() => setLayoutMenuOpen(!layoutMenuOpen)}
               className="h-8 px-3 rounded-full liquid-glass-pill text-xs text-white font-semibold flex items-center gap-1.5 cursor-pointer"
             >
-              <GiCardPick className="w-3.5 h-3.5 text-[#E10600]" />
+              <LayoutGrid className="w-5 h-5 text-white" />
               <span className="hidden sm:inline">Layout</span>
-              <ChevronDown className="w-3 h-3 text-neutral-400" />
+              <ChevronDown className="w-3 h-3 text-white" />
             </button>
 
             {layoutMenuOpen && (
@@ -386,25 +345,25 @@ export function LiveTimingHeader({
                     mode: 'cockpit' as LayoutMode,
                     label: 'Cockpit View (Zero-Scroll)',
                     desc: 'Balanced 3-column live telemetry & map',
-                    icon: <GiFullMotorcycleHelmet className="w-4 h-4" />,
+                    icon: <Swords className="w-5 h-5 text-white" />,
                   },
                   {
                     mode: 'map-focus' as LayoutMode,
                     label: 'Cinema / Map Focus',
                     desc: 'Expansive 3D track centerpiece',
-                    icon: <GiRoad className="w-4 h-4" />,
+                    icon: <Map className="w-5 h-5 text-white" />,
                   },
                   {
                     mode: 'table-focus' as LayoutMode,
                     label: 'Timing Grid Focus',
                     desc: 'Full sector splits & stint matrix',
-                    icon: <GiStopwatch className="w-4 h-4" />,
+                    icon: <Timer className="w-5 h-5 text-white" />,
                   },
                   {
                     mode: 'custom-bento' as LayoutMode,
                     label: 'Custom Magic Bento',
                     desc: 'Freely drag & reorder all frames',
-                    icon: <GiCardPick className="w-4 h-4 text-[#00F5D4]" />,
+                    icon: <LayoutGrid className="w-5 h-5 text-white" />,
                   },
                 ].map((item) => (
                   <button

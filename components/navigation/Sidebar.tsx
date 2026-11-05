@@ -20,7 +20,7 @@ import {
 
 const NAV_ITEMS = [
   { name: 'Dashboard', href: '/', icon: Gauge },
-  { name: 'Live Timing', href: '/live-timing', icon: Radio, isLive: true },
+  { name: 'Live Session', href: '/live-timing', icon: Radio, isLive: true },
   { name: '3D Track Map', href: '/track-map', icon: Layers, isNew: true },
   { name: 'Race Pace & Tyres', href: '/race-pace', icon: BarChart3 },
   { name: 'Head-to-Head', href: '/head-to-head', icon: GitCompare },

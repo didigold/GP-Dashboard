@@ -2,10 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { LiveTimingRider } from '@/lib/types/motogp';
-import { getRiderByNumber } from '@/lib/data/motogp-grid';
-import { ConstructorLogo } from '@/components/ui/ConstructorLogo';
 import { ChevronDown, ChevronUp, X, Video } from 'lucide-react';
-import { GiCrossedSwords } from 'react-icons/gi';
 
 interface DriverBattleOverlayHUDProps {
   riderA: LiveTimingRider;
@@ -13,6 +10,7 @@ interface DriverBattleOverlayHUDProps {
   activeSector?: 1 | 2 | 3 | 4;
   sectorProgress?: number; // 0..1
   currentLap?: number;
+  sessionType?: string;
   battleCamActive?: boolean;
   onToggleBattleCam?: () => void;
   onClose?: () => void;
@@ -45,6 +43,7 @@ export function DriverBattleOverlayHUD({
   activeSector = 4,
   sectorProgress = 0.68,
   currentLap = 16,
+  sessionType = 'RAC',
   battleCamActive = false,
   onToggleBattleCam,
   onClose,
@@ -56,14 +55,10 @@ export function DriverBattleOverlayHUD({
     return riderA.pos <= riderB.pos ? [riderA, riderB] : [riderB, riderA];
   }, [riderA, riderB]);
 
-  const gridLeader = getRiderByNumber(leader.rider_number);
-  const gridChaser = getRiderByNumber(chaser.rider_number);
-
-  const leaderConstructor = gridLeader?.constructor_name || 'Ducati';
-  const chaserConstructor = gridChaser?.constructor_name || 'KTM';
-
   const leaderCode = leader.rider_shortname || leader.rider_surname.slice(0, 3).toUpperCase();
   const chaserCode = chaser.rider_shortname || chaser.rider_surname.slice(0, 3).toUpperCase();
+
+  const isRaceSession = sessionType === 'RAC' || sessionType === 'SPR';
 
   // Live gap between the two selected riders
   const gapLeader = parseGapVal(leader.gap_first, leader.pos);
@@ -132,7 +127,6 @@ export function DriverBattleOverlayHUD({
               className="w-1 h-5 rounded-full shrink-0"
               style={{ backgroundColor: leader.color || '#E10600' }}
             />
-            <ConstructorLogo constructor={leaderConstructor} className="w-4 h-4 object-contain shrink-0" />
             <span
               className="font-black text-xs sm:text-sm tracking-tight truncate uppercase"
               style={{ color: leader.color || '#EF4444' }}
@@ -168,7 +162,6 @@ export function DriverBattleOverlayHUD({
               className="w-1 h-5 rounded-full shrink-0"
               style={{ backgroundColor: chaser.color || '#3B82F6' }}
             />
-            <ConstructorLogo constructor={chaserConstructor} className="w-4 h-4 object-contain shrink-0" />
             <span
               className="font-black text-xs sm:text-sm tracking-tight truncate uppercase"
               style={{ color: chaser.color === leader.color ? '#38BDF8' : chaser.color || '#38BDF8' }}
@@ -287,8 +280,8 @@ export function DriverBattleOverlayHUD({
         })}
       </div>
 
-      {/* ROW 3: LAST 6 LAPS COMPARISON MATRIX (F1 Dashboard Image 5 Style) */}
-      {showLapMatrix && (
+      {/* ROW 3: RACE = Last 6 Laps Matrix | QUALIFYING/FP = Sector Detail */}
+      {showLapMatrix && isRaceSession && (
         <div className="relative z-10 px-3.5 py-2 bg-[#090B10]/90 text-[11px]">
           <div className="grid grid-cols-7 gap-1.5 items-center text-center">
             <div className="text-left text-[10px] font-bold uppercase tracking-wider text-neutral-400">
@@ -339,6 +332,35 @@ export function DriverBattleOverlayHUD({
                   title={`${chaserCode} Lap ${lap.lapNum}: ${lap.chaserTime}`}
                 >
                   {lap.delta > 0 ? `+${lap.delta.toFixed(3)}` : lap.delta.toFixed(3)}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {showLapMatrix && !isRaceSession && (
+        <div className="relative z-10 px-3.5 py-2 bg-[#090B10]/90 text-[11px]">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1.5">
+            SECTOR DETAIL
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {sectorDeltas.map((s) => {
+              const isFaster = s.delta < 0;
+              return (
+                <div
+                  key={s.sector}
+                  className="flex items-center justify-between px-2 py-1 rounded bg-white/[0.03] border border-white/[0.06]"
+                >
+                  <span className="text-neutral-400 font-bold">S{s.sector}</span>
+                  <span
+                    className={`font-bold tabular-nums ${
+                      isFaster ? 'text-emerald-400' : 'text-rose-400'
+                    }`}
+                  >
+                    {s.delta > 0 ? '+' : ''}
+                    {s.delta.toFixed(3)}
+                  </span>
                 </div>
               );
             })}

@@ -36,7 +36,7 @@ const LANGUAGES = [
 
 // Full catalogue retained for CommandPalette and full index searches
 export const NAV_ITEMS = [
-  { name: 'Live Timing', href: '/live-timing', icon: Radio, isLive: true },
+  { name: 'Live Session', href: '/live-timing', icon: Radio, isLive: true },
   { name: 'Teams', href: '/teams', icon: ShieldCheck },
   { name: 'Riders', href: '/riders', icon: Users },
   { name: 'Lean & Gyro', href: '/lean-telemetry', icon: Compass },
@@ -224,7 +224,7 @@ export function TopTacticalHUD() {
                 }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-[#E10600] animate-pulse" />
-                <span>Live Timing</span>
+                <span>Live Session</span>
               </Link>
 
               {/* Telemetry Tab with Mega-Menu Trigger */}
@@ -663,7 +663,7 @@ export function TopTacticalHUD() {
                       className="block text-xs font-semibold text-white hover:text-[#FF2A24] transition-colors"
                       onClick={() => setStatsOpen(false)}
                     >
-                      Live Timing Tower →
+                      Live Session Tower →
                     </Link>
                     <Link
                       href="/schedule"
@@ -852,7 +852,7 @@ export function TopTacticalHUD() {
                       className="block text-xs font-semibold text-white hover:text-[#FF2A24] transition-colors"
                       onClick={() => setGridOpen(false)}
                     >
-                      Live Timing Tower →
+                      Live Session Tower →
                     </Link>
                     <Link
                       href="/schedule"
@@ -888,7 +888,7 @@ export function TopTacticalHUD() {
               className="flex items-center gap-2 text-white font-medium"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[#E10600] animate-pulse" />
-              Live Timing
+              Live Session
             </Link>
             <Link
               href="/schedule"

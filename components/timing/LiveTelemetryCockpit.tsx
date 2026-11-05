@@ -5,15 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LiveTimingRider } from '@/lib/types/motogp';
 import { getRiderByNumber } from '@/lib/data/motogp-grid';
 import { computeRiderLiveKinematics, RiderKinematicTelemetry } from '@/lib/utils/rider-kinematics';
-import { X, GripVertical, Play, Pause } from 'lucide-react';
+import { X, GripVertical, Play, Pause, Gauge, Swords } from 'lucide-react';
 import { ConstructorLogo } from '@/components/ui/ConstructorLogo';
 import { useMagicBentoEffect, MagicBentoGlow } from '@/components/ui/MagicBentoCard';
-import {
-  GiSpeedometer,
-  GiStopwatch,
-  GiCarWheel,
-  GiCrossedSwords,
-} from 'react-icons/gi';
 
 interface LiveTelemetryCockpitProps {
   selectedRiders: LiveTimingRider[];
@@ -202,9 +196,9 @@ export function LiveTelemetryCockpit({
         className={`rounded-2xl border border-white/[0.08] bg-[#0D0D0E]/90 overflow-hidden shadow-2xl select-none font-sans flex flex-col justify-between relative ${className}`}
       >
         <MagicBentoGlow />
-        <div className="px-3.5 py-2.5 border-b border-white/[0.08] flex items-center justify-between relative z-10">
+        <div className="px-3.5 py-2.5 flex items-center justify-between relative z-10">
           <div className="flex items-center gap-2">
-            <GiSpeedometer className="w-4 h-4 text-[#00F5D4]" />
+            <Gauge className="w-5 h-5 text-white" />
             <h2 className="font-sans font-bold text-white text-xs sm:text-sm tracking-tight">
               Telemetry &amp; Comparison
             </h2>
@@ -213,7 +207,7 @@ export function LiveTelemetryCockpit({
 
         <div className="p-5 flex-1 flex flex-col items-center justify-center text-center space-y-3 relative z-10">
           <div className="w-11 h-11 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-neutral-400">
-            <GiSpeedometer className="w-5 h-5 text-neutral-300" />
+            <Gauge className="w-5 h-5 text-white" />
           </div>
           <div className="space-y-1">
             <h3 className="font-sans font-bold text-white text-sm">No Riders Selected</h3>
@@ -227,7 +221,7 @@ export function LiveTelemetryCockpit({
               onClick={onQuickCompareTop2}
               className="h-8 px-4 rounded-full liquid-glass-btn text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer"
             >
-              <GiCrossedSwords className="w-3.5 h-3.5 text-[#E10600]" />
+              <Swords className="w-5 h-5 text-white" />
               <span>Compare Top 2 Battle</span>
             </button>
           )}
@@ -270,7 +264,7 @@ export function LiveTelemetryCockpit({
       <MagicBentoGlow />
 
       {/* HEADER: Title + Selected Rider Pills (LEC x vs VER x style from Image 5) */}
-      <div className="px-3.5 py-2.5 border-b border-white/[0.08] flex items-center justify-between gap-2 relative z-10 shrink-0">
+      <div className="px-3.5 py-2.5 flex items-center justify-between gap-2 relative z-10 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           {isDraggable && (
             <div
@@ -280,7 +274,7 @@ export function LiveTelemetryCockpit({
               <GripVertical className="w-3.5 h-3.5" />
             </div>
           )}
-          <GiSpeedometer className="w-4 h-4 text-[#00F5D4] shrink-0" />
+          <Gauge className="w-5 h-5 text-white shrink-0" />
           <h2 className="font-sans font-bold text-white text-xs sm:text-sm tracking-tight truncate">
             {isDualMode ? 'Head-to-Head Telemetry' : 'Live Rider Telemetry'}
           </h2>
@@ -322,7 +316,7 @@ export function LiveTelemetryCockpit({
               className="h-7 px-2.5 rounded-full liquid-glass-pill text-[10px] font-bold text-neutral-200 hover:text-white flex items-center gap-1 cursor-pointer"
               title="Select P1 vs P2 for real-time dual battle comparison"
             >
-              <GiCrossedSwords className="w-3 h-3 text-[#E10600]" />
+              <Swords className="w-5 h-5 text-white" />
               <span>2-Way</span>
             </button>
           )}

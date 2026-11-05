@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getCircuitCoords } from '@/lib/data/circuit-coords';
 
 if (process.env.NODE_ENV !== 'production') {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -108,7 +109,8 @@ export async function GET(req: Request) {
                 active: true,
                 source: 'gateway-live',
                 isTrackLive: true,
-                sessionName: liveData.head?.session_name || 'Live Track Session',
+                sessionName: `${liveData.head?.event_tv_name || 'MotoGP'} · ${liveData.head?.session_name || 'Live Session'}`,
+                trackCoords: getCircuitCoords(liveData.head?.circuit_name),
                 data: liveData,
               },
               {
@@ -223,7 +225,7 @@ export async function GET(req: Request) {
     const riderMap: Record<string, any> = {};
 
     classificationList.forEach((item: any, idx: number) => {
-      const pos = item.position || idx + 1;
+      const pos = item.position ?? 90 + idx;
       const riderNumber = String(item.rider?.number || pos);
       const fullName = item.rider?.full_name || 'Rider';
       const nameParts = fullName.split(' ');
@@ -234,7 +236,7 @@ export async function GET(req: Request) {
       const bikeName = item.constructor?.name ? `${item.constructor.name} Prototype` : 'MotoGP Prototype';
       const color = getTeamColor(teamName);
 
-      // Real gaps from Dorna API
+      // Gap values are only meaningful for classified riders
       let gapFirst = 'LEADER';
       const currentGapNum = parseFloat(item.gap?.first || '0') || (pos > 1 ? pos * 0.485 : 0);
 
@@ -242,7 +244,7 @@ export async function GET(req: Request) {
         if (item.gap?.first && item.gap.first !== '0.000' && item.gap.first !== '0') {
           gapFirst = `+${item.gap.first}s`;
         } else {
-          gapFirst = `+${(pos * 0.485).toFixed(3)}s`;
+          gapFirst = '—';
         }
       }
 
@@ -255,16 +257,7 @@ export async function GET(req: Request) {
         gapPrev = `+${interval.toFixed(3)}s`;
       }
 
-      // Authentic Sepang lap time benchmark
-      const bestLapMs = 117100 + idx * 82; // ~1'57.100 to 1'58.600
-      const bestLapMinutes = Math.floor(bestLapMs / 60000);
-      const bestLapSecs = ((bestLapMs % 60000) / 1000).toFixed(3);
-      const authenticLapTime = `${bestLapMinutes}'${bestLapSecs.padStart(6, '0')}`;
-
-      // Radar speed trap from TOP_SPEED_MAP or item
-      const radarTopSpeed = TOP_SPEED_MAP[riderNumber] || (343.5 - idx * 0.45);
-
-      riderMap[String(pos)] = {
+      riderMap[riderNumber] = {
         pos,
         order: pos,
         rider_number: riderNumber,
@@ -274,25 +267,17 @@ export async function GET(req: Request) {
         team_name: teamName,
         bike_name: bikeName,
         color,
-        lap_time: authenticLapTime,
-        last_lap_time: authenticLapTime,
-        total_time: item.time || '40:14.236',
-        num_lap: item.total_laps || 20,
-        last_lap: item.total_laps || 20,
+        lap_time: '',
+        last_lap_time: '',
+        total_time: item.time || '',
+        num_lap: item.total_laps || 0,
+        last_lap: item.total_laps || 0,
         gap_first: gapFirst,
         gap_prev: gapPrev,
         on_pit: false,
-        speed: parseFloat(radarTopSpeed.toFixed(1)),
-        average_speed: item.average_speed || 165.3,
-        best_lap: { time: authenticLapTime, number: 3 + (idx % 12) },
+        average_speed: item.average_speed || 0,
         points: item.points || 0,
         status: item.status || 'INSTND',
-        t1: (28.25 + idx * 0.04).toFixed(3),
-        t2: (29.10 + idx * 0.03).toFixed(3),
-        t3: (23.80 + idx * 0.02).toFixed(3),
-        t4: (23.20 + idx * 0.02).toFixed(3),
-        tyre_front: idx % 3 === 0 ? 'Hard' : 'Medium',
-        tyre_rear: idx % 2 === 0 ? 'Medium' : 'Soft',
       };
     });
 
@@ -348,6 +333,7 @@ export async function GET(req: Request) {
         source: 'dorna-pulselive-official',
         isTrackLive: false,
         sessionName: `${targetEvent.name} · ${sessionTypeName}`,
+        trackCoords: getCircuitCoords(targetEvent.circuit?.name),
         event: {
           id: targetEvent.id,
           name: targetEvent.name,

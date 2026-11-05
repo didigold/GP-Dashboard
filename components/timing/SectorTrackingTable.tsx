@@ -6,8 +6,7 @@ import { parseLapTimeToSeconds } from '@/lib/utils/time';
 import { abbreviateRiderName } from '@/lib/utils/rider-name';
 import { DriverNumber } from '@/components/ui/driver-number';
 import { cn } from '@/lib/utils';
-import { GripVertical } from 'lucide-react';
-import { GiStopwatch, GiCardPick } from 'react-icons/gi';
+import { GripVertical, Timer, LayoutGrid } from 'lucide-react';
 import { useMagicBentoEffect } from '@/components/ui/MagicBentoCard';
 
 export const SECTOR_KEYS = ['t1', 't2', 't3', 't4'] as const;
@@ -171,7 +170,7 @@ export function SectorTrackingTable({
       <span className="magic-bento__border" aria-hidden="true" />
 
       {/* Header with Drag Handle + Title + Game Icon */}
-      <div className="px-4 py-3 bg-[#080A0F] border-b border-neutral-800/80 flex items-center justify-between gap-3 relative z-10">
+      <div className="px-4 py-3 flex items-center justify-between gap-3 relative z-10">
         <div className="flex items-center gap-2.5">
           {isDraggable && (
             <div
@@ -179,10 +178,10 @@ export function SectorTrackingTable({
               title="Drag frame to reorder in Bento grid"
             >
               <GripVertical className="w-4 h-4 text-neutral-400 group-hover/handle:text-emerald-400 transition-colors" />
-              <GiCardPick className="w-3.5 h-3.5 text-neutral-500 group-hover/handle:text-emerald-400 transition-colors hidden sm:inline" />
+              <LayoutGrid className="w-4 h-4 text-neutral-500 group-hover/handle:text-white transition-colors hidden sm:inline" />
             </div>
           )}
-          <GiStopwatch className="w-5 h-5 text-emerald-400" />
+          <Timer className="w-5 h-5 text-white" />
           <h2 className="font-sans font-bold text-white text-sm sm:text-base tracking-tight">
             Sector Split Benchmarks &amp; Speed Traps
           </h2>

@@ -32,12 +32,11 @@ import {
   Clock,
   GripVertical,
   Flag,
+  Map,
+  TreePine,
+  SunDim,
+  Building2,
 } from 'lucide-react';
-import {
-  GiRoad,
-  GiFullMotorcycleHelmet,
-  GiCrossedSwords,
-} from 'react-icons/gi';
 import { useMagicBentoEffect, MagicBentoGlow } from '@/components/ui/MagicBentoCard';
 
 const DAY_VECTOR_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
@@ -85,6 +84,7 @@ interface LiveMapboxTrackMapProps {
   windSpeedMs?: number;
   activeAlert?: RaceControlAlert | null;
   onDismissAlert?: () => void;
+  sessionType?: string;
   className?: string;
   isDraggable?: boolean;
   isDragging?: boolean;
@@ -113,6 +113,7 @@ export function LiveMapboxTrackMap({
   windSpeedMs = 2.1,
   activeAlert = null,
   onDismissAlert,
+  sessionType = 'RAC',
   className = '',
   isDraggable = true,
   isDragging = false,
@@ -142,9 +143,12 @@ export function LiveMapboxTrackMap({
 
   const [viewMode, setViewMode] = useState<'3d' | '2d' | 'onboard'>('3d');
   const [lightingMode, setLightingMode] = useState<MapLightingMode>('auto');
-  const [showDriverCodes, setShowDriverCodes] = useState<boolean>(true);
   const [showCorners, setShowCorners] = useState<boolean>(true);
   const [showSectorTint, setShowSectorTint] = useState<boolean>(false);
+  const [showTrees, setShowTrees] = useState<boolean>(true);
+  const [showShadows, setShowShadows] = useState<boolean>(true);
+  const [showBuildings, setShowBuildings] = useState<boolean>(true);
+  const [dotDisplayMode, setDotDisplayMode] = useState<'dot' | 'dot-number' | 'dot-name' | 'both'>('dot-number');
   const [battleCamActive, setBattleCamActive] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
@@ -293,10 +297,10 @@ export function LiveMapboxTrackMap({
             id: 'sepang-kerbs-white',
             type: 'line',
             source: 'sepang-kerbs',
-            layout: { 'line-cap': 'butt', 'line-join': 'round' },
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
             paint: {
               'line-color': '#FFFFFF',
-              'line-width': ['interpolate', ['linear'], ['zoom'], 13, 2.5, 16, 6],
+              'line-width': ['interpolate', ['linear'], ['zoom'], 13, 3, 16, 7],
               'line-opacity': 0.95,
             },
           });
@@ -306,11 +310,11 @@ export function LiveMapboxTrackMap({
             id: 'sepang-kerbs-red-pianos',
             type: 'line',
             source: 'sepang-kerbs',
-            layout: { 'line-cap': 'butt', 'line-join': 'round' },
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
             paint: {
               'line-color': '#E10600',
-              'line-width': ['interpolate', ['linear'], ['zoom'], 13, 2.5, 16, 6],
-              'line-dasharray': [1.1, 1.1],
+              'line-width': ['interpolate', ['linear'], ['zoom'], 13, 3, 16, 7],
+              'line-dasharray': [2, 2],
               'line-opacity': 0.98,
             },
           });
@@ -379,6 +383,33 @@ export function LiveMapboxTrackMap({
               'line-color': isWet ? '#38BDF8' : '#94A3B8',
               'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1, 16, 2],
               'line-opacity': isWet ? 0.35 : 0.25,
+            },
+          });
+        }
+
+        // 4e. Satellite Dark Asphalt Overlay (boosts track contrast on aerial imagery)
+        if (resolvedBaseStyle === 'satellite' && !map.getSource('satellite-overlay')) {
+          map.addSource('satellite-overlay', {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: closedSplineCoords,
+              },
+            },
+          });
+
+          map.addLayer({
+            id: 'satellite-asphalt-overlay',
+            type: 'line',
+            source: 'satellite-overlay',
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: {
+              'line-color': '#1A1A2E',
+              'line-width': ['interpolate', ['linear'], ['zoom'], 13, 9, 16, 18],
+              'line-opacity': 0.6,
             },
           });
         }
@@ -525,6 +556,27 @@ export function LiveMapboxTrackMap({
       }
     });
   }, [showSectorTint]);
+
+  // Toggle map layer visibility (buildings, trees, shadows) based on state
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    try {
+      if (map.getLayer('3d-buildings')) {
+        map.setLayoutProperty('3d-buildings', 'visibility', showBuildings ? 'visible' : 'none');
+      }
+    } catch {
+      // safe ignore before style load
+    }
+
+    // Trees/shadows on the raster/vector base are toggled via a CSS filter on the canvas container
+    if (mapContainerRef.current) {
+      const parts: string[] = [];
+      if (!showTrees) parts.push('saturate(0.55)');
+      if (!showShadows) parts.push('brightness(1.08) contrast(0.92)');
+      mapContainerRef.current.style.filter = parts.length ? parts.join(' ') : 'none';
+    }
+  }, [showTrees, showShadows, showBuildings]);
 
   // Update wet asphalt colors dynamically when weather changes
   useEffect(() => {
@@ -714,7 +766,8 @@ export function LiveMapboxTrackMap({
         el.className = 'rider-marker cursor-pointer select-none';
         el.style.display = 'flex';
         el.style.alignItems = 'center';
-        el.style.gap = '4px';
+        el.style.justifyContent = 'center';
+        el.style.position = 'relative';
 
         el.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -740,58 +793,53 @@ export function LiveMapboxTrackMap({
         // Dim unselected riders when 2 riders are in comparison focus mode (like F1 Image 5)
         item.el.style.opacity = isDualComparison && !isSelected ? '0.45' : '1';
 
+        const showNumberInside = dotDisplayMode === 'dot-number' || dotDisplayMode === 'both';
+        const showName = dotDisplayMode === 'dot-name' || dotDisplayMode === 'both' || isSelected;
+        const dotSize = isSelected ? 22 : showNumberInside ? 18 : 14;
+        const dotFont = isSelected ? 11 : showNumberInside ? 9 : 8;
+        const labelLeft = dotSize + 3;
+
         item.el.innerHTML = `
-          <div style="
-            width: ${isSelected ? '20px' : '14px'};
-            height: ${isSelected ? '20px' : '14px'};
-            border-radius: 9999px;
-            background-color: ${riderColor};
-            border: ${isSelected ? '2.5px solid #FFFFFF' : '1.5px solid #0B0D14'};
-            box-shadow: ${isSelected ? `0 0 14px ${riderColor}` : '0 2px 4px rgba(0,0,0,0.6)'};
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: ${isSelected ? '10px' : '8px'};
-            font-weight: 900;
-            color: #FFFFFF;
-          ">
-            ${r.rider_number}
+          <div style="position: relative; width: ${dotSize}px; height: ${dotSize}px; display: flex; align-items: center; justify-content: center;">
+            <div style="
+              width: ${dotSize}px;
+              height: ${dotSize}px;
+              border-radius: 9999px;
+              background-color: ${riderColor};
+              border: ${isSelected ? '2.5px solid #FFFFFF' : '1.5px solid rgba(255,255,255,0.35)'};
+              box-shadow: ${isSelected ? `0 0 14px ${riderColor}` : '0 2px 6px rgba(0,0,0,0.55)'};
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: ${dotFont}px;
+              font-weight: 900;
+              color: #FFFFFF;
+            ">
+              ${showNumberInside ? r.rider_number : ''}
+            </div>
+            ${
+              showName
+                ? `<div style="
+                    position: absolute;
+                    left: ${labelLeft}px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: ${isSelected ? 'rgba(9, 11, 16, 0.94)' : 'rgba(11, 13, 20, 0.88)'};
+                    border: ${isSelected ? `1.5px solid ${riderColor}` : '1px solid rgba(255,255,255,0.16)'};
+                    padding: ${isSelected ? '1.5px 6px' : '1px 4.5px'};
+                    border-radius: 6px;
+                    font-size: ${isSelected ? 10 : 9.5}px;
+                    font-weight: 800;
+                    color: #FFFFFF;
+                    white-space: nowrap;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.55);
+                    pointer-events: none;
+                  ">
+                    ${shortName}${isSelected ? `<span style="color: #94A3B8; font-weight: 700; margin-left: 4px;">${kin.speedKmh} km/h</span><span style="color: #FBBF24; font-weight: 800; margin-left: 3px;">G${kin.gear}</span>` : ''}
+                  </div>`
+                : ''
+            }
           </div>
-          ${
-            isSelected
-              ? `<div style="
-                  background: rgba(9, 11, 16, 0.94);
-                  border: 1.5px solid ${riderColor};
-                  padding: 1.5px 6px;
-                  border-radius: 6px;
-                  font-size: 10px;
-                  font-weight: 800;
-                  color: #FFFFFF;
-                  white-space: nowrap;
-                  box-shadow: 0 4px 12px rgba(0,0,0,0.65);
-                  display: flex;
-                  align-items: center;
-                  gap: 4px;
-                ">
-                  <span>${shortName}</span>
-                  <span style="color: #94A3B8; font-weight: 700;">${kin.speedKmh} km/h</span>
-                  <span style="color: #FBBF24; font-weight: 800;">G${kin.gear}</span>
-                </div>`
-              : showDriverCodes
-              ? `<div style="
-                  background: rgba(11, 13, 20, 0.88);
-                  border: 1px solid rgba(255,255,255,0.16);
-                  padding: 1px 4.5px;
-                  border-radius: 4px;
-                  font-size: 9.5px;
-                  font-weight: 800;
-                  color: #E2E8F0;
-                  white-space: nowrap;
-                ">
-                  ${shortName}
-                </div>`
-              : ''
-          }
         `;
       }
     });
@@ -800,7 +848,7 @@ export function LiveMapboxTrackMap({
     activeSelectedList,
     isDualComparison,
     battleCamActive,
-    showDriverCodes,
+    dotDisplayMode,
     onSelectRider,
     viewMode,
     riders,
@@ -856,7 +904,7 @@ export function LiveMapboxTrackMap({
       <MagicBentoGlow />
 
       {/* TOP HEADER BAR: Standardized Liquid Glass Pills (h-8) matching F1 Image 2 & MotoGP Taste */}
-      <div className="px-3.5 py-2.5 bg-[#0A0B0E]/90 border-b border-white/[0.08] flex flex-wrap items-center justify-between gap-2 z-20 shrink-0">
+      <div className="px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 z-20 shrink-0">
         {/* Left: Drag Handle + Icon + Title */}
         <div className="flex items-center gap-2 min-w-0">
           {isDraggable && (
@@ -867,7 +915,7 @@ export function LiveMapboxTrackMap({
               <GripVertical className="w-3.5 h-3.5" />
             </div>
           )}
-          <GiRoad className="w-4 h-4 text-[#E10600] shrink-0" />
+          <Map className="w-5 h-5 text-white shrink-0" />
           <h2 className="text-xs sm:text-sm font-bold text-white tracking-tight flex items-center gap-2 truncate">
             <span>Track Map</span>
             <span className="hidden xl:inline-block text-xs font-normal text-neutral-400 truncate">
@@ -878,20 +926,8 @@ export function LiveMapboxTrackMap({
 
         {/* Right: Liquid Glass Control Pills (Codes | Corners | Sectors | Mode 3D/2D | Theme Auto/Day/Dusk/Night/Sat) */}
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
-          {/* Toggle Pill Group: Codes / Corners / Sectors */}
+          {/* Toggle Pill Group: Corners / Sectors */}
           <div className="h-8 p-0.5 inline-flex items-center rounded-full liquid-glass-pill text-[11px] font-semibold">
-            <button
-              type="button"
-              onClick={() => setShowDriverCodes(!showDriverCodes)}
-              className={`h-full px-2.5 rounded-full transition-all cursor-pointer ${
-                showDriverCodes
-                  ? 'bg-white text-black font-bold shadow-xs'
-                  : 'text-neutral-300 hover:text-white'
-              }`}
-              title="Toggle rider 3-letter codes on map"
-            >
-              Codes
-            </button>
             <button
               type="button"
               onClick={() => setShowCorners(!showCorners)}
@@ -916,6 +952,64 @@ export function LiveMapboxTrackMap({
             >
               Sectors
             </button>
+          </div>
+
+          {/* Layer Visibility Pill: Trees / Shadows / Buildings (matches F1 Dashboard) */}
+          <div className="h-8 p-0.5 inline-flex items-center rounded-full liquid-glass-pill">
+            <button
+              type="button"
+              onClick={() => setShowTrees(!showTrees)}
+              className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                showTrees ? 'bg-white text-black shadow-xs' : 'text-neutral-300 hover:text-white'
+              }`}
+              title="Toggle trees"
+            >
+              <TreePine className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowShadows(!showShadows)}
+              className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                showShadows ? 'bg-white text-black shadow-xs' : 'text-neutral-300 hover:text-white'
+              }`}
+              title="Toggle shadows"
+            >
+              <SunDim className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowBuildings(!showBuildings)}
+              className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                showBuildings ? 'bg-white text-black shadow-xs' : 'text-neutral-300 hover:text-white'
+              }`}
+              title="Toggle 3D buildings"
+            >
+              <Building2 className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Driver Dot Display Mode Pill */}
+          <div className="h-8 p-0.5 inline-flex items-center rounded-full liquid-glass-pill text-[11px] font-semibold">
+            {([
+              { id: 'dot', label: '\u2022', title: 'Dots only' },
+              { id: 'dot-number', label: '#', title: 'Dots with number inside' },
+              { id: 'dot-name', label: 'Aa', title: 'Dots with name overlay' },
+              { id: 'both', label: 'Aa#', title: 'Dots with name and number' },
+            ] as const).map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setDotDisplayMode(opt.id)}
+                className={`h-full px-2 rounded-full transition-all cursor-pointer text-[10px] ${
+                  dotDisplayMode === opt.id
+                    ? 'bg-white text-black font-bold shadow-xs'
+                    : 'text-neutral-300 hover:text-white'
+                }`}
+                title={opt.title}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
 
           {/* Mode Pill: 3D | 2D | Onboard */}
@@ -1080,6 +1174,7 @@ export function LiveMapboxTrackMap({
           <DriverBattleOverlayHUD
             riderA={selectedRiderA}
             riderB={selectedRiderB}
+            sessionType={sessionType}
             activeSector={leaderKin?.sector || 4}
             sectorProgress={leaderKin?.sectorProgress || 0.65}
             currentLap={currentLap}

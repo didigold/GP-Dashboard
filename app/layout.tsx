@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   title: 'GP-Dashboard | MotoGP™ Live Telemetry & Pitwall',
   description:
     'Dedicated MotoGP telemetry dashboard: 68° lean angle dynamics, Michelin asymmetric tyre thermal stress, Brembo carbon braking zones, TV delay buffer, and live pitwall timing.',
-  keywords: ['MotoGP', 'Live Timing', 'Lean Angle', 'Telemetry', 'Tyre Degradation', 'Brembo', 'Bagnaia', 'Martin', 'Marquez', 'Acosta'],
+  keywords: ['MotoGP', 'Live Session', 'Lean Angle', 'Telemetry', 'Tyre Degradation', 'Brembo', 'Bagnaia', 'Martin', 'Marquez', 'Acosta'],
   openGraph: {
     title: 'GP-Dashboard | MotoGP™ Live Telemetry & Pitwall',
     description: 'Track live lean angles, asymmetric tyre stress, and sector splits in real-time.',

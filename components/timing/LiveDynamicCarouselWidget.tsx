@@ -15,14 +15,11 @@ import {
   GripVertical,
   Play,
   Pause,
+  Trophy,
+  Gauge,
+  Disc,
+  Flag,
 } from 'lucide-react';
-import {
-  GiTrophyCup,
-  GiSpeedometer,
-  GiCarWheel,
-  GiStopwatch,
-  GiCheckeredFlag,
-} from 'react-icons/gi';
 
 export interface StandingItem {
   position: number;
@@ -78,10 +75,10 @@ const OFFICIAL_2026_TEAMS = [
 ];
 
 const SLIDE_META = [
-  { id: 'championship', title: 'Live Championship', icon: GiTrophyCup, accent: '#EAB308' },
-  { id: 'speed-sectors', title: 'Speed Trap & Sectors', icon: GiSpeedometer, accent: '#E10600' },
-  { id: 'tyre-stints', title: 'Michelin Tyre Stints', icon: GiCarWheel, accent: '#00F5D4' },
-  { id: 'team-comms', title: 'Team Comms & Steward', icon: GiCheckeredFlag, accent: '#38BDF8' },
+  { id: 'championship', title: 'Live Championship', icon: Trophy, accent: '#EAB308' },
+  { id: 'speed-sectors', title: 'Speed Trap & Sectors', icon: Gauge, accent: '#E10600' },
+  { id: 'tyre-stints', title: 'Michelin Tyre Stints', icon: Disc, accent: '#00F5D4' },
+  { id: 'team-comms', title: 'Team Comms & Steward', icon: Flag, accent: '#38BDF8' },
 ] as const;
 
 export function LiveDynamicCarouselWidget({
@@ -181,7 +178,7 @@ export function LiveDynamicCarouselWidget({
       <MagicBentoGlow />
 
       {/* TOP HEADER: Active Slide Title + Auto-Rotate Switch / Sub-controls */}
-      <div className="px-3.5 py-2.5 border-b border-white/[0.08] flex items-center justify-between gap-2 relative z-10 shrink-0">
+      <div className="px-3.5 py-2.5 flex items-center justify-between gap-2 relative z-10 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           {isDraggable && (
             <div
@@ -191,7 +188,7 @@ export function LiveDynamicCarouselWidget({
               <GripVertical className="w-3.5 h-3.5" />
             </div>
           )}
-          <SlideIcon className="w-4 h-4 shrink-0" style={{ color: activeSlide.accent }} />
+          <SlideIcon className="w-5 h-5 shrink-0 text-white" />
           <h2 className="font-sans font-bold text-white text-xs sm:text-sm tracking-tight truncate">
             {activeSlide.title}
           </h2>

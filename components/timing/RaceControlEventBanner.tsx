@@ -2,13 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
-import {
-  GiHeavyRain,
-  GiCheckeredFlag,
-  GiStopwatch,
-  GiFullMotorcycleHelmet,
-} from 'react-icons/gi';
+import { X, CloudRain, Flag, Timer, Swords } from 'lucide-react';
 
 export interface RaceControlAlert {
   id: string;
@@ -35,7 +29,7 @@ export function RaceControlEventBanner({
       badgeBg: 'bg-sky-500 text-black',
       glow: 'shadow-[0_12px_40px_rgba(56,189,248,0.35)]',
       vignette: 'from-sky-500/18 via-transparent to-transparent',
-      icon: <GiHeavyRain className="w-4 h-4 text-sky-400 shrink-0" />,
+      icon: <CloudRain className="w-5 h-5 text-white shrink-0" />,
       tag: 'WET RACE / WHITE CROSS FLAG',
     },
     yellow: {
@@ -43,7 +37,7 @@ export function RaceControlEventBanner({
       badgeBg: 'bg-amber-400 text-black',
       glow: 'shadow-[0_12px_40px_rgba(251,191,36,0.35)]',
       vignette: 'from-amber-500/18 via-transparent to-transparent',
-      icon: <GiCheckeredFlag className="w-4 h-4 text-amber-400 shrink-0" />,
+      icon: <Flag className="w-5 h-5 text-white shrink-0" />,
       tag: 'RACE DIRECTION · YELLOW FLAG',
     },
     red: {
@@ -51,7 +45,7 @@ export function RaceControlEventBanner({
       badgeBg: 'bg-[#E10600] text-white',
       glow: 'shadow-[0_12px_40px_rgba(225,6,0,0.45)]',
       vignette: 'from-[#E10600]/22 via-transparent to-transparent',
-      icon: <GiCheckeredFlag className="w-4 h-4 text-[#E10600] shrink-0" />,
+      icon: <Flag className="w-5 h-5 text-white shrink-0" />,
       tag: 'SESSION RED FLAGGED',
     },
     fastest: {
@@ -59,7 +53,7 @@ export function RaceControlEventBanner({
       badgeBg: 'bg-purple-500 text-white',
       glow: 'shadow-[0_12px_40px_rgba(168,85,247,0.35)]',
       vignette: 'from-purple-500/15 via-transparent to-transparent',
-      icon: <GiStopwatch className="w-4 h-4 text-purple-400 shrink-0" />,
+      icon: <Timer className="w-5 h-5 text-white shrink-0" />,
       tag: 'NEW FASTEST LAP',
     },
     clear: {
@@ -67,7 +61,7 @@ export function RaceControlEventBanner({
       badgeBg: 'bg-emerald-400 text-black',
       glow: 'shadow-[0_12px_40px_rgba(16,185,129,0.3)]',
       vignette: 'from-emerald-500/14 via-transparent to-transparent',
-      icon: <GiFullMotorcycleHelmet className="w-4 h-4 text-emerald-400 shrink-0" />,
+      icon: <Swords className="w-5 h-5 text-white shrink-0" />,
       tag: 'TRACK CLEAR · GREEN FLAG',
     },
   }[alert.type];

@@ -6,8 +6,10 @@ import {
   Pause,
   FastForward,
   Rewind,
+  CloudRain,
+  Flag,
+  Timer,
 } from 'lucide-react';
-import { GiHeavyRain, GiCheckeredFlag, GiStopwatch } from 'react-icons/gi';
 
 export interface TimelineIncidentMarker {
   timeSec: number;
@@ -171,13 +173,13 @@ export function ReplayScrubberBar({
             >
               <div className="flex items-center gap-1.5 font-extrabold text-white">
                 {hoveredIncident.type === 'wet' && (
-                  <GiHeavyRain className="w-3.5 h-3.5 text-sky-400" />
+                  <CloudRain className="w-5 h-5 text-white" />
                 )}
                 {hoveredIncident.type === 'yellow' && (
-                  <GiCheckeredFlag className="w-3.5 h-3.5 text-amber-400" />
+                  <Flag className="w-5 h-5 text-white" />
                 )}
                 {hoveredIncident.type === 'purple' && (
-                  <GiStopwatch className="w-3.5 h-3.5 text-purple-400" />
+                  <Timer className="w-5 h-5 text-white" />
                 )}
                 <span>{hoveredIncident.label}</span>
                 <span className="text-neutral-400 font-semibold tabular-nums">

@@ -146,6 +146,20 @@ export function generateSepangKerbsGeoJSON() {
   // Offset distance in meters from centerline to track edge kerb
   const kerbOffsetMeters = 5.4;
 
+  // Smooth the per-vertex normals over a small window so kerb lines stay clean
+  // and do not self-intersect on tight corners (removes the jagged look).
+  const smoothNormals: Array<[number, number]> = table.map((_, i) => {
+    let nx = 0;
+    let ny = 0;
+    for (let d = -3; d <= 3; d++) {
+      const v = table[(i + d + n) % n];
+      nx += v.normalLng;
+      ny += v.normalLat;
+    }
+    const len = Math.hypot(nx, ny) || 1;
+    return [nx / len, ny / len];
+  });
+
   SEPANG_CORNERS.forEach((corner) => {
     // Find closest spline vertex to corner GPS coordinate
     let bestIdx = 0;
@@ -168,10 +182,12 @@ export function generateSepangKerbsGeoJSON() {
     // 1. Inside Apex Kerb (-6 to +6 vertices around apex)
     const apexCoords: [number, number][] = [];
     for (let step = -6; step <= 6; step++) {
-      const v = table[(bestIdx + step + n) % n];
+      const idx = (bestIdx + step + n) % n;
+      const v = table[idx];
+      const [nLng, nLat] = smoothNormals[idx];
       apexCoords.push([
-        v.lng + v.normalLng * kerbOffsetMeters * apexSign,
-        v.lat + v.normalLat * kerbOffsetMeters * apexSign,
+        v.lng + nLng * kerbOffsetMeters * apexSign,
+        v.lat + nLat * kerbOffsetMeters * apexSign,
       ]);
     }
     features.push({
@@ -183,10 +199,12 @@ export function generateSepangKerbsGeoJSON() {
     // 2. Outside Exit Kerb (+3 to +16 vertices after apex)
     const exitCoords: [number, number][] = [];
     for (let step = 3; step <= 16; step++) {
-      const v = table[(bestIdx + step + n) % n];
+      const idx = (bestIdx + step + n) % n;
+      const v = table[idx];
+      const [nLng, nLat] = smoothNormals[idx];
       exitCoords.push([
-        v.lng + v.normalLng * kerbOffsetMeters * exitSign,
-        v.lat + v.normalLat * kerbOffsetMeters * exitSign,
+        v.lng + nLng * kerbOffsetMeters * exitSign,
+        v.lat + nLat * kerbOffsetMeters * exitSign,
       ]);
     }
     features.push({
